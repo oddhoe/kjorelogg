@@ -266,8 +266,7 @@ function loadSettings(){
    if(typeof d?.dataSaver==='boolean')settings.dataSaver=d.dataSaver;
    if(typeof d?.backgroundGps==='boolean')settings.backgroundGps=d.backgroundGps;
    if(typeof d?.includeSideanlegg==='boolean')settings.includeSideanlegg=d.includeSideanlegg;
-   if(typeof d?.progressRange==='string')settings.progressRange=d.progressRange;
-   if(typeof d?.progressFylke==='string')settings.progressFylke=d.progressFylke;
+   if(typeof d?.progressRange==='string')settings.progressRange=d.progressRange;   if(typeof d?.progressFylke==='string')settings.progressFylke=d.progressFylke;
    if(d?.manualCenter&&Number.isFinite(d.manualCenter.lat)&&Number.isFinite(d.manualCenter.lon))settings.manualCenter=d.manualCenter;
    if(typeof d?.planMode==='boolean')settings.planMode=d.planMode;
     if(d?.categoryFilter)settings.categoryFilter={...DEFAULT_CATEGORY_FILTER,...d.categoryFilter};
@@ -302,8 +301,7 @@ function applySettingsToUI(){
  const bg=document.getElementById('btn-backgroundgps'); if(bg) bg.textContent=settings.backgroundGps?'📍 Bakgrunns-GPS PÅ':'📍 Bakgrunns-GPS AV';
  const sa=document.getElementById('btn-sideanlegg'); if(sa) sa.textContent=settings.includeSideanlegg?'🅿️ Sideanlegg PÅ':'🅿️ Sideanlegg AV';
  const pm=document.getElementById('btn-planmode'); if(pm) pm.textContent=settings.planMode?'🗺 Planmodus PÅ':'🗺 Planmodus AV';
- const pr=document.getElementById('progress-range'); if(pr) pr.value=settings.progressRange||'all';
- const pfs=document.getElementById('progress-fylke'); if(pfs) pfs.value=settings.progressFylke||'';
+ const pr=document.getElementById('progress-range'); if(pr) pr.value=settings.progressRange||'all'; const pfs=document.getElementById('progress-fylke'); if(pfs) pfs.value=settings.progressFylke||'';
  const radiusEl=document.getElementById('radius');if(!radiusEl.value||Number(radiusEl.value)<=0)radiusEl.value=String(currentProfile().radiusDefault);
  document.querySelectorAll('.cat-chip').forEach(btn=>btn.classList.toggle('active',!!settings.categoryFilter[btn.dataset.cat]));
  updateHeaderTitle();
@@ -1139,7 +1137,53 @@ function isGSV(seg){const m=seg.match(/D(\d+)$/i);return m?Number(m[1])>=100:fal
 function dM(la1,lo1,la2,lo2){const R=6371000,dlat=(la2-la1)*Math.PI/180,dlon=(lo2-lo1)*Math.PI/180,a=Math.sin(dlat/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dlon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))}
 function ptSeg(lat,lon,a,b){const lat0=(a[1]+b[1]+lat)/3,mLat=111320,mLon=Math.cos(lat0*Math.PI/180)*111320,ax=a[0]*mLon,ay=a[1]*mLat,bx=b[0]*mLon,by=b[1]*mLat,px=lon*mLon,py=lat*mLat,abx=bx-ax,aby=by-ay,ab2=abx*abx+aby*aby;if(ab2===0)return Math.hypot(px-ax,py-ay);const t=Math.max(0,Math.min(1,((px-ax)*abx+(py-ay)*aby)/ab2));return Math.hypot(px-(ax+t*abx),py-(ay+t*aby))}
 function roadDist(lat,lon,r){let best=Infinity;for(const part of(r.parts||[])){if(!part?.length)continue;if(part.length===1){const d=dM(lat,lon,part[0][1],part[0][0]);if(d<best)best=d;continue}for(let i=0;i<part.length-1;i++){const d=ptSeg(lat,lon,part[i],part[i+1]);if(d<best)best=d}}return best}
+
+function clipSegmentToRadius(a,b,lat,lon,radiusM){
+ const lat0=(a[1]+b[1]+lat)/3,mLat=111320,mLon=Math.cos(lat0*Math.PI/180)*111320,ax=(a[0]-lon)*mLon,ay=(a[1]-lat)*mLat,bx=(b[0]-lon)*mLon,by=(b[1]-lat)*mLat,dx=bx-ax,dy=by-ay;
+ const aa=dx*dx+dy*dy,bb=2*(ax*dx+ay*dy),cc=ax*ax+ay*ay-radiusM*radiusM,insideA=cc<=0,insideB=bx*bx+by*by<=radiusM*radiusM;
+ const ts=[];if(insideA)ts.push(0);if(aa>0){const disc=bb*bb-4*aa*cc;if(disc>=0){const s=Math.sqrt(disc),t1=(-bb-s)/(2*aa),t2=(-bb+s)/(2*aa);if(t1>0&&t1<1)ts.push(t1);if(t2>0&&t2<1)ts.push(t2)}}if(insideB)ts.push(1);
+ const u=[...new Set(ts.map(t=>Math.max(0,Math.min(1,+t.toFixed(6)))))].sort((x,y)=>x-y);if(u.length<2)return null;
+ const p=t=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return[p(u[0]),p(u[u.length-1])];
+}
+function clipPartsToRadius(parts,lat,lon,radiusKm){
+ const radiusM=radiusKm*1000,out=[];
+ for(const part of parts||[]){
+  const v=(part||[]).filter(isVLL);let cur=[];
+  for(let i=0;i<v.length-1;i++){
+   const seg=clipSegmentToRadius(v[i],v[i+1],lat,lon,radiusM);
+   if(!seg){if(cur.length>=2)out.push(cur);cur=[];continue}
+   const last=cur[cur.length-1];
+   if(!last||dM(last[1],last[0],seg[0][1],seg[0][0])>2){if(cur.length>=2)out.push(cur);cur=[seg[0]]}
+   cur.push(seg[1]);
+  }
+  if(cur.length>=2)out.push(cur);
+ }
+ return out;
+}
+function roadRenderParts(r){return r?.displayParts?.length?r.displayParts:(r?.parts||[])}
+function roadRenderLen(r){return Number.isFinite(r?.displayLen)?r.displayLen:(r?.len||0)}
+function applySearchRadiusView(list,lat,lon,radiusKm){
+ const limitM=radiusKm*1000+25,out=[];
+ for(const r of list||[]){
+  const minDist=roadDist(lat,lon,r);
+  if(!Number.isFinite(minDist)||minDist>limitM)continue;
+  const displayParts=clipPartsToRadius(r.parts,lat,lon,radiusKm);
+  if(!displayParts.length)continue;
+  out.push({...r,minDist,displayParts,displayLen:Math.round(calcPartsKm(displayParts)*1000),searchRadiusKm:radiusKm});
+ }
+ return out;
+}
 function bboxFromPoint(lat,lon,rKm){const dLat=rKm/111.32,dLon=rKm/(111.32*Math.max(0.2,Math.abs(Math.cos(lat*Math.PI/180))));return[lon-dLon,lat-dLat,lon+dLon,lat+dLat]}
+const DENSE_CITY_RADIUS_LIMIT_KM=5;
+const DENSE_CITY_RADIUS_AREAS=[
+ {name:'Oslo',lat:59.9139,lon:10.7522,triggerKm:18},
+ {name:'Bergen',lat:60.3929,lon:5.3242,triggerKm:14},
+ {name:'Trondheim',lat:63.4305,lon:10.3951,triggerKm:14}
+];
+function getDenseCityRadiusRule(lat,lon,radiusKm){
+ if(!(Number.isFinite(lat)&&Number.isFinite(lon)&&Number.isFinite(radiusKm))||radiusKm<=DENSE_CITY_RADIUS_LIMIT_KM)return null;
+ return DENSE_CITY_RADIUS_AREAS.find(c=>dM(lat,lon,c.lat,c.lon)<=c.triggerKm*1000)||null;
+}
 function getRoadStartLatLon(r){if(r.parts?.length&&r.parts[0]?.length){const c=r.parts[0][0];if(isVLL(c))return{lat:c[1],lon:c[0]}}return null}
 function calcPartsKm(parts){let m=0;for(const part of(parts||[])){const v=part.filter(isVLL);for(let i=0;i<v.length-1;i++)m+=dM(v[i][1],v[i][0],v[i+1][1],v[i+1][0])}return m/1000}
 function getRoadHeadingAtPoint(lat,lon,r,myHeading){if(!r.parts)return null;let bestDist=Infinity,bestHeading=null;for(const part of r.parts){for(let i=0;i<part.length-1;i++){const a=part[i],b=part[i+1],d=ptSeg(lat,lon,a,b);if(d<bestDist){bestDist=d;const dy=b[1]-a[1],dx=b[0]-a[0];bestHeading=(Math.atan2(dx,dy)*180/Math.PI+360)%360}}}if(bestHeading===null)return null;let diff=Math.abs((myHeading??0)-bestHeading);if(diff>180)diff=360-diff;return{heading:bestHeading,isForward:diff<90}}
@@ -1281,7 +1325,7 @@ function speedLimitSignHtml(){
 /* ───────────────────── FYLKE + NVDB ───────────────────── */
 async function detectFylkeFromAPI(lat,lon){try{const resp=await fetch(`https://ws.geonorge.no/kommuneinfo/v1/punkt?nord=${lat}&ost=${lon}&koordsys=4326`,{headers:{Accept:'application/json'}});if(!resp.ok)return null;const d=await resp.json(),knr=d?.kommunenummer||d?.kommuneinfo?.kommunenummer;if(!knr)return null;const fid=String(knr).substring(0,2);return FYLKER.find(f=>f.id===fid)||null}catch(e){return null}}
 let lastFylkeCheckPos=null;
-async function updateFylkeFromPosition(lat,lon){const sel=document.getElementById('fylke');if(sel.dataset.manual==='1')return;if(lastFylkeCheckPos&&dM(lastFylkeCheckPos[0],lastFylkeCheckPos[1],lat,lon)<10000)return;lastFylkeCheckPos=[lat,lon];const f=await detectFylkeFromAPI(lat,lon);if(!f)return;gps.detectedFylke=f.id;if(sel.value!==f.id)sel.value=f.id;updateHeaderTitle()}
+async function updateFylkeFromPosition(lat,lon){const sel=document.getElementById('fylke');if(lastFylkeCheckPos&&dM(lastFylkeCheckPos[0],lastFylkeCheckPos[1],lat,lon)<10000)return;lastFylkeCheckPos=[lat,lon];const f=await detectFylkeFromAPI(lat,lon);if(!f)return;gps.detectedFylke=f.id;if(sel&&sel.dataset.manual!=='1'&&sel.value)sel.value='';updateHeaderTitle()}
 async function loadRoadsAround(lat,lon,radiusKm,fylkeNr){
  const profile=currentProfile(),[minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm),base=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
  base.searchParams.set('srid','4326');base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);if(fylkeNr)base.searchParams.set('fylke',String(fylkeNr));base.searchParams.set('inkluderAntall','false');base.searchParams.set('antall',String(profile.maxPerPage));
@@ -1573,6 +1617,7 @@ function maybeAdvanceDeadReckoning(){
  if(arr.length>=ROUTE_LOG_DECIMATE_AT)routeLog[_deadReckon.key][_deadReckon.dir]=decimateRouteLogArray(arr);
  markRouteLogDirty();
  markDirectionDriven(_deadReckon.key,_deadReckon.dir);
+ scheduleLiveProgressRender();
  _deadReckon.lastDropTs=now;
  _deadReckon.advancedM=advancedM;
 }
@@ -1629,7 +1674,18 @@ function stopGPS(){
  flushRouteWritesNow();
  renderGPS();renderAllViews()
 }
-function onPosErr(err){finalizeActiveRoad();gps.watching=false;gps.watchId=null;clearNativeForegroundGPS();renderGPS();const m={1:'Tillatelse avslått.',2:'Posisjon utilgjengelig.',3:'Timeout.'};setMessage(m[err?.code]||'GPS-feil.','error')}
+function onPosErr(err){
+ const m={1:'Tillatelse avslått.',2:'Posisjon utilgjengelig.',3:'Timeout.'};
+ if(gps.watching&&err?.code!==1){
+  const now=Date.now();
+  if(now-(gps._lastTransientErrTs||0)>15000){
+   gps._lastTransientErrTs=now;
+   setMessage((m[err?.code]||'GPS-feil.')+' GPS-watch beholdes; tunnel/dekningstap håndteres med dead reckoning og automatisk restart.','notice');
+  }
+  return;
+ }
+ finalizeActiveRoad();gps.watching=false;gps.watchId=null;clearNativeForegroundGPS();stopGpsHealthWatchdog();releaseWakeLock();renderGPS();setMessage(m[err?.code]||'GPS-feil.','error')
+}
 function onPos(pos){
  const lat=Number(pos?.coords?.latitude),lon=Number(pos?.coords?.longitude);
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180)return;
@@ -1750,7 +1806,7 @@ function mapRoadsToRender(){
 function activeCategoryText(){const cf=settings.categoryFilter,a=[];if(cf.E)a.push('EV');if(cf.EGSV)a.push('EV-GSV');if(cf.R)a.push('RV');if(cf.RGSV)a.push('RV-GSV');if(cf.F)a.push('FV');if(cf.FGSV)a.push('FV-GSV');return a.length?a.join('/'): 'Ingen'}
 function getFylkeNameById(id){return FYLKER.find(f=>f.id===String(id))?.name||''}
 function getActiveFylkeName(){
- const selected=document.getElementById('fylke')?.value||'';
+ const sel=document.getElementById('fylke'),selected=sel?.dataset.manual==='1'?sel.value:'';
  return getFylkeNameById(selected)||getFylkeNameById(gps.detectedFylke)||'';
 }
 function updateHeaderTitle(){
@@ -1758,12 +1814,12 @@ function updateHeaderTitle(){
  if(label)label.textContent=`Vegmåling · ${APP_VERSION}`;
  if(title)title.textContent=fylkeName?`Kjørelogg · ${fylkeName}`:'Kjørelogg';
 }
-function getFilteredTableRows(){const sort=document.getElementById('table-sort').value;let arr=activeFilteredRoads().slice();arr.sort((a,b)=>{if(sort==='veg-asc')return a.veg.localeCompare(b.veg,'no');if(sort==='veg-desc')return b.veg.localeCompare(a.veg,'no');if(sort==='len-asc')return a.len-b.len;if(sort==='len-desc')return b.len-a.len;if(sort==='dist-asc')return(a.minDist??1e9)-(b.minDist??1e9);if(sort==='dist-desc')return(b.minDist??-1)-(a.minDist??-1);return 0});return arr}
-function renderStats(){const vis=activeFilteredRoads(),n=vis.length,km=(vis.reduce((s,r)=>s+(r.len||0),0)/1000).toFixed(1),cat=activeCategoryText(),fylkeName=getActiveFylkeName();document.getElementById('stat-text').textContent=`${n} strekninger · ${km} km · ${cat}`;document.getElementById('prog-fill').style.width='100%';updateHeaderTitle();document.getElementById('hdr-sub').textContent=`${n} stk · ${km} km · ${cat}${fylkeName?` · ${fylkeName}`:''}${settings.dataSaver?' · datasparing':''}`}
+function getFilteredTableRows(){const sort=document.getElementById('table-sort').value;let arr=activeFilteredRoads().slice();arr.sort((a,b)=>{if(sort==='veg-asc')return a.veg.localeCompare(b.veg,'no');if(sort==='veg-desc')return b.veg.localeCompare(a.veg,'no');if(sort==='len-asc')return roadRenderLen(a)-roadRenderLen(b);if(sort==='len-desc')return roadRenderLen(b)-roadRenderLen(a);if(sort==='dist-asc')return(a.minDist??1e9)-(b.minDist??1e9);if(sort==='dist-desc')return(b.minDist??-1)-(a.minDist??-1);return 0});return arr}
+function renderStats(){const vis=activeFilteredRoads(),n=vis.length,km=(vis.reduce((s,r)=>s+roadRenderLen(r),0)/1000).toFixed(1),cat=activeCategoryText(),fylkeName=getActiveFylkeName();document.getElementById('stat-text').textContent=`${n} strekninger · ${km} km · ${cat}`;document.getElementById('prog-fill').style.width='100%';updateHeaderTitle();document.getElementById('hdr-sub').textContent=`${n} stk · ${km} km · ${cat}${fylkeName?` · ${fylkeName}`:''}${settings.dataSaver?' · datasparing':''}`}
 function catBadgeHtml(r){const k=roadFilterKey(r),color=k==='E'?'#6a1b9a':k==='EGSV'?'#8e24aa':k==='R'?'#1565c0':k==='RGSV'?'#1976d2':k==='F'?'#2e7d32':'#43a047';return`<span style="display:inline-block;background:${color};color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:900;margin-right:6px">${roadMainKatLabel(r.kat)}${r.gsv?'-GSV':''}</span>`}
 function renderRoads(){
  const el=document.getElementById('road-list'),vis=activeFilteredRoads().sort((a,b)=>(a.minDist??1e9)-(b.minDist??1e9));if(!vis.length){el.innerHTML='<div class="loading">Ingen veger funnet innen søkeradiusen.</div>';return}
- el.innerHTML=vis.map(r=>{const status=getRoadStatus(r.key),isAct=gps.activeKey===r.key,isDriven=status==='done',isOneWay=status==='oneway',isSkipR=skipKeys.has(r.key),ds=getDirectionState(r.key),icon=isAct?'🔵':isDriven?'🟢':isOneWay?'🟡':isSkipR?'⛔':'⬜',color=isAct?'#1e88ff':isDriven?'#43a047':isOneWay?'#f9a825':isSkipR?'#333':'#555',km=(r.len/1000).toFixed(2),meter=`${Math.round(r.fra)}–${Math.round(r.til)}`,p=getRoadStartLatLon(r),google=p?`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving`:'#',distTxt=Number.isFinite(r.minDist)?` · ca ${Math.round(r.minDist)} m`:'';
+ el.innerHTML=vis.map(r=>{const status=getRoadStatus(r.key),isAct=gps.activeKey===r.key,isDriven=status==='done',isOneWay=status==='oneway',isSkipR=skipKeys.has(r.key),ds=getDirectionState(r.key),icon=isAct?'🔵':isDriven?'🟢':isOneWay?'🟡':isSkipR?'⛔':'⬜',color=isAct?'#1e88ff':isDriven?'#43a047':isOneWay?'#f9a825':isSkipR?'#333':'#555',km=(roadRenderLen(r)/1000).toFixed(2),meter=`${Math.round(r.fra)}–${Math.round(r.til)}`,p=getRoadStartLatLon(r),google=p?`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving`:'#',distTxt=Number.isFinite(r.minDist)?` · ca ${Math.round(r.minDist)} m`:'';
  let dirBadge='';if(isAct&&gps.activeDir!==null)dirBadge=gps.activeDir==='fwd'?`<span style="background:#7a3800;color:#ff9a4a;border:1px solid #cc6600;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:900;margin-left:6px">→ Retning 1</span>`:`<span style="background:#1a3a1a;color:#6fcf7a;border:1px solid #2e6b2e;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:900;margin-left:6px">← Retning 2</span>`;
  const dirInfo=(isOneWay||isDriven)?`<div class="road-meta" style="margin-top:4px;color:${isDriven?'#8fca8f':'#f9a825'}">Retninger kjørt: ${[ds.fwd?'R1':'',ds.rev?'R2':''].filter(Boolean).join(' + ')||'–'}</div>`:'';
  const gpsHtml=isAct?`<div class="road-gps near">🔵 Kjører nå${distTxt}${dirBadge}</div>`:isDriven?`<div class="road-gps" style="color:#8fca8f">✅ Ferdig</div>`:isOneWay?`<div class="road-gps" style="color:#f9a825">↔ Én retning kjørt</div>`:'';
@@ -1926,13 +1982,13 @@ function updateMapOverlay(fit=false){
   const act=gps.activeKey===r.key;if(pass!==act)continue;
   const st=getRoadStatus(r.key),done=st==='done',one=st==='oneway',skip=skipKeys.has(r.key),plans=getCoverageDrawPlans(r.key);
   if(plans.length){
-   for(const part of r.parts||[])draw(part,skip?'#444':'#d32f2f',skip?3:4,skip?.35:.45);
+   for(const part of roadRenderParts(r))draw(part,skip?'#444':'#d32f2f',skip?3:4,skip?.35:.45);
    drawCoveragePlans(map,r.key,bounds,{oneWeight:7,oneOpacity:.95,bothWeight:8,bothOpacity:.98});
-   if(act)for(const part of r.parts||[])draw(part,'#1e88ff',3,.75);
+   if(act)for(const part of roadRenderParts(r))draw(part,'#1e88ff',3,.75);
    continue;
   }
-  if(act){for(const part of r.parts||[])draw(part,one?'#f9a825':'#2b2b31',9,.55);for(const part of r.parts||[])draw(part,'#1e88ff',5,1)}
-  else{if(done)continue;const col=one?'#f9a825':skip?'#444':'#d32f2f',w=one?5:skip?3:4,op=one?.85:skip?.4:.75;for(const part of r.parts||[])draw(part,col,w,op)}
+  if(act){for(const part of roadRenderParts(r))draw(part,one?'#f9a825':'#2b2b31',9,.55);for(const part of roadRenderParts(r))draw(part,'#1e88ff',5,1)}
+  else{if(done)continue;const col=one?'#f9a825':skip?'#444':'#d32f2f',w=one?5:skip?3:4,op=one?.85:skip?.4:.75;for(const part of roadRenderParts(r))draw(part,col,w,op)}
  }
  const inView=new Set(toRender.map(r=>r.key));
  for(const key of [...oneWayKeys,...drivenKeys]){
@@ -2121,7 +2177,8 @@ function maybeBridgeGapOnSameRoad(gap,key,dir){
   // v2.0.33: marker også retningen som kjørt slik at Fremdrift fargelegger gjennom tunnelen.
   // Tidligere ble bare routeLog oppdatert, men coverage-visualisering krever directionState-flagg.
   markDirectionDriven(key,dir);
-  setMessage(`GPS-gap brokoblet: ${added} syntetiske punkt langs ${key.split('_')[0]} over ${(dm/1000).toFixed(2)} km. Tunnel/dekningstap ble fanget.`,'success');
+  scheduleLiveProgressRender();
+   setMessage(`GPS-gap brokoblet: ${added} syntetiske punkt langs ${key.split('_')[0]} over ${(dm/1000).toFixed(2)} km. Tunnel/dekningstap ble fanget.`,'success');
  }
  return added>0;
 }
@@ -2225,11 +2282,14 @@ function updateProgressMap(){
 async function updateFromCenter(force=false,centerLat=null,centerLon=null){
  const c=(Number.isFinite(centerLat)&&Number.isFinite(centerLon))?{lat:centerLat,lon:centerLon}:currentFetchCenter();
  if(!c){if(force)setMessage('Ingen GPS-posisjon eller manuell kartmarkør. Start GPS eller sett manuell markør i ⋯-menyen.','notice');renderAllViews();return}
- const lat=c.lat,lon=c.lon,radius=parseFloat(document.getElementById('radius').value)||currentProfile().radiusDefault,fylkeNr=document.getElementById('fylke').value||null,changed=radius!==lastCenterRadius||fylkeNr!==lastCenterFylke;
+ const fylkeSel=document.getElementById('fylke'),fylkeNr=fylkeSel?.dataset.manual==='1'?(fylkeSel.value||null):null;
+ const lat=c.lat,lon=c.lon,requestedRadius=parseFloat(document.getElementById('radius').value)||currentProfile().radiusDefault,denseCityRule=getDenseCityRadiusRule(lat,lon,requestedRadius),radius=denseCityRule?DENSE_CITY_RADIUS_LIMIT_KM:requestedRadius;
+  if(denseCityRule){const radiusEl=document.getElementById('radius');if(radiusEl)radiusEl.value=String(radius)}
+  const changed=radius!==lastCenterRadius||fylkeNr!==lastCenterFylke;
  // v2.0.30: avstandssjekk FØR loadTile. Tidligere åpnet vi IDB-transaksjon på hver onPos selv om
  // vi var langt under reload-grensen — unødvendig disk-I/O under kjøring.
  if(!force&&!changed&&lastCenter){const dist=dM(lastCenter[0],lastCenter[1],lat,lon)/1000;if(dist<getReloadDistKm()){updateDistancesAndActiveRoad();renderAllViews();return}}
- if(nvdbLoading)return;nvdbLoading=true;document.getElementById('road-list').innerHTML='<div class="loading">Laster vegnett…</div>';setMessage(c.manual?'Laster vegnett rundt manuell markør…':'');
+ if(nvdbLoading)return;nvdbLoading=true;document.getElementById('road-list').innerHTML='<div class="loading">Laster vegnett…</div>';setMessage(c.manual?'Laster vegnett rundt manuell markør…':(denseCityRule?`${denseCityRule.name}: tett vegnett, radius satt til ${DENSE_CITY_RADIUS_LIMIT_KM} km for komplett lasting.`:''));
  try{
   let newRoads=(!force||offlineMode)?await loadTile(lat,lon,radius,fylkeNr):null;
   const cachedRoads=force&&!offlineMode?await loadTile(lat,lon,radius,fylkeNr):null;
@@ -2245,7 +2305,7 @@ async function updateFromCenter(force=false,centerLat=null,centerLon=null){
    }
    await saveTile(lat,lon,radius,fylkeNr,newRoads)
   }
-  roads=newRoads;
+  roads=applySearchRadiusView(newRoads,lat,lon,radius);
   try{
    const slKey=`${lat.toFixed(4)},${lon.toFixed(4)},${radius},${fylkeNr||''}`;
    if(!offlineMode&&slKey!==lastSpeedLimitFetchKey){speedLimits=await loadSpeedLimitsAround(lat,lon,radius,fylkeNr);lastSpeedLimitFetchKey=slKey;lastSpeedLimitRefreshPos=[lat,lon]}
@@ -2293,7 +2353,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('#top-menu')&&!e.targ
 document.getElementById('refresh').addEventListener('click',()=>refreshCurrentCenter(false));
 document.getElementById('btn-refreshcenter').addEventListener('click',()=>refreshCurrentCenter(true));
 document.getElementById('radius').addEventListener('change',()=>(()=>{const c=currentFetchCenter();updateFromCenter(true,c?.lat,c?.lon)})());
-document.getElementById('fylke').addEventListener('change',function(){this.dataset.manual=this.value?'1':'';updateHeaderTitle();(()=>{const c=currentFetchCenter();updateFromCenter(true,c?.lat,c?.lon)})()});
+document.getElementById('fylke').addEventListener('change',function(){this.dataset.manual=this.value?'1':'';if(!this.value)gps.detectedFylke=null;updateHeaderTitle();(()=>{const c=currentFetchCenter();updateFromCenter(true,c?.lat,c?.lon)})()});
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 document.getElementById('fit-map-btn').addEventListener('click',async()=>{await ensureLeafletReady();if(!map)initMap();if(map){safeInvalidate(map);updateMapOverlay(true)}});
 document.getElementById('fit-progress-btn').addEventListener('click',async()=>{await ensureLeafletReady();if(!progressMap)initProgressMap();if(progressMap){safeInvalidate(progressMap);updateProgressMap()}});
@@ -2369,8 +2429,7 @@ document.getElementById('btn-repairgeom').addEventListener('click',()=>{const ok
 document.getElementById('btn-export').addEventListener('click',async()=>{try{closeMenu();setMessage('Eksporterer data …','notice');const msg=await exportAppData();setMessage(msg||'Eksport ferdig.','success')}catch(e){setMessage('Eksport feilet: '+e.message,'error')}});
 document.getElementById('btn-exportgpx')?.addEventListener('click',async()=>{closeMenu();setMessage('Lager GPX-spor …','notice');await exportGpxTracks()});
 document.getElementById('btn-import').addEventListener('click',()=>{closeMenu();document.getElementById('import-file').click()});
-document.getElementById('import-file').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{setMessage('Importerer data …','notice');await importAppDataFromFile(file)}catch(err){setMessage('Import feilet: '+err.message,'error')}finally{e.target.value=''}});
-document.getElementById('progress-range')?.addEventListener('change',()=>{settings.progressRange=document.getElementById('progress-range').value;saveSettings();updateProgressMap();updateProgressReportUi();});
+document.getElementById('import-file').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{setMessage('Importerer data …','notice');await importAppDataFromFile(file)}catch(err){setMessage('Import feilet: '+err.message,'error')}finally{e.target.value=''}});document.getElementById('progress-range')?.addEventListener('change',()=>{settings.progressRange=document.getElementById('progress-range').value;saveSettings();updateProgressMap();updateProgressReportUi();});
 document.getElementById('progress-fylke')?.addEventListener('change',()=>{settings.progressFylke=document.getElementById('progress-fylke').value;saveSettings();updateProgressMap();updateProgressReportUi();});
 document.getElementById('progress-report-kind')?.addEventListener('change',updateProgressReportUi);
 document.getElementById('progress-report-btn')?.addEventListener('click',exportProgressPdfReport);
