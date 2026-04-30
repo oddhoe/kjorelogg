@@ -38,6 +38,7 @@ const SELECT_STORE='mr_veg_table_selection_v1';
 const DATA_SAVER_ON={reloadDistKm:20,maxPerPage:400,maxPages:4,radiusDefault:3,mapMaxZoom:16,autoPan:false};
 const DATA_SAVER_OFF={reloadDistKm:5,maxPerPage:1000,maxPages:20,radiusDefault:10,mapMaxZoom:19,autoPan:true};
 const ALLOWED_KATS=new Set(['E','R','F']);
+const ROAD_FETCH_REFS='E,R,F', ROAD_FETCH_MAX_PER_PAGE=1000, ROAD_FETCH_MAX_PAGES=80, ROAD_TILE_SCHEMA=4;
 const SPEED_LIMIT_TYPE_ID=105, SPEED_LIMIT_PROP_ID=2021, SPEED_LIMIT_MAX_DIST_M=45;
 const SPEED_LIMIT_REFRESH_DISTANCE_M=500, SPEED_LIMIT_REFRESH_RADIUS_KM=2.5;
 const DEFAULT_CATEGORY_FILTER={E:false,EGSV:false,R:false,RGSV:false,F:true,FGSV:false};
@@ -906,7 +907,7 @@ function cacheGeomForTrackedRoads(list){
 
 /* ───────────────────── IDB CACHE ───────────────────── */
 function openIDB(){if(!HAS_INDEXED_DB)return Promise.reject(new Error('IndexedDB er ikke tilgjengelig'));if(_idb)return Promise.resolve(_idb);return new Promise((res,rej)=>{const req=indexedDB.open(IDB_NAME,IDB_VER);req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE);if(!db.objectStoreNames.contains(IDB_META_STORE))db.createObjectStore(IDB_META_STORE)};req.onsuccess=e=>{_idb=e.target.result;res(_idb)};req.onerror=()=>rej(req.error)})}
-function tileKey(lat,lon,r,f){const dLat=TILE_SIZE_KM/111.32,cos=Math.cos(lat*Math.PI/180)||1,dLon=TILE_SIZE_KM/(111.32*Math.max(0.2,Math.abs(cos)));return`nvdb_t_${Math.round(lat/dLat)}_${Math.round(lon/dLon)}_r${Math.round(r)}_f${f||'0'}`}
+function tileKey(lat,lon,r,f){const dLat=TILE_SIZE_KM/111.32,cos=Math.cos(lat*Math.PI/180)||1,dLon=TILE_SIZE_KM/(111.32*Math.max(0.2,Math.abs(cos)));return`nvdb_t${ROAD_TILE_SCHEMA}_${Math.round(lat/dLat)}_${Math.round(lon/dLon)}_r${Math.round(r)}_f${f||'0'}`}
 async function saveTile(lat,lon,r,f,data){if(!HAS_INDEXED_DB)return;try{const db=await openIDB();db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).put({data,ts:Date.now()},tileKey(lat,lon,r,f))}catch(e){}}
 async function loadTile(lat,lon,r,f){if(!HAS_INDEXED_DB)return null;try{const db=await openIDB();return await new Promise(res=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get(tileKey(lat,lon,r,f));req.onsuccess=()=>{const o=req.result;if(!o||!Array.isArray(o.data))return res(null);if(Date.now()-o.ts>30*24*3600*1000)return res(null);res(o.data)};req.onerror=()=>res(null)})}catch(e){return null}}
 async function countTilesByFylke(f){if(!HAS_INDEXED_DB)return 0;try{const db=await openIDB();return await new Promise(res=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).getAllKeys();req.onsuccess=()=>{const rx=new RegExp(`_f${String(f)}$|_f${String(f)}_`);res(req.result.filter(k=>rx.test(String(k))).length)};req.onerror=()=>res(0)})}catch(e){return 0}}
@@ -1327,10 +1328,10 @@ async function detectFylkeFromAPI(lat,lon){try{const resp=await fetch(`https://w
 let lastFylkeCheckPos=null;
 async function updateFylkeFromPosition(lat,lon){const sel=document.getElementById('fylke');if(lastFylkeCheckPos&&dM(lastFylkeCheckPos[0],lastFylkeCheckPos[1],lat,lon)<10000)return;lastFylkeCheckPos=[lat,lon];const f=await detectFylkeFromAPI(lat,lon);if(!f)return;gps.detectedFylke=f.id;if(sel&&sel.dataset.manual!=='1'&&sel.value)sel.value='';updateHeaderTitle()}
 async function loadRoadsAround(lat,lon,radiusKm,fylkeNr){
- const profile=currentProfile(),[minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm),base=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
- base.searchParams.set('srid','4326');base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);if(fylkeNr)base.searchParams.set('fylke',String(fylkeNr));base.searchParams.set('inkluderAntall','false');base.searchParams.set('antall',String(profile.maxPerPage));
+ const profile=currentProfile(),perPage=Math.max(profile.maxPerPage,ROAD_FETCH_MAX_PER_PAGE),maxPages=Math.max(profile.maxPages,ROAD_FETCH_MAX_PAGES),[minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm),base=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
+ base.searchParams.set('srid','4326');base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);base.searchParams.set('vegsystemreferanse',ROAD_FETCH_REFS);if(fylkeNr)base.searchParams.set('fylke',String(fylkeNr));base.searchParams.set('inkluderAntall','false');base.searchParams.set('antall',String(perPage));
  const out=[];let url=base.toString(),pages=0;let skippedSideanlegg=0;
- while(url&&pages<profile.maxPages){pages++;const resp=await fetch(url,{headers:{'X-Client':'kjorelogg-nvdb-gps/v2.0.35'}});if(!resp.ok)throw new Error(`NVDB ${resp.status}`);const data=await resp.json();
+ while(url&&pages<maxPages){pages++;const resp=await fetch(url,{headers:{'X-Client':'kjorelogg-nvdb-gps/v2.0.35'}});if(!resp.ok)throw new Error(`NVDB ${resp.status}`);const data=await resp.json();
   for(const s of(data.objekter||[])){
    const vs=s?.vegsystemreferanse;if(!vs?.vegsystem||!vs?.strekning)continue;
    const vegsys=vs.vegsystem,kat=String(vegsys.vegkategori||'').toUpperCase();
@@ -1356,9 +1357,9 @@ async function loadRoadsAround(lat,lon,radiusKm,fylkeNr){
  if(skippedSideanlegg>0)console.info(`v2.0.32: filtrerte ut ${skippedSideanlegg} sideanlegg-segmenter fra vegnettet`);
  // v2.0.30: hvis vi avslutter med pages==maxPages OG det finnes en neste-URL, har vi truffet taket
  // og data er trunkert. Synlig advarsel slik at brukeren vet området ikke er komplett.
- if(url&&pages>=profile.maxPages){
-  console.warn(`NVDB pagination-tak nådd (${pages} sider × ${profile.maxPerPage} pr side). Området er trunkert.`);
-  setMessage(`Området er stort: NVDB-svar truncert ved ${pages*profile.maxPerPage} segmenter. Reduser radius eller velg fylke for fullstendig dekning.`,'notice');
+ if(url&&pages>=maxPages){
+  console.warn(`NVDB pagination-tak nådd (${pages} sider × ${perPage} pr side). Området er trunkert.`);
+  setMessage(`Området er stort: NVDB-svar truncert ved ${pages*perPage} segmenter. Reduser radius eller velg fylke for fullstendig dekning.`,'notice');
  }
  return mergeRoads(out)
 }
