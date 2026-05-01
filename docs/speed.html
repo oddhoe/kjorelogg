@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Oddis GPS Speedometer - NVDB105/OSM lavdata v2026-05-01 -->
+<!-- Oddis GPS Speedometer - NVDB105/OSM lavdata v2026-05-01 v2 -->
 <html lang="no">
 <head>
   <meta charset="utf-8" />
@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0b0f17" />
-  <title>GPS Speedometer Lav Data</title>
+  <title>GPS Speedometer Lav Data v2</title>
 
   <style>
     :root {
@@ -204,14 +204,34 @@
       text-transform: uppercase;
     }
 
+    .subline-wrap {
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      min-height: 40px;
+      max-width: 90vw;
+      padding: 0 8px;
+    }
+
     .subline {
       color: var(--muted);
       font-size: 13px;
-      min-height: 18px;
+      line-height: 1.2;
       max-width: 90vw;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-align: center;
+    }
+
+    .subline.main {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .subline.meta {
+      font-size: 12px;
+      opacity: .92;
     }
 
     .sign-row {
@@ -437,7 +457,7 @@
           <div class="speed-content">
             <div id="speed" class="speed">--</div>
             <div class="unit">km/t</div>
-            <div id="message" class="subline">Starter GPS…</div>
+            <div class="subline-wrap"><div id="messageMain" class="subline main">Starter GPS…</div><div id="messageMeta" class="subline meta"></div></div>
           </div>
         </div>
       </div>
@@ -515,7 +535,8 @@
         gpsStatus: document.getElementById("gpsStatus"),
         speedometer: document.getElementById("speedometer"),
         speed: document.getElementById("speed"),
-        message: document.getElementById("message"),
+        messageMain: document.getElementById("messageMain"),
+        messageMeta: document.getElementById("messageMeta"),
         speedSign: document.getElementById("speedSign"),
         limitText: document.getElementById("limitText"),
         warnText: document.getElementById("warnText"),
@@ -558,7 +579,24 @@
       }
 
       function setMessage(text) {
-        els.message.textContent = text;
+        const raw = String(text ?? "").trim();
+
+        if (!raw) {
+          els.messageMain.textContent = "";
+          els.messageMeta.textContent = "";
+          return;
+        }
+
+        const parts = raw.split(" · ").map(s => s.trim()).filter(Boolean);
+
+        if (parts.length <= 1) {
+          els.messageMain.textContent = raw;
+          els.messageMeta.textContent = "";
+          return;
+        }
+
+        els.messageMain.textContent = parts[0];
+        els.messageMeta.textContent = parts.slice(1).join(" · ");
       }
 
       function toRad(deg) { return deg * Math.PI / 180; }
