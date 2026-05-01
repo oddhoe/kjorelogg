@@ -427,7 +427,7 @@
   <main class="app">
     <div class="topbar">
       <div class="pill status"><span id="gpsDot" class="dot"></span><span id="gpsStatus">Starter GPS…</span></div>
-      <div class="pill"><span>OSM / iOS</span></div>
+      <div class="pill"><span>NVDB / OSM</span></div>
     </div>
 
     <section class="card main">
@@ -927,21 +927,28 @@ out skel qt;
           if (inNorway) {
             setMessage("Henter fartsgrense fra NVDB…");
             const limit = await fetchNvdbSpeedLimit(lat, lon);
+
             if (limit) {
               dataState.speedLimit = limit;
               dataState.speedLimitSource = "NVDB 105";
-            } else {
-              dataState.speedLimit = null;
-              dataState.speedLimitSource = "NVDB: ikke treff";
-            }
 
-            // OSM brukes bare for ATK i Norge i denne versjonen.
-            try {
-              const osmData = await fetchOverpass(lat, lon, false);
-              const osm = processOsm(osmData, lat, lon, false);
+              // OSM brukes bare for ATK når NVDB faktisk ga norsk fartsgrense.
+              try {
+                const osmData = await fetchOverpass(lat, lon, false);
+                const osm = processOsm(osmData, lat, lon, false);
+                dataState.cameras = osm.cameras;
+              } catch (_) {
+                dataState.cameras = [];
+              }
+            } else {
+              // Viktig: grov Norge-boks treffer også deler av Sverige/Finland.
+              // Ved tomt NVDB-treff prøver vi OSM maxspeed før vi gir opp.
+              setMessage("NVDB uten treff – prøver OSM…");
+              const osmData = await fetchOverpass(lat, lon, true);
+              const osm = processOsm(osmData, lat, lon, true);
+              dataState.speedLimit = osm.speedLimit;
+              dataState.speedLimitSource = osm.speedLimit ? "OSM fallback" : "OSM: ikke treff";
               dataState.cameras = osm.cameras;
-            } catch (_) {
-              dataState.cameras = [];
             }
           } else {
             setMessage("Henter fartsgrense fra OSM…");
