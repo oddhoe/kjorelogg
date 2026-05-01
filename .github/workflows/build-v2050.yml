@@ -1,0 +1,58 @@
+name: Bygg v2.0.50
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Branch å committe til (la stå på main hvis usikker)'
+        required: true
+        default: 'main'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.target_branch }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Sjekk at filer finnes
+        run: |
+          test -f docs/index.html || (echo "❌ docs/index.html mangler" && exit 1)
+          test -f docs/build_v2050.py || (echo "❌ docs/build_v2050.py mangler" && exit 1)
+          echo "✅ Filer på plass"
+
+      - name: Backup gammel index.html
+        run: cp docs/index.html docs/index.html.v2049_1.bak
+
+      - name: Kjør patch-script
+        run: |
+          cd docs
+          python3 build_v2050.py index.html index_v2050.html
+
+      - name: Bytt ut index.html
+        run: mv docs/index_v2050.html docs/index.html
+
+      - name: Vis diff-oppsummering
+        run: |
+          echo "Linjer i ny index.html: $(wc -l < docs/index.html)"
+          echo "Linjer i backup: $(wc -l < docs/index.html.v2049_1.bak)"
+          echo ""
+          echo "Versjonssjekk:"
+          grep -c "v2.0.50-ios" docs/index.html || true
+
+      - name: Commit endringer
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html docs/index.html.v2049_1.bak
+          git commit -m "Patch til v2.0.50-ios (auto via Actions)"
+          git push
