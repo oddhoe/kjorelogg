@@ -5,138 +5,478 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#05070b" />
-  <title>GPS Fart</title>
+  <meta name="theme-color" content="#0b0f17" />
+  <title>GPS Speedometer</title>
+
   <style>
     :root {
-      --bg: #05070b;
-      --text: #ffffff;
-      --muted: rgba(255,255,255,.62);
-      --danger: #ff2020;
-      --ok: #ffffff;
+      --bg: #0b0f17;
+      --panel: #141b27;
+      --text: #f7fafc;
+      --muted: #9aa7b8;
+      --ok: #2ee59d;
+      --warn: #ffcc00;
+      --danger: #ff3030;
+      --border: rgba(255,255,255,.14);
+      --shadow: 0 24px 70px rgba(0,0,0,.45);
       --safeTop: env(safe-area-inset-top);
       --safeBottom: env(safe-area-inset-bottom);
-      --signRed: #e11919;
     }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     html, body {
-      margin: 0; padding: 0; width: 100%; height: 100%; min-height: 100%;
-      overflow: hidden; background: var(--bg); color: var(--text);
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #1d2a3d 0%, var(--bg) 45%, #05070b 100%);
+      color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      user-select: none; touch-action: manipulation;
+      user-select: none;
+      touch-action: manipulation;
     }
-    body { position: fixed; inset: 0; }
-    #app {
-      position: fixed; inset: 0; width: 100vw; height: 100dvh; min-height: 100vh;
-      display: grid; grid-template-rows: 1fr auto;
-      padding: calc(10px + var(--safeTop)) 14px calc(10px + var(--safeBottom));
-      background: radial-gradient(circle at 50% 20%, rgba(35,45,60,.9), transparent 42%),
-                  linear-gradient(180deg, #080d14 0%, #020307 100%);
+
+    body {
+      position: fixed;
+      inset: 0;
+      padding: calc(10px + var(--safeTop)) 12px calc(10px + var(--safeBottom));
     }
-    .main { display: grid; place-items: center; min-height: 0; }
-    .speedBlock { display: grid; justify-items: center; align-content: center; gap: 8px; width: 100%; }
-    #speed {
-      font-size: clamp(118px, 42vw, 245px); font-weight: 950;
-      letter-spacing: -0.09em; line-height: .82; font-variant-numeric: tabular-nums;
-      color: var(--ok); text-shadow: 0 16px 42px rgba(0,0,0,.6);
+
+    .app {
+      width: min(760px, 100%);
+      height: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .02em;
+      min-height: 36px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(12px);
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pill.status {
+      flex: 1;
+    }
+
+    .dot {
+      flex: 0 0 auto;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 4px rgba(154,167,184,.12);
+    }
+
+    .dot.ok {
+      background: var(--ok);
+      box-shadow: 0 0 0 4px rgba(46,229,157,.13);
+    }
+
+    .dot.bad {
+      background: var(--danger);
+      box-shadow: 0 0 0 4px rgba(255,48,48,.13);
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .main {
+      padding: 16px 12px 14px;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .speed-wrap {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      min-height: 0;
+    }
+
+    .speedometer {
+      position: relative;
+      width: min(92vw, 520px, 62dvh);
+      max-width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at center, rgba(20,27,39,.98) 0 53%, transparent 54%),
+        conic-gradient(from -130deg,
+          var(--arcColor, var(--ok)) 0deg,
+          var(--arcColor, var(--ok)) var(--arc, 0deg),
+          rgba(255,255,255,.12) var(--arc, 0deg),
+          rgba(255,255,255,.12) 260deg,
+          transparent 260deg 360deg);
+      filter: drop-shadow(0 22px 35px rgba(0,0,0,.35));
+    }
+
+    .speedometer::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(circle at center, rgba(255,255,255,.04), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0));
+    }
+
+    .speedometer::after {
+      content: "";
+      position: absolute;
+      inset: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .speed-content {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      justify-items: center;
+      gap: 5px;
+    }
+
+    .speed {
+      font-size: clamp(82px, 24vw, 168px);
+      font-weight: 900;
+      letter-spacing: -0.075em;
+      line-height: .9;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 8px 26px rgba(0,0,0,.45);
+      transition: color .15s ease, transform .15s ease;
       transform: translateX(-.035em);
     }
-    #speed.danger {
+
+    .speed.danger {
       color: var(--danger);
-      text-shadow: 0 0 18px rgba(255,32,32,.42), 0 16px 42px rgba(0,0,0,.6);
+      transform: translateX(-.035em) scale(1.035);
+      text-shadow:
+        0 0 18px rgba(255,48,48,.35),
+        0 8px 26px rgba(0,0,0,.45);
     }
+
     .unit {
-      font-size: clamp(19px, 5vw, 30px); font-weight: 850;
-      letter-spacing: .22em; color: var(--muted); text-transform: uppercase;
+      color: var(--muted);
+      font-size: clamp(16px, 4vw, 24px);
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
     }
-    .bottom { display: grid; justify-items: center; gap: 10px; padding-bottom: 4px; }
-    .limitRow {
-      display: flex; align-items: center; justify-content: center;
-      gap: clamp(14px, 5vw, 34px); width: 100%;
+
+    .subline {
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 18px;
+      max-width: 90vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    #speedSign {
-      width: clamp(118px, 34vw, 170px); height: clamp(118px, 34vw, 170px);
-      border-radius: 50%; background: #fff; color: #111;
-      border: clamp(11px, 3vw, 16px) solid var(--signRed);
-      display: grid; place-items: center;
-      font-size: clamp(46px, 14vw, 72px); font-weight: 950;
-      font-variant-numeric: tabular-nums; box-shadow: 0 16px 38px rgba(0,0,0,.52);
+
+    .sign-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: nowrap;
+      min-height: 154px;
     }
-    #speedSign.unknown {
-      color: #555; border-color: #777; font-size: clamp(38px, 12vw, 62px);
+
+    .speed-sign {
+      width: 142px;
+      height: 142px;
+      border-radius: 50%;
+      background: #fff;
+      color: #111;
+      border: 14px solid #df1818;
+      display: grid;
+      place-items: center;
+      font-size: 56px;
+      font-weight: 900;
+      box-shadow:
+        0 12px 30px rgba(0,0,0,.35),
+        inset 0 0 0 2px rgba(0,0,0,.05);
+      font-variant-numeric: tabular-nums;
+      transition: transform .15s ease, filter .15s ease;
+      flex: 0 0 auto;
     }
-    #speedSign.blink { animation: blink .48s steps(2, start) infinite; }
-    @keyframes blink {
-      0%, 100% { transform: scale(1); filter: brightness(1); box-shadow: 0 16px 38px rgba(0,0,0,.52); }
-      50% { transform: scale(1.11); filter: brightness(1.2); box-shadow: 0 16px 38px rgba(0,0,0,.52), 0 0 38px 14px rgba(255,32,32,.72); }
+
+    .speed-sign.unknown {
+      color: #666;
+      border-color: #777;
+      font-size: 54px;
     }
-    .atk {
-      display: none; min-width: clamp(118px, 34vw, 170px); min-height: clamp(84px, 22vw, 120px);
-      padding: 10px 12px; border: 4px solid rgba(255,255,255,.86); border-radius: 24px;
-      align-content: center; justify-items: center; background: rgba(255,255,255,.08);
-      box-shadow: 0 16px 38px rgba(0,0,0,.38); font-weight: 950; text-align: center;
+
+    .speed-sign.blink {
+      animation: blinkSign .55s steps(2, start) infinite;
     }
-    .atk.show { display: grid; }
-    .atkIcon { font-size: clamp(32px, 10vw, 52px); line-height: 1; }
-    .atkText { font-size: clamp(18px, 5vw, 26px); letter-spacing: .04em; }
-    .status {
-      width: 100%; max-width: 520px; min-height: 26px; text-align: center;
-      color: var(--muted); font-size: clamp(12px, 3.4vw, 16px); line-height: 1.2;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+
+    @keyframes blinkSign {
+      0%, 100% {
+        transform: scale(1);
+        filter: brightness(1);
+        box-shadow:
+          0 12px 30px rgba(0,0,0,.35),
+          0 0 0 0 rgba(255,48,48,.0);
+      }
+      50% {
+        transform: scale(1.08);
+        filter: brightness(1.2);
+        box-shadow:
+          0 12px 30px rgba(0,0,0,.35),
+          0 0 28px 8px rgba(255,48,48,.65);
+      }
     }
+
+    .info-panel {
+      display: grid;
+      gap: 8px;
+      min-width: 170px;
+      max-width: 280px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .info-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 11px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .info-line strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .atk-line {
+      display: none;
+    }
+
+    .atk-line.show {
+      display: flex;
+      background: rgba(255,48,48,.16);
+      border-color: rgba(255,48,48,.35);
+    }
+
     #tapToStart {
-      position: fixed; inset: 0; z-index: 10; display: none; place-items: center;
-      padding: 22px; background: rgba(0,0,0,.78); backdrop-filter: blur(8px);
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      place-items: center;
+      padding: 22px;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(8px);
     }
-    #tapToStart.show { display: grid; }
+
+    #tapToStart.show {
+      display: grid;
+    }
+
     .startBox {
-      display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 430px;
-      padding: 24px; border: 1px solid rgba(255,255,255,.22); border-radius: 28px;
-      background: rgba(255,255,255,.08); box-shadow: 0 30px 80px rgba(0,0,0,.55);
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+      text-align: center;
+      max-width: 430px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 28px;
+      background: rgba(255,255,255,.08);
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
     }
-    .startTitle { font-size: 28px; font-weight: 950; }
-    .startText { color: var(--muted); line-height: 1.35; font-size: 16px; }
+
+    .startTitle {
+      font-size: 28px;
+      font-weight: 950;
+    }
+
+    .startText {
+      color: var(--muted);
+      line-height: 1.35;
+      font-size: 16px;
+    }
+
     .startBtn {
-      width: 100%; min-height: 58px; border: 0; border-radius: 18px;
-      background: #fff; color: #000; font-size: 19px; font-weight: 950;
+      width: 100%;
+      min-height: 58px;
+      border: 0;
+      border-radius: 18px;
+      background: #fff;
+      color: #000;
+      font-size: 19px;
+      font-weight: 950;
     }
-    @media (orientation: landscape) {
-      #app { grid-template-rows: 1fr; grid-template-columns: 1fr auto; gap: 10px; }
-      .bottom { align-content: center; width: min(40vw, 300px); }
-      .limitRow { flex-direction: column; }
-      #speed { font-size: clamp(98px, 34vh, 190px); }
+
+    @media (max-width: 430px) {
+      body {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .main {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .sign-row {
+        gap: 10px;
+      }
+
+      .speed-sign {
+        width: 128px;
+        height: 128px;
+        border-width: 13px;
+        font-size: 50px;
+      }
+
+      .info-panel {
+        min-width: 160px;
+        font-size: 12px;
+      }
+
+      .info-line {
+        padding: 8px 9px;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 540px) {
+      body {
+        padding-top: calc(6px + var(--safeTop));
+      }
+
+      .app {
+        grid-template-rows: 1fr;
+      }
+
+      .topbar {
+        display: none;
+      }
+
+      .main {
+        grid-template-columns: 1.2fr .8fr;
+        grid-template-rows: 1fr;
+        align-items: center;
+      }
+
+      .speedometer {
+        width: min(58vh, 420px);
+      }
+
+      .sign-row {
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .speed-sign {
+        width: 122px;
+        height: 122px;
+        border-width: 12px;
+        font-size: 48px;
+      }
     }
   </style>
 </head>
+
 <body>
-  <main id="app">
-    <section class="main" aria-label="GPS hastighet">
-      <div class="speedBlock">
-        <div id="speed">--</div>
-        <div class="unit">km/t</div>
-      </div>
-    </section>
-    <section class="bottom" aria-label="Fartsgrense og ATK">
-      <div class="limitRow">
-        <div id="speedSign" class="unknown">?</div>
-        <div id="atkBox" class="atk">
-          <div class="atkIcon">📷</div>
-          <div class="atkText" id="atkText">ATK</div>
+  <main class="app">
+    <div class="topbar">
+      <div class="pill status"><span id="gpsDot" class="dot"></span><span id="gpsStatus">Starter GPS…</span></div>
+      <div class="pill"><span>OSM / iOS</span></div>
+    </div>
+
+    <section class="card main">
+      <div class="speed-wrap">
+        <div id="speedometer" class="speedometer" aria-label="GPS hastighet">
+          <div class="speed-content">
+            <div id="speed" class="speed">--</div>
+            <div class="unit">km/t</div>
+            <div id="message" class="subline">Starter GPS…</div>
+          </div>
         </div>
       </div>
-      <div id="status" class="status">Starter GPS…</div>
+
+      <div class="sign-row">
+        <div id="speedSign" class="speed-sign unknown" aria-label="Fartsgrense">?</div>
+
+        <div class="info-panel">
+          <div class="info-line">
+            <span>Fartsgrense</span>
+            <strong><span id="limitText">?</span></strong>
+          </div>
+          <div class="info-line">
+            <span>Varsel</span>
+            <strong><span id="warnText">+5</span></strong>
+          </div>
+          <div id="atkLine" class="info-line atk-line">
+            <span>ATK</span>
+            <strong id="atkText">--</strong>
+          </div>
+          <div class="info-line">
+            <span>GPS</span>
+            <strong id="accuracyText">--</strong>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
+
   <div id="tapToStart">
     <div class="startBox">
       <div class="startTitle">Start GPS</div>
       <div class="startText">
-        iOS krever ofte ett trykk før GPS kan starte. Etter at stedstilgang er gitt,
-        prøver appen å starte automatisk neste gang.
+        iOS krever ofte ett trykk første gang. Etter at Safari/PWA har fått stedstilgang,
+        prøver appen å starte automatisk.
       </div>
       <button id="manualStart" class="startBtn">Start</button>
     </div>
   </div>
+
   <script>
     (() => {
       "use strict";
@@ -156,11 +496,17 @@
       };
 
       const els = {
+        gpsDot: document.getElementById("gpsDot"),
+        gpsStatus: document.getElementById("gpsStatus"),
+        speedometer: document.getElementById("speedometer"),
         speed: document.getElementById("speed"),
+        message: document.getElementById("message"),
         speedSign: document.getElementById("speedSign"),
-        atkBox: document.getElementById("atkBox"),
+        limitText: document.getElementById("limitText"),
+        warnText: document.getElementById("warnText"),
+        atkLine: document.getElementById("atkLine"),
         atkText: document.getElementById("atkText"),
-        status: document.getElementById("status"),
+        accuracyText: document.getElementById("accuracyText"),
         tapToStart: document.getElementById("tapToStart"),
         manualStart: document.getElementById("manualStart")
       };
@@ -178,7 +524,6 @@
 
       let osm = {
         speedLimit: null,
-        source: "",
         cameras: [],
         lastFetchLat: null,
         lastFetchLon: null,
@@ -187,8 +532,15 @@
         endpointIndex: 0
       };
 
-      function setStatus(text) {
-        els.status.textContent = text;
+      function setGpsState(state, text) {
+        els.gpsDot.classList.remove("ok", "bad");
+        if (state === "ok") els.gpsDot.classList.add("ok");
+        if (state === "bad") els.gpsDot.classList.add("bad");
+        els.gpsStatus.textContent = text;
+      }
+
+      function setMessage(text) {
+        els.message.textContent = text;
       }
 
       function toRad(deg) { return deg * Math.PI / 180; }
@@ -226,7 +578,13 @@
         if (!value) return null;
         const raw = String(value).trim().toLowerCase();
 
-        if (raw === "none" || raw === "signals" || raw === "variable" || raw === "walk" || raw === "implicit") {
+        if (
+          raw === "none" ||
+          raw === "signals" ||
+          raw === "variable" ||
+          raw === "walk" ||
+          raw === "implicit"
+        ) {
           return null;
         }
 
@@ -339,7 +697,6 @@ out skel qt;
         }
 
         osm.speedLimit = bestLimit;
-        osm.source = bestLimit ? "OSM maxspeed" : "Ingen maxspeed nær GPS";
         osm.cameras = cameras;
       }
 
@@ -360,7 +717,7 @@ out skel qt;
         if (!shouldFetchOsm(lat, lon)) return;
 
         if (Number.isFinite(accuracy) && accuracy > 80) {
-          setStatus("Venter på bedre GPS før fartsgrense hentes…");
+          setMessage("Venter på bedre GPS før fartsgrense hentes…");
           return;
         }
 
@@ -370,14 +727,13 @@ out skel qt;
         osm.lastFetchLon = lon;
 
         try {
-          setStatus("Henter fartsgrense/ATK…");
+          setMessage("Henter fartsgrense og ATK…");
           const data = await fetchOverpass(lat, lon);
           processOsm(data, lat, lon);
           render();
         } catch (err) {
           osm.speedLimit = null;
-          osm.source = "OSM-oppslag feilet";
-          setStatus("Fartsgrense/ATK ikke hentet: " + (err.message || "ukjent feil"));
+          setMessage("Fartsgrense/ATK ikke hentet");
           render();
         } finally {
           osm.busy = false;
@@ -410,6 +766,19 @@ out skel qt;
         return best;
       }
 
+      function updateGauge(speed, limit, over) {
+        const hasSpeed = Number.isFinite(speed);
+        const arcSpeed = hasSpeed ? Math.max(0, Math.min(140, speed)) : 0;
+        const arcDeg = (arcSpeed / 140) * 260;
+
+        let arcColor = "var(--ok)";
+        if (limit && speed > limit) arcColor = "var(--warn)";
+        if (over) arcColor = "var(--danger)";
+
+        els.speedometer.style.setProperty("--arc", `${arcDeg}deg`);
+        els.speedometer.style.setProperty("--arcColor", arcColor);
+      }
+
       function render() {
         const speed = Number.isFinite(current.speedKmh) ? current.speedKmh : null;
         const limit = osm.speedLimit;
@@ -420,27 +789,44 @@ out skel qt;
         if (limit) {
           els.speedSign.textContent = String(limit);
           els.speedSign.classList.remove("unknown");
+          els.limitText.textContent = `${limit} km/t`;
+          els.warnText.textContent = `${limit + 5} km/t`;
         } else {
           els.speedSign.textContent = "?";
           els.speedSign.classList.add("unknown");
+          els.limitText.textContent = "?";
+          els.warnText.textContent = "+5";
         }
 
         const over = speed !== null && limit && speed > limit + 5;
         els.speed.classList.toggle("danger", Boolean(over));
         els.speedSign.classList.toggle("blink", Boolean(over));
+        updateGauge(speed, limit, over);
 
         if (camera) {
-          els.atkBox.classList.add("show");
-          els.atkText.textContent = Math.max(0, Math.round(camera.distanceM)) + " m";
+          els.atkLine.classList.add("show");
+          els.atkText.textContent = `${Math.max(0, Math.round(camera.distanceM))} m`;
         } else {
-          els.atkBox.classList.remove("show");
+          els.atkLine.classList.remove("show");
+          els.atkText.textContent = "--";
         }
 
+        els.accuracyText.textContent = Number.isFinite(current.accuracy)
+          ? `±${Math.round(current.accuracy)} m`
+          : "--";
+
         if (!osm.busy) {
-          const acc = Number.isFinite(current.accuracy) ? `GPS ±${Math.round(current.accuracy)} m` : "GPS";
-          const lim = limit ? `${limit} km/t` : "ukjent fartsgrense";
-          const cams = osm.cameras.length ? `${osm.cameras.length} ATK i område` : "ingen ATK funnet";
-          setStatus(`${acc} · ${lim} · ${cams}`);
+          if (speed === null) {
+            setMessage("Venter på GPS-hastighet");
+          } else if (over) {
+            setMessage(`Over grense med ${Math.round(speed - limit)} km/t`);
+          } else if (limit && speed > limit) {
+            setMessage("Over fartsgrense, men under +5 km/t");
+          } else if (limit) {
+            setMessage("Innenfor fartsgrense");
+          } else {
+            setMessage("Fartsgrense ukjent");
+          }
         }
       }
 
@@ -465,16 +851,19 @@ out skel qt;
             : current.heading;
 
         els.tapToStart.classList.remove("show");
+        setGpsState("ok", "GPS aktiv");
         render();
         maybeFetchOsm();
       }
 
       function onGeoError(err) {
         let msg = "GPS-feil";
-        if (err.code === 1) msg = "GPS nektet – gi stedstilgang i Safari.";
-        if (err.code === 2) msg = "GPS utilgjengelig.";
-        if (err.code === 3) msg = "GPS timeout.";
-        setStatus(msg);
+        if (err.code === 1) msg = "GPS nektet – gi stedstilgang i Safari";
+        if (err.code === 2) msg = "GPS utilgjengelig";
+        if (err.code === 3) msg = "GPS timeout";
+
+        setGpsState("bad", msg);
+        setMessage(msg);
         els.tapToStart.classList.add("show");
       }
 
@@ -490,7 +879,8 @@ out skel qt;
 
       function startGps() {
         if (!("geolocation" in navigator)) {
-          setStatus("Denne nettleseren støtter ikke GPS.");
+          setGpsState("bad", "GPS mangler");
+          setMessage("Denne nettleseren støtter ikke GPS");
           els.tapToStart.classList.add("show");
           return;
         }
@@ -502,12 +892,17 @@ out skel qt;
           watchId = null;
         }
 
-        setStatus("Starter GPS…");
+        setGpsState("", "Starter GPS…");
+        setMessage("Henter GPS-signal…");
 
         watchId = navigator.geolocation.watchPosition(
           onPosition,
           onGeoError,
-          { enableHighAccuracy: true, maximumAge: 500, timeout: 12000 }
+          {
+            enableHighAccuracy: true,
+            maximumAge: 500,
+            timeout: 12000
+          }
         );
       }
 
@@ -538,6 +933,8 @@ out skel qt;
       document.addEventListener("touchmove", (e) => {
         e.preventDefault();
       }, { passive: false });
+
+      render();
     })();
   </script>
 </body>
