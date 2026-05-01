@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Oddis GPS Speedometer - NVDB105/OSM lavdata v2026-05-01 v2 -->
+<!-- Oddis GPS Speedometer - NVDB105/OSM lavdata v2026-05-01 v3 høyde -->
 <html lang="no">
 <head>
   <meta charset="utf-8" />
@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0b0f17" />
-  <title>GPS Speedometer Lav Data v2</title>
+  <title>GPS Speedometer Lav Data v3</title>
 
   <style>
     :root {
@@ -482,6 +482,10 @@
             <span>GPS</span>
             <strong id="accuracyText">--</strong>
           </div>
+          <div class="info-line">
+            <span>Høyde</span>
+            <strong id="altitudeText">--</strong>
+          </div>
         </div>
       </div>
     </section>
@@ -543,6 +547,7 @@
         atkLine: document.getElementById("atkLine"),
         atkText: document.getElementById("atkText"),
         accuracyText: document.getElementById("accuracyText"),
+        altitudeText: document.getElementById("altitudeText"),
         tapToStart: document.getElementById("tapToStart"),
         manualStart: document.getElementById("manualStart")
       };
@@ -555,7 +560,9 @@
         lon: null,
         speedKmh: null,
         heading: null,
-        accuracy: null
+        accuracy: null,
+        altitude: null,
+        altitudeAccuracy: null
       };
 
       let dataState = {
@@ -1117,6 +1124,16 @@ out skel qt;
           ? `±${Math.round(current.accuracy)} m`
           : "--";
 
+        if (Number.isFinite(current.altitude)) {
+          const alt = `${Math.round(current.altitude)} moh`;
+          const acc = Number.isFinite(current.altitudeAccuracy)
+            ? ` ±${Math.round(current.altitudeAccuracy)} m`
+            : "";
+          els.altitudeText.textContent = alt + acc;
+        } else {
+          els.altitudeText.textContent = "--";
+        }
+
         if (!dataState.busy) {
           const source = dataState.speedLimitSource ? ` · ${dataState.speedLimitSource}` : "";
           const calls = dataState.requestCount ? ` · kall ${dataState.requestCount}` : "";
@@ -1141,6 +1158,8 @@ out skel qt;
         current.lat = c.latitude;
         current.lon = c.longitude;
         current.accuracy = c.accuracy;
+        current.altitude = Number.isFinite(c.altitude) ? c.altitude : null;
+        current.altitudeAccuracy = Number.isFinite(c.altitudeAccuracy) ? c.altitudeAccuracy : null;
 
         const mps = c.speed;
         const kmh = Number.isFinite(mps) && mps >= 0 ? mps * 3.6 : 0;
