@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Oddis GPS Speedometer - NVDB105/OSM lavdata v2026-05-01 -->
 <html lang="no">
 <head>
   <meta charset="utf-8" />
@@ -6,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0b0f17" />
-  <title>GPS Speedometer</title>
+  <title>GPS Speedometer Lav Data</title>
 
   <style>
     :root {
@@ -427,7 +428,7 @@
   <main class="app">
     <div class="topbar">
       <div class="pill status"><span id="gpsDot" class="dot"></span><span id="gpsStatus">Starter GPS…</span></div>
-      <div class="pill"><span>NVDB / OSM</span></div>
+      <div class="pill"><span>NVDB / OSM · lav data</span></div>
     </div>
 
     <section class="card main">
@@ -503,8 +504,9 @@
         osmSpeedLimitSearchRadiusM: 85,
         speedCameraSearchRadiusM: 1600,
         cameraWarnDistanceM: 500,
-        refetchDistanceM: 120,
-        refetchMs: 10000,
+        refetchDistanceM: 150,
+        refetchMs: 30000,
+        minSpeedForTimeRefreshKmh: 5,
         maxReasonableSpeedKmh: 250
       };
 
@@ -543,7 +545,9 @@
         lastFetchLon: null,
         lastFetchAt: 0,
         busy: false,
-        endpointIndex: 0
+        endpointIndex: 0,
+        requestCount: 0,
+        lastRequestKind: ""
       };
 
       function setGpsState(state, text) {
@@ -902,8 +906,17 @@ out skel qt;
 
         const age = Date.now() - dataState.lastFetchAt;
         const moved = distanceM(lat, lon, dataState.lastFetchLat, dataState.lastFetchLon);
+        const speed = Number.isFinite(current.speedKmh) ? current.speedKmh : 0;
 
-        return age > CFG.refetchMs || moved > CFG.refetchDistanceM;
+        // Lav databruk:
+        // 1) Hent alltid ved nok forflytning.
+        if (moved > CFG.refetchDistanceM) return true;
+
+        // 2) Tidsbasert refresh bare når bilen faktisk beveger seg.
+        //    Hindrer API-kall hvert 30. sekund når du står parkert/stille.
+        if (speed >= CFG.minSpeedForTimeRefreshKmh && age > CFG.refetchMs) return true;
+
+        return false;
       }
 
       async function maybeFetchData() {
@@ -917,6 +930,7 @@ out skel qt;
         }
 
         dataState.busy = true;
+        dataState.requestCount += 1;
         dataState.lastFetchAt = Date.now();
         dataState.lastFetchLat = lat;
         dataState.lastFetchLon = lon;
@@ -925,6 +939,7 @@ out skel qt;
 
         try {
           if (inNorway) {
+            dataState.lastRequestKind = "NVDB";
             setMessage("Henter fartsgrense fra NVDB…");
             const limit = await fetchNvdbSpeedLimit(lat, lon);
 
@@ -943,6 +958,7 @@ out skel qt;
             } else {
               // Viktig: grov Norge-boks treffer også deler av Sverige/Finland.
               // Ved tomt NVDB-treff prøver vi OSM maxspeed før vi gir opp.
+              dataState.lastRequestKind = "OSM fallback";
               setMessage("NVDB uten treff – prøver OSM…");
               const osmData = await fetchOverpass(lat, lon, true);
               const osm = processOsm(osmData, lat, lon, true);
@@ -951,6 +967,7 @@ out skel qt;
               dataState.cameras = osm.cameras;
             }
           } else {
+            dataState.lastRequestKind = "OSM";
             setMessage("Henter fartsgrense fra OSM…");
             const osmData = await fetchOverpass(lat, lon, true);
             const osm = processOsm(osmData, lat, lon, true);
@@ -1064,17 +1081,18 @@ out skel qt;
 
         if (!dataState.busy) {
           const source = dataState.speedLimitSource ? ` · ${dataState.speedLimitSource}` : "";
+          const calls = dataState.requestCount ? ` · kall ${dataState.requestCount}` : "";
 
           if (speed === null) {
             setMessage("Venter på GPS-hastighet");
           } else if (over) {
-            setMessage(`Over grense med ${Math.round(speed - limit)} km/t${source}`);
+            setMessage(`Over grense med ${Math.round(speed - limit)} km/t${source}${calls}`);
           } else if (limit && speed > limit) {
-            setMessage(`Over fartsgrense, men under +5 km/t${source}`);
+            setMessage(`Over fartsgrense, men under +5 km/t${source}${calls}`);
           } else if (limit) {
-            setMessage(`Innenfor fartsgrense${source}`);
+            setMessage(`Innenfor fartsgrense${source}${calls}`);
           } else {
-            setMessage(`Fartsgrense ukjent${source}`);
+            setMessage(`Fartsgrense ukjent${source}${calls}`);
           }
         }
       }
