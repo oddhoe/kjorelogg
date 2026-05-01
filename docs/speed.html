@@ -481,17 +481,30 @@
     (() => {
       "use strict";
 
+      /*
+        Norge:
+          - NVDB API Les V4, vegobjekttype 105 Fartsgrense.
+          - Søker med kartutsnitt rundt GPS-posisjon.
+          - Velger nærmeste geometri/objekt og leser egenskap "Fartsgrense" / id 2021.
+
+        Utenfor Norge eller ved NVDB-feil:
+          - Fallback til OpenStreetMap/Overpass maxspeed + speed_camera.
+      */
+
+      const NVDB_URL = "https://nvdbapiles.atlas.vegvesen.no/vegobjekter/api/v4/vegobjekter/105";
+
       const OVERPASS_URLS = [
         "https://overpass-api.de/api/interpreter",
         "https://overpass.kumi.systems/api/interpreter"
       ];
 
       const CFG = {
-        speedLimitSearchRadiusM: 85,
+        nvdbSearchRadiusM: 130,
+        osmSpeedLimitSearchRadiusM: 85,
         speedCameraSearchRadiusM: 1600,
         cameraWarnDistanceM: 500,
-        refetchDistanceM: 350,
-        refetchMs: 25000,
+        refetchDistanceM: 120,
+        refetchMs: 10000,
         maxReasonableSpeedKmh: 250
       };
 
@@ -522,8 +535,9 @@
         accuracy: null
       };
 
-      let osm = {
+      let dataState = {
         speedLimit: null,
+        speedLimitSource: "",
         cameras: [],
         lastFetchLat: null,
         lastFetchLon: null,
@@ -545,6 +559,12 @@
 
       function toRad(deg) { return deg * Math.PI / 180; }
       function toDeg(rad) { return rad * 180 / Math.PI; }
+
+      function isProbablyNorway(lat, lon) {
+        return Number.isFinite(lat) && Number.isFinite(lon) &&
+          lat >= 57.5 && lat <= 71.5 &&
+          lon >= 4.0 && lon <= 32.5;
+      }
 
       function distanceM(aLat, aLon, bLat, bLon) {
         const R = 6371000;
@@ -574,8 +594,19 @@
         return diff > 180 ? 360 - diff : diff;
       }
 
-      function parseMaxspeed(value) {
-        if (!value) return null;
+      function bboxAround(lat, lon, radiusM) {
+        const dLat = radiusM / 111320;
+        const dLon = radiusM / ((111320 * Math.cos(toRad(lat))) || 1);
+        return {
+          south: lat - dLat,
+          west: lon - dLon,
+          north: lat + dLat,
+          east: lon + dLon
+        };
+      }
+
+      function parseSpeedValue(value) {
+        if (value === null || value === undefined) return null;
         const raw = String(value).trim().toLowerCase();
 
         if (
@@ -602,25 +633,190 @@
         return num;
       }
 
-      function bboxAround(lat, lon, radiusM) {
-        const dLat = radiusM / 111320;
-        const dLon = radiusM / ((111320 * Math.cos(toRad(lat))) || 1);
-        return {
-          south: lat - dLat,
-          west: lon - dLon,
-          north: lat + dLat,
-          east: lon + dLon
-        };
+      function getNested(obj, path) {
+        return path.split(".").reduce((acc, key) => acc && acc[key], obj);
       }
 
-      function buildOverpassQuery(lat, lon) {
-        const road = bboxAround(lat, lon, CFG.speedLimitSearchRadiusM);
+      function extractNvdbSpeedLimit(obj) {
+        const candidates = [];
+
+        function walk(value) {
+          if (!value || typeof value !== "object") return;
+
+          if (Array.isArray(value)) {
+            for (const item of value) walk(item);
+            return;
+          }
+
+          const id = value.id ?? value.egenskapstypeid ?? value.egenskapstype?.id;
+          const navn = String(value.navn ?? value.egenskapstype?.navn ?? "").toLowerCase();
+
+          const looksLikeSpeed =
+            id === 2021 ||
+            navn === "fartsgrense" ||
+            navn.includes("fartsgrense") ||
+            navn.includes("hastighet");
+
+          if (looksLikeSpeed) {
+            const vals = [
+              value.verdi,
+              value.enum_verdi,
+              value.kortnavn,
+              value.visningsnavn,
+              value.tekst,
+              value.value
+            ];
+
+            for (const v of vals) {
+              const parsed = parseSpeedValue(v);
+              if (parsed) candidates.push(parsed);
+            }
+
+            if (value.verdi && typeof value.verdi === "object") {
+              for (const v of Object.values(value.verdi)) {
+                const parsed = parseSpeedValue(v);
+                if (parsed) candidates.push(parsed);
+              }
+            }
+          }
+
+          for (const child of Object.values(value)) {
+            if (child && typeof child === "object") walk(child);
+          }
+        }
+
+        walk(obj);
+
+        return candidates.length ? candidates[0] : null;
+      }
+
+      function extractCoordinatesFromWkt(wkt) {
+        if (!wkt || typeof wkt !== "string") return [];
+
+        const nums = wkt.match(/-?\d+(?:\.\d+)?\s+-?\d+(?:\.\d+)?/g);
+        if (!nums) return [];
+
+        const coords = [];
+
+        for (const pair of nums) {
+          const [a, b] = pair.trim().split(/\s+/).map(Number);
+          if (!Number.isFinite(a) || !Number.isFinite(b)) continue;
+
+          // SRID 4326 WKT er normalt lon lat.
+          if (Math.abs(a) <= 180 && Math.abs(b) <= 90) {
+            coords.push([b, a]); // lat, lon
+          }
+        }
+
+        return coords;
+      }
+
+      function extractNvdbCoords(obj) {
+        const coords = [];
+        const possibleWkts = [
+          getNested(obj, "geometri.wkt"),
+          getNested(obj, "geometri.egengeometri"),
+          getNested(obj, "geometri.vegnettsgeometri"),
+          getNested(obj, "lokasjon.geometri.wkt")
+        ].filter(Boolean);
+
+        for (const wkt of possibleWkts) {
+          coords.push(...extractCoordinatesFromWkt(wkt));
+        }
+
+        // Tolerant deep scan for WKT strings.
+        function walk(value) {
+          if (!value || typeof value !== "object") return;
+
+          if (Array.isArray(value)) {
+            for (const item of value) walk(item);
+            return;
+          }
+
+          for (const [key, child] of Object.entries(value)) {
+            if (typeof child === "string" && key.toLowerCase().includes("wkt")) {
+              coords.push(...extractCoordinatesFromWkt(child));
+            } else if (child && typeof child === "object") {
+              walk(child);
+            }
+          }
+        }
+
+        walk(obj);
+        return coords;
+      }
+
+      function objectDistanceToGps(obj, lat, lon) {
+        const coords = extractNvdbCoords(obj);
+
+        if (!coords.length) {
+          // Fallback: kartutsnittet er allerede lite, så manglende geometri gir middels score.
+          return 9999;
+        }
+
+        let best = Infinity;
+        for (const [cLat, cLon] of coords) {
+          const d = distanceM(lat, lon, cLat, cLon);
+          if (d < best) best = d;
+        }
+        return best;
+      }
+
+      async function fetchNvdbSpeedLimit(lat, lon) {
+        const box = bboxAround(lat, lon, CFG.nvdbSearchRadiusM);
+        const params = new URLSearchParams({
+          srid: "4326",
+          kartutsnitt: `${box.west},${box.south},${box.east},${box.north}`,
+          inkluder: "egenskaper,geometri,lokasjon",
+          inkluderAntall: "false",
+          antall: "50"
+        });
+
+        const res = await fetch(`${NVDB_URL}?${params.toString()}`, {
+          headers: {
+            "Accept": "application/json",
+            "X-Client": "oddis-gps-speedometer/1.0"
+          }
+        });
+
+        if (!res.ok) throw new Error("NVDB HTTP " + res.status);
+
+        const json = await res.json();
+
+        const objects =
+          Array.isArray(json.objekter) ? json.objekter :
+          Array.isArray(json.vegobjekter) ? json.vegobjekter :
+          Array.isArray(json) ? json :
+          [];
+
+        let best = null;
+
+        for (const obj of objects) {
+          const limit = extractNvdbSpeedLimit(obj);
+          if (!limit) continue;
+
+          const dist = objectDistanceToGps(obj, lat, lon);
+
+          if (!best || dist < best.dist) {
+            best = { limit, dist };
+          }
+        }
+
+        return best ? best.limit : null;
+      }
+
+      function buildOverpassQuery(lat, lon, includeRoads) {
+        const road = bboxAround(lat, lon, CFG.osmSpeedLimitSearchRadiusM);
         const cam = bboxAround(lat, lon, CFG.speedCameraSearchRadiusM);
+
+        const roadPart = includeRoads
+          ? `way["highway"]["maxspeed"](${road.south},${road.west},${road.north},${road.east});`
+          : "";
 
         return `
 [out:json][timeout:8];
 (
-  way["highway"]["maxspeed"](${road.south},${road.west},${road.north},${road.east});
+  ${roadPart}
   node["highway"="speed_camera"](${cam.south},${cam.west},${cam.north},${cam.east});
   node["enforcement"~"maxspeed|average_speed"](${cam.south},${cam.west},${cam.north},${cam.east});
   relation["type"="enforcement"]["enforcement"~"maxspeed|average_speed"](${cam.south},${cam.west},${cam.north},${cam.east});
@@ -631,11 +827,11 @@ out skel qt;
         `.trim();
       }
 
-      async function fetchOverpass(lat, lon) {
-        const query = buildOverpassQuery(lat, lon);
+      async function fetchOverpass(lat, lon, includeRoads) {
+        const query = buildOverpassQuery(lat, lon, includeRoads);
 
         for (let attempt = 0; attempt < OVERPASS_URLS.length; attempt++) {
-          const idx = (osm.endpointIndex + attempt) % OVERPASS_URLS.length;
+          const idx = (dataState.endpointIndex + attempt) % OVERPASS_URLS.length;
           const url = OVERPASS_URLS[idx];
 
           try {
@@ -647,7 +843,7 @@ out skel qt;
 
             if (!res.ok) throw new Error("HTTP " + res.status);
 
-            osm.endpointIndex = idx;
+            dataState.endpointIndex = idx;
             return await res.json();
           } catch (err) {
             if (attempt === OVERPASS_URLS.length - 1) throw err;
@@ -655,7 +851,7 @@ out skel qt;
         }
       }
 
-      function processOsm(data, lat, lon) {
+      function processOsm(data, lat, lon, allowSpeedLimit) {
         const elements = Array.isArray(data.elements) ? data.elements : [];
 
         let bestLimit = null;
@@ -665,8 +861,8 @@ out skel qt;
         for (const el of elements) {
           const tags = el.tags || {};
 
-          if (el.type === "way" && tags.maxspeed && el.center) {
-            const limit = parseMaxspeed(tags.maxspeed);
+          if (allowSpeedLimit && el.type === "way" && tags.maxspeed && el.center) {
+            const limit = parseSpeedValue(tags.maxspeed);
             if (!limit) continue;
 
             const d = distanceM(lat, lon, el.center.lat, el.center.lon);
@@ -689,54 +885,98 @@ out skel qt;
               cameras.push({
                 lat: cLat,
                 lon: cLon,
-                maxspeed: parseMaxspeed(tags.maxspeed),
+                maxspeed: parseSpeedValue(tags.maxspeed),
                 type: tags.enforcement || tags.highway || "speed_camera"
               });
             }
           }
         }
 
-        osm.speedLimit = bestLimit;
-        osm.cameras = cameras;
+        return { speedLimit: bestLimit, cameras };
       }
 
-      function shouldFetchOsm(lat, lon) {
-        if (osm.busy) return false;
+      function shouldFetchData(lat, lon) {
+        if (dataState.busy) return false;
         if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
-        if (!osm.lastFetchAt) return true;
+        if (!dataState.lastFetchAt) return true;
 
-        const age = Date.now() - osm.lastFetchAt;
-        const moved = distanceM(lat, lon, osm.lastFetchLat, osm.lastFetchLon);
+        const age = Date.now() - dataState.lastFetchAt;
+        const moved = distanceM(lat, lon, dataState.lastFetchLat, dataState.lastFetchLon);
 
         return age > CFG.refetchMs || moved > CFG.refetchDistanceM;
       }
 
-      async function maybeFetchOsm() {
+      async function maybeFetchData() {
         const { lat, lon, accuracy } = current;
 
-        if (!shouldFetchOsm(lat, lon)) return;
+        if (!shouldFetchData(lat, lon)) return;
 
         if (Number.isFinite(accuracy) && accuracy > 80) {
           setMessage("Venter på bedre GPS før fartsgrense hentes…");
           return;
         }
 
-        osm.busy = true;
-        osm.lastFetchAt = Date.now();
-        osm.lastFetchLat = lat;
-        osm.lastFetchLon = lon;
+        dataState.busy = true;
+        dataState.lastFetchAt = Date.now();
+        dataState.lastFetchLat = lat;
+        dataState.lastFetchLon = lon;
+
+        const inNorway = isProbablyNorway(lat, lon);
 
         try {
-          setMessage("Henter fartsgrense og ATK…");
-          const data = await fetchOverpass(lat, lon);
-          processOsm(data, lat, lon);
+          if (inNorway) {
+            setMessage("Henter fartsgrense fra NVDB…");
+            const limit = await fetchNvdbSpeedLimit(lat, lon);
+            if (limit) {
+              dataState.speedLimit = limit;
+              dataState.speedLimitSource = "NVDB 105";
+            } else {
+              dataState.speedLimit = null;
+              dataState.speedLimitSource = "NVDB: ikke treff";
+            }
+
+            // OSM brukes bare for ATK i Norge i denne versjonen.
+            try {
+              const osmData = await fetchOverpass(lat, lon, false);
+              const osm = processOsm(osmData, lat, lon, false);
+              dataState.cameras = osm.cameras;
+            } catch (_) {
+              dataState.cameras = [];
+            }
+          } else {
+            setMessage("Henter fartsgrense fra OSM…");
+            const osmData = await fetchOverpass(lat, lon, true);
+            const osm = processOsm(osmData, lat, lon, true);
+            dataState.speedLimit = osm.speedLimit;
+            dataState.speedLimitSource = osm.speedLimit ? "OSM maxspeed" : "OSM: ikke treff";
+            dataState.cameras = osm.cameras;
+          }
+
           render();
         } catch (err) {
-          osm.speedLimit = null;
-          setMessage("Fartsgrense/ATK ikke hentet");
+          // Hvis NVDB feiler i Norge, prøv OSM som nødløsning.
+          if (inNorway) {
+            try {
+              setMessage("NVDB feilet – prøver OSM…");
+              const osmData = await fetchOverpass(lat, lon, true);
+              const osm = processOsm(osmData, lat, lon, true);
+              dataState.speedLimit = osm.speedLimit;
+              dataState.speedLimitSource = osm.speedLimit ? "OSM fallback" : "ikke treff";
+              dataState.cameras = osm.cameras;
+            } catch (_) {
+              dataState.speedLimit = null;
+              dataState.speedLimitSource = "oppslag feilet";
+              dataState.cameras = [];
+            }
+          } else {
+            dataState.speedLimit = null;
+            dataState.speedLimitSource = "oppslag feilet";
+            dataState.cameras = [];
+          }
+
           render();
         } finally {
-          osm.busy = false;
+          dataState.busy = false;
         }
       }
 
@@ -746,7 +986,7 @@ out skel qt;
 
         let best = null;
 
-        for (const cam of osm.cameras) {
+        for (const cam of dataState.cameras) {
           const d = distanceM(lat, lon, cam.lat, cam.lon);
           if (d > CFG.cameraWarnDistanceM) continue;
 
@@ -781,7 +1021,7 @@ out skel qt;
 
       function render() {
         const speed = Number.isFinite(current.speedKmh) ? current.speedKmh : null;
-        const limit = osm.speedLimit;
+        const limit = dataState.speedLimit;
         const camera = nearestRelevantCamera();
 
         els.speed.textContent = speed === null ? "--" : String(Math.round(speed));
@@ -815,17 +1055,19 @@ out skel qt;
           ? `±${Math.round(current.accuracy)} m`
           : "--";
 
-        if (!osm.busy) {
+        if (!dataState.busy) {
+          const source = dataState.speedLimitSource ? ` · ${dataState.speedLimitSource}` : "";
+
           if (speed === null) {
             setMessage("Venter på GPS-hastighet");
           } else if (over) {
-            setMessage(`Over grense med ${Math.round(speed - limit)} km/t`);
+            setMessage(`Over grense med ${Math.round(speed - limit)} km/t${source}`);
           } else if (limit && speed > limit) {
-            setMessage("Over fartsgrense, men under +5 km/t");
+            setMessage(`Over fartsgrense, men under +5 km/t${source}`);
           } else if (limit) {
-            setMessage("Innenfor fartsgrense");
+            setMessage(`Innenfor fartsgrense${source}`);
           } else {
-            setMessage("Fartsgrense ukjent");
+            setMessage(`Fartsgrense ukjent${source}`);
           }
         }
       }
@@ -853,7 +1095,7 @@ out skel qt;
         els.tapToStart.classList.remove("show");
         setGpsState("ok", "GPS aktiv");
         render();
-        maybeFetchOsm();
+        maybeFetchData();
       }
 
       function onGeoError(err) {
