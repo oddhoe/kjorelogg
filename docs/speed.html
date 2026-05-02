@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0b0f17" />
-  <title>GPS Speedometer Lav Data v3</title>
+  <title>GPS Speedometer Smartvalg</title>
 
   <style>
     :root {
@@ -204,6 +204,25 @@
       text-transform: uppercase;
     }
 
+    .roadline {
+      color: rgba(255,255,255,.88);
+      font-size: clamp(15px, 3.6vw, 21px);
+      font-weight: 800;
+      line-height: 1.2;
+      min-height: 20px;
+      max-width: 90vw;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .01em;
+    }
+
+    .roadline.unknown {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
     .subline-wrap {
       display: grid;
       justify-items: center;
@@ -374,6 +393,31 @@
       font-weight: 950;
     }
 
+
+    /* Smartvalg: skiltet viser fartsgrense, derfor skjules fartsgrense/varsel i menyen. */
+    .info-panel .info-line:nth-child(1),
+    .info-panel .info-line:nth-child(2),
+    #atkLine {
+      display: none !important;
+    }
+
+    .info-panel {
+      min-width: 225px;
+      max-width: 320px;
+      font-size: 17px;
+      gap: 10px;
+    }
+
+    .info-line {
+      padding: 13px 15px;
+      border-radius: 17px;
+      align-items: baseline;
+    }
+
+    .info-line strong {
+      font-size: 21px;
+    }
+
     @media (max-width: 430px) {
       body {
         padding-left: 8px;
@@ -448,7 +492,7 @@
   <main class="app">
     <div class="topbar">
       <div class="pill status"><span id="gpsDot" class="dot"></span><span id="gpsStatus">Starter GPS…</span></div>
-      <div class="pill"><span>NVDB / OSM · lav data</span></div>
+      <div class="pill"><span>NVDB / OSM · smart</span></div>
     </div>
 
     <section class="card main">
@@ -457,7 +501,8 @@
           <div class="speed-content">
             <div id="speed" class="speed">--</div>
             <div class="unit">km/t</div>
-            <div class="subline-wrap"><div id="messageMain" class="subline main">Starter GPS…</div><div id="messageMeta" class="subline meta"></div></div>
+                        <div id="roadText" class="roadline unknown">Vegnummer ukjent</div>
+<div class="subline-wrap"><div id="messageMain" class="subline main">Starter GPS…</div><div id="messageMeta" class="subline meta"></div></div>
           </div>
         </div>
       </div>
@@ -524,12 +569,12 @@
       ];
 
       const CFG = {
-        nvdbSearchRadiusM: 130,
-        osmSpeedLimitSearchRadiusM: 85,
+        nvdbSearchRadiusM: 70,
+        osmSpeedLimitSearchRadiusM: 60,
         speedCameraSearchRadiusM: 1600,
         cameraWarnDistanceM: 500,
-        refetchDistanceM: 150,
-        refetchMs: 30000,
+        refetchDistanceM: 50,
+        refetchMs: 5000,
         minSpeedForTimeRefreshKmh: 5,
         maxReasonableSpeedKmh: 250
       };
@@ -539,6 +584,7 @@
         gpsStatus: document.getElementById("gpsStatus"),
         speedometer: document.getElementById("speedometer"),
         speed: document.getElementById("speed"),
+        roadText: document.getElementById("roadText"),
         messageMain: document.getElementById("messageMain"),
         messageMeta: document.getElementById("messageMeta"),
         speedSign: document.getElementById("speedSign"),
@@ -586,33 +632,29 @@
       }
 
       function setMessage(text) {
-        const raw = String(text ?? "").trim();
-
-        if (!raw) {
-          els.messageMain.textContent = "";
-          els.messageMeta.textContent = "";
-          return;
-        }
-
-        const parts = raw.split(" · ").map(s => s.trim()).filter(Boolean);
-
-        if (parts.length <= 1) {
-          els.messageMain.textContent = raw;
-          els.messageMeta.textContent = "";
-          return;
-        }
-
-        els.messageMain.textContent = parts[0];
-        els.messageMeta.textContent = parts.slice(1).join(" · ");
+        els.messageMain.textContent = String(text ?? "").trim();
+        els.messageMeta.textContent = "";
       }
 
       function toRad(deg) { return deg * Math.PI / 180; }
       function toDeg(rad) { return rad * 180 / Math.PI; }
 
       function isProbablyNorway(lat, lon) {
-        return Number.isFinite(lat) && Number.isFinite(lon) &&
-          lat >= 57.5 && lat <= 71.5 &&
-          lon >= 4.0 && lon <= 32.5;
+        // Strammere enn ren bbox: hindrer NVDB-oppslag i f.eks. Östersund.
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+        if (lat < 57.7 || lat > 71.4 || lon < 4.0 || lon > 31.5) return false;
+
+        let eastMax;
+        if (lat < 59.0) eastMax = 11.4;
+        else if (lat < 61.0) eastMax = 12.6;
+        else if (lat < 63.8) eastMax = 13.4;
+        else if (lat < 65.6) eastMax = 14.8;
+        else if (lat < 67.4) eastMax = 17.6;
+        else if (lat < 68.9) eastMax = 21.8;
+        else if (lat < 69.7) eastMax = 26.6;
+        else eastMax = 31.5;
+
+        return lon <= eastMax;
       }
 
       function distanceM(aLat, aLon, bLat, bLon) {
@@ -685,6 +727,117 @@
       function getNested(obj, path) {
         return path.split(".").reduce((acc, key) => acc && acc[key], obj);
       }
+      function normalizeRoadRef(text) {
+        if (!text) return "";
+
+        let s = String(text).trim();
+        if (!s) return "";
+
+        s = s.replace(/\s+/g, " ");
+        s = s.replace(/^([EeRrFfKkPp][Vv]?)\s*(\d+)/, (m, p1, p2) => {
+          const key = p1.toLowerCase();
+          if (key === "e" || key === "ev") return `E${p2}`;
+          if (key === "rv") return `Rv ${p2}`;
+          if (key === "fv") return `Fv ${p2}`;
+          if (key === "kv") return `Kv ${p2}`;
+          if (key === "pv") return `Pv ${p2}`;
+          return `${p1} ${p2}`;
+        });
+
+        const m = s.match(/^(E\s?\d+|Rv\s?\d+|Fv\s?\d+|Kv\s?\d+|Pv\s?\d+)/i);
+        if (m) {
+          return m[1]
+            .replace(/^E\s+/i, "E")
+            .replace(/^Rv\s*/i, "Rv ")
+            .replace(/^Fv\s*/i, "Fv ")
+            .replace(/^Kv\s*/i, "Kv ")
+            .replace(/^Pv\s*/i, "Pv ");
+        }
+
+        return s;
+      }
+
+      function extractRoadRefFromKortform(kortform) {
+        if (!kortform) return "";
+        const m = String(kortform).match(/\b(E\s?\d+|Rv\s?\d+|Fv\s?\d+|Kv\s?\d+|Pv\s?\d+|EV\s?\d+|RV\s?\d+|FV\s?\d+|KV\s?\d+|PV\s?\d+)\b/i);
+        return m ? normalizeRoadRef(m[1]) : "";
+      }
+
+      function buildRoadLabelFromVegsystemRef(vsr) {
+        if (!vsr || typeof vsr !== "object") return "";
+
+        const directKortform = extractRoadRefFromKortform(vsr.kortform);
+        if (directKortform) return directKortform;
+
+        const vegsystem = vsr.vegsystem || {};
+        const nummer = vegsystem.nummer ?? vsr.nummer;
+        let kategori = vegsystem.vegkategori ?? vsr.vegkategori ?? "";
+
+        if (!nummer) return "";
+
+        kategori = String(kategori).toUpperCase();
+
+        if (kategori === "E") return `E${nummer}`;
+        if (kategori === "R") return `Rv ${nummer}`;
+        if (kategori === "F") return `Fv ${nummer}`;
+        if (kategori === "K") return `Kv ${nummer}`;
+        if (kategori === "P") return `Pv ${nummer}`;
+
+        return String(nummer);
+      }
+
+      function extractNvdbRoadLabel(obj) {
+        const candidates = [
+          getNested(obj, "lokasjon.vegsystemreferanser"),
+          getNested(obj, "vegsystemreferanser"),
+          getNested(obj, "lokasjon.vegsegmenter"),
+          getNested(obj, "vegsegmenter")
+        ];
+
+        for (const candidate of candidates) {
+          if (!candidate) continue;
+
+          if (Array.isArray(candidate)) {
+            for (const item of candidate) {
+              const label = buildRoadLabelFromVegsystemRef(item);
+              if (label) return label;
+
+              const ref = extractRoadRefFromKortform(item?.kortform);
+              if (ref) return ref;
+            }
+          } else {
+            const label = buildRoadLabelFromVegsystemRef(candidate);
+            if (label) return label;
+          }
+        }
+
+        let found = "";
+
+        function walk(value) {
+          if (found || !value || typeof value !== "object") return;
+
+          if (Array.isArray(value)) {
+            for (const item of value) walk(item);
+            return;
+          }
+
+          if (typeof value.kortform === "string") {
+            const ref = extractRoadRefFromKortform(value.kortform);
+            if (ref) {
+              found = ref;
+              return;
+            }
+          }
+
+          for (const child of Object.values(value)) {
+            if (child && typeof child === "object") walk(child);
+          }
+        }
+
+        walk(obj);
+        return found;
+      }
+
 
       function extractNvdbSpeedLimit(obj) {
         const candidates = [];
@@ -795,19 +948,61 @@
         return coords;
       }
 
+      function metersXY(lat, lon, originLat, originLon) {
+        return {
+          x: (lon - originLon) * 111320 * Math.cos(toRad(originLat)),
+          y: (lat - originLat) * 111320
+        };
+      }
+
+      function pointToSegmentDistanceM(pLat, pLon, aLat, aLon, bLat, bLon) {
+        const a = metersXY(aLat, aLon, pLat, pLon);
+        const b = metersXY(bLat, bLon, pLat, pLon);
+        const vx = b.x - a.x;
+        const vy = b.y - a.y;
+        const len2 = vx * vx + vy * vy;
+
+        if (len2 === 0) {
+          return Math.sqrt(a.x * a.x + a.y * a.y);
+        }
+
+        const t = Math.max(0, Math.min(1, (-(a.x * vx + a.y * vy)) / len2));
+        const px = a.x + t * vx;
+        const py = a.y + t * vy;
+        return Math.sqrt(px * px + py * py);
+      }
+
       function objectDistanceToGps(obj, lat, lon) {
         const coords = extractNvdbCoords(obj);
 
-        if (!coords.length) {
-          // Fallback: kartutsnittet er allerede lite, så manglende geometri gir middels score.
-          return 9999;
-        }
+        if (!coords.length) return 9999;
 
         let best = Infinity;
-        for (const [cLat, cLon] of coords) {
-          const d = distanceM(lat, lon, cLat, cLon);
-          if (d < best) best = d;
+        let bestBearing = null;
+
+        if (coords.length === 1) {
+          best = distanceM(lat, lon, coords[0][0], coords[0][1]);
+        } else {
+          for (let i = 0; i < coords.length - 1; i++) {
+            const a = coords[i];
+            const b = coords[i + 1];
+            const d = pointToSegmentDistanceM(lat, lon, a[0], a[1], b[0], b[1]);
+            if (d < best) {
+              best = d;
+              bestBearing = bearingDeg(a[0], a[1], b[0], b[1]);
+            }
+          }
         }
+
+        // Reduser feil treff på tilstøtende veger ved å straffe feil retning.
+        if (Number.isFinite(current.heading) && Number.isFinite(bestBearing) && current.speedKmh > 8) {
+          const diff1 = angleDiffDeg(current.heading, bestBearing);
+          const diff2 = angleDiffDeg(current.heading, (bestBearing + 180) % 360);
+          const diff = Math.min(diff1, diff2);
+          if (diff > 70) best += 120;
+          else if (diff > 35) best += 35;
+        }
+
         return best;
       }
 
@@ -870,9 +1065,7 @@
   node["enforcement"~"maxspeed|average_speed"](${cam.south},${cam.west},${cam.north},${cam.east});
   relation["type"="enforcement"]["enforcement"~"maxspeed|average_speed"](${cam.south},${cam.west},${cam.north},${cam.east});
 );
-out center tags;
->;
-out skel qt;
+out geom tags center;
         `.trim();
       }
 
@@ -910,11 +1103,25 @@ out skel qt;
         for (const el of elements) {
           const tags = el.tags || {};
 
-          if (allowSpeedLimit && el.type === "way" && tags.maxspeed && el.center) {
+          if (allowSpeedLimit && el.type === "way" && tags.maxspeed) {
             const limit = parseSpeedValue(tags.maxspeed);
             if (!limit) continue;
 
-            const d = distanceM(lat, lon, el.center.lat, el.center.lon);
+            const geom = Array.isArray(el.geometry) ? el.geometry : [];
+            let d = Infinity;
+
+            if (geom.length >= 2) {
+              for (let i = 0; i < geom.length - 1; i++) {
+                const a = geom[i];
+                const b = geom[i + 1];
+                if (!Number.isFinite(a.lat) || !Number.isFinite(a.lon) || !Number.isFinite(b.lat) || !Number.isFinite(b.lon)) continue;
+                const segD = pointToSegmentDistanceM(lat, lon, a.lat, a.lon, b.lat, b.lon);
+                if (segD < d) d = segD;
+              }
+            } else if (el.center) {
+              d = distanceM(lat, lon, el.center.lat, el.center.lon);
+            }
+
             if (d < bestDist) {
               bestDist = d;
               bestLimit = limit;
@@ -1135,19 +1342,16 @@ out skel qt;
         }
 
         if (!dataState.busy) {
-          const source = dataState.speedLimitSource ? ` · ${dataState.speedLimitSource}` : "";
-          const calls = dataState.requestCount ? ` · kall ${dataState.requestCount}` : "";
-
           if (speed === null) {
             setMessage("Venter på GPS-hastighet");
           } else if (over) {
-            setMessage(`Over grense med ${Math.round(speed - limit)} km/t${source}${calls}`);
+            setMessage(`Over grense med ${Math.round(speed - limit)} km/t`);
           } else if (limit && speed > limit) {
-            setMessage(`Over fartsgrense, men under +5 km/t${source}${calls}`);
+            setMessage("Over fartsgrense");
           } else if (limit) {
-            setMessage(`Innenfor fartsgrense${source}${calls}`);
+            setMessage("Innenfor fartsgrense");
           } else {
-            setMessage(`Fartsgrense ukjent${source}${calls}`);
+            setMessage(dataState.busy ? "Henter fartsgrense" : "Fartsgrense ukjent");
           }
         }
       }
