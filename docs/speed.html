@@ -335,6 +335,16 @@
       white-space: nowrap;
     }
 
+    .gps-line span {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .gps-line strong {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
     .altitude-line {
       padding-top: 15px;
       padding-bottom: 15px;
@@ -409,14 +419,6 @@
       color: #000;
       font-size: 19px;
       font-weight: 950;
-    }
-
-
-    /* Smartvalg: skiltet viser fartsgrense, derfor skjules fartsgrense/varsel i menyen. */
-    .info-panel .info-line:nth-child(1),
-    .info-panel .info-line:nth-child(2),
-    #atkLine {
-      display: none !important;
     }
 
     .info-panel {
@@ -529,7 +531,7 @@
         <div id="speedSign" class="speed-sign unknown" aria-label="Fartsgrense">?</div>
 
         <div class="info-panel">
-          <div class="info-line">
+          <div class="info-line gps-line">
             <span>GPS</span>
             <strong id="accuracyText">--</strong>
           </div>
