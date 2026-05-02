@@ -31,12 +31,12 @@ body{position:fixed;inset:0;padding:calc(10px + var(--safeTop)) 12px calc(10px +
 .sign-row{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:nowrap;min-height:154px}
 .speed-sign{width:142px;height:142px;border-radius:50%;background:#fff;color:#111;border:14px solid #df1818;display:grid;place-items:center;font-size:56px;font-weight:900;box-shadow:0 12px 30px rgba(0,0,0,.35),inset 0 0 0 2px rgba(0,0,0,.05);font-variant-numeric:tabular-nums;transition:transform .15s ease,filter .15s ease}
 .speed-sign.unknown{color:#666;border-color:#777;font-size:48px}.speed-sign.blink{animation:blinkSign .55s steps(2,start) infinite}@keyframes blinkSign{0%,100%{transform:scale(1);filter:brightness(1);box-shadow:0 12px 30px rgba(0,0,0,.35)}50%{transform:scale(1.08);filter:brightness(1.2);box-shadow:0 12px 30px rgba(0,0,0,.35),0 0 28px 8px rgba(255,48,48,.65)}}
-.info-panel{display:grid;gap:10px;min-width:225px;max-width:320px;color:var(--muted);font-size:17px}
+.info-panel{display:grid;gap:10px;min-width:225px;max-width:320px;color:var(--muted);font-size:16px}
 .info-line{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:13px 15px;border-radius:17px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
-.gps-line span{font-size:16px;font-weight:600}.gps-line strong{color:var(--text);font-size:18px;font-weight:800;white-space:nowrap}
-.altitude-line{padding-top:15px;padding-bottom:15px}.altitude-line span{font-size:18px;font-weight:700}.altitude-line strong{color:var(--text);font-size:28px;font-weight:900;letter-spacing:-.01em;white-space:nowrap}
+.gps-line span{font-size:14px;font-weight:600}.gps-line strong{color:var(--text);font-size:16px;font-weight:800;white-space:nowrap}
+.altitude-line{padding-top:14px;padding-bottom:14px}.altitude-line span{font-size:16px;font-weight:700}.altitude-line strong{color:var(--text);font-size:22px;font-weight:900;letter-spacing:-.01em;white-space:nowrap}
 #tapToStart{position:fixed;inset:0;z-index:10;display:none;place-items:center;padding:22px;background:rgba(0,0,0,.78);backdrop-filter:blur(8px)}#tapToStart.show{display:grid}.startBox{display:grid;gap:12px;justify-items:center;text-align:center;max-width:430px;padding:24px;border:1px solid rgba(255,255,255,.22);border-radius:28px;background:rgba(255,255,255,.08);box-shadow:0 30px 80px rgba(0,0,0,.55)}.startTitle{font-size:28px;font-weight:950}.startText{color:var(--muted);line-height:1.35;font-size:16px}.startBtn{width:100%;min-height:58px;border:0;border-radius:18px;background:#fff;color:#000;font-size:19px;font-weight:950}
-@media(max-width:430px){body{padding-left:8px;padding-right:8px}.main{padding-left:8px;padding-right:8px}.sign-row{gap:12px}.speed-sign{width:128px;height:128px;border-width:13px;font-size:50px}.info-panel{min-width:205px}.altitude-line strong{font-size:24px}}
+@media(max-width:430px){body{padding-left:8px;padding-right:8px}.main{padding-left:8px;padding-right:8px}.sign-row{gap:12px}.speed-sign{width:128px;height:128px;border-width:13px;font-size:50px}.info-panel{min-width:205px}.gps-line span{font-size:13px}.gps-line strong{font-size:15px}.altitude-line span{font-size:15px}.altitude-line strong{font-size:20px}}
 </style>
 </head>
 <body>
