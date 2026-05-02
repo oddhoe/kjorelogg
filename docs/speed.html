@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0b0f17" />
-  <title>GPS Speedometer Smartvalg</title>
+  <title>GPS Speedometer Hysterese</title>
 
   <style>
     :root {
@@ -206,10 +206,10 @@
 
     .roadline {
       color: rgba(255,255,255,.88);
-      font-size: clamp(15px, 3.6vw, 21px);
-      font-weight: 800;
+      font-size: clamp(15px, 3.7vw, 22px);
+      font-weight: 850;
       line-height: 1.2;
-      min-height: 20px;
+      min-height: 21px;
       max-width: 90vw;
       text-align: center;
       white-space: nowrap;
@@ -310,27 +310,45 @@
 
     .info-panel {
       display: grid;
-      gap: 8px;
-      min-width: 170px;
-      max-width: 280px;
+      gap: 10px;
+      min-width: 220px;
+      max-width: 320px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 17px;
     }
 
     .info-line {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      padding: 9px 11px;
-      border-radius: 14px;
+      align-items: baseline;
+      gap: 14px;
+      padding: 13px 15px;
+      border-radius: 17px;
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.08);
     }
 
     .info-line strong {
       color: var(--text);
+      font-size: 21px;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
+    }
+
+    .altitude-line {
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
+
+    .altitude-line span {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .altitude-line strong {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -.01em;
     }
 
     .atk-line {
@@ -492,7 +510,7 @@
   <main class="app">
     <div class="topbar">
       <div class="pill status"><span id="gpsDot" class="dot"></span><span id="gpsStatus">Starter GPS…</span></div>
-      <div class="pill"><span>NVDB / OSM · smart</span></div>
+      <div class="pill"><span>NVDB / OSM · låst</span></div>
     </div>
 
     <section class="card main">
@@ -501,8 +519,8 @@
           <div class="speed-content">
             <div id="speed" class="speed">--</div>
             <div class="unit">km/t</div>
-                        <div id="roadText" class="roadline unknown">Vegnummer ukjent</div>
-<div class="subline-wrap"><div id="messageMain" class="subline main">Starter GPS…</div><div id="messageMeta" class="subline meta"></div></div>
+            <div id="roadText" class="roadline unknown">Veg ukjent</div>
+            <div class="subline-wrap"><div id="messageMain" class="subline main">Starter GPS…</div><div id="messageMeta" class="subline meta"></div></div>
           </div>
         </div>
       </div>
@@ -512,22 +530,10 @@
 
         <div class="info-panel">
           <div class="info-line">
-            <span>Fartsgrense</span>
-            <strong><span id="limitText">?</span></strong>
-          </div>
-          <div class="info-line">
-            <span>Varsel</span>
-            <strong><span id="warnText">+5</span></strong>
-          </div>
-          <div id="atkLine" class="info-line atk-line">
-            <span>ATK</span>
-            <strong id="atkText">--</strong>
-          </div>
-          <div class="info-line">
             <span>GPS</span>
             <strong id="accuracyText">--</strong>
           </div>
-          <div class="info-line">
+          <div class="info-line altitude-line">
             <span>Høyde</span>
             <strong id="altitudeText">--</strong>
           </div>
@@ -569,14 +575,22 @@
       ];
 
       const CFG = {
-        nvdbSearchRadiusM: 70,
-        osmSpeedLimitSearchRadiusM: 60,
+        // Hysterese/låsing mot at OSM hopper mellom sideveger i samme område.
+        nvdbSearchRadiusM: 55,
+        osmSpeedLimitSearchRadiusM: 45,
         speedCameraSearchRadiusM: 1600,
         cameraWarnDistanceM: 500,
-        refetchDistanceM: 50,
-        refetchMs: 5000,
-        minSpeedForTimeRefreshKmh: 5,
-        maxReasonableSpeedKmh: 250
+        refetchDistanceM: 70,
+        refetchMs: 8000,
+        minSpeedForTimeRefreshKmh: 8,
+        maxReasonableSpeedKmh: 250,
+
+        // Byttefilter
+        slowSpeedKmh: 12,
+        stableHitsMoving: 2,
+        stableHitsSlow: 4,
+        keepOldOnMissingHits: 3,
+        maxAcceptedRoadDistanceM: 45
       };
 
       const els = {
@@ -588,10 +602,6 @@
         messageMain: document.getElementById("messageMain"),
         messageMeta: document.getElementById("messageMeta"),
         speedSign: document.getElementById("speedSign"),
-        limitText: document.getElementById("limitText"),
-        warnText: document.getElementById("warnText"),
-        atkLine: document.getElementById("atkLine"),
-        atkText: document.getElementById("atkText"),
         accuracyText: document.getElementById("accuracyText"),
         altitudeText: document.getElementById("altitudeText"),
         tapToStart: document.getElementById("tapToStart"),
@@ -614,6 +624,11 @@
       let dataState = {
         speedLimit: null,
         speedLimitSource: "",
+        roadLabel: "",
+        pendingLimit: null,
+        pendingRoadLabel: "",
+        pendingHits: 0,
+        missingHits: 0,
         cameras: [],
         lastFetchLat: null,
         lastFetchLon: null,
@@ -729,60 +744,55 @@
       }
       function normalizeRoadRef(text) {
         if (!text) return "";
-
         let s = String(text).trim();
         if (!s) return "";
-
         s = s.replace(/\s+/g, " ");
-        s = s.replace(/^([EeRrFfKkPp][Vv]?)\s*(\d+)/, (m, p1, p2) => {
-          const key = p1.toLowerCase();
-          if (key === "e" || key === "ev") return `E${p2}`;
-          if (key === "rv") return `Rv ${p2}`;
-          if (key === "fv") return `Fv ${p2}`;
-          if (key === "kv") return `Kv ${p2}`;
-          if (key === "pv") return `Pv ${p2}`;
-          return `${p1} ${p2}`;
-        });
 
-        const m = s.match(/^(E\s?\d+|Rv\s?\d+|Fv\s?\d+|Kv\s?\d+|Pv\s?\d+)/i);
-        if (m) {
-          return m[1]
-            .replace(/^E\s+/i, "E")
+        const ref = s.match(/\b(EV\s?\d+|RV\s?\d+|FV\s?\d+|KV\s?\d+|PV\s?\d+|E\s?\d+|Rv\s?\d+|Fv\s?\d+|Kv\s?\d+|Pv\s?\d+)\b/i);
+        if (ref) {
+          const r = ref[1];
+          return r
+            .replace(/^EV\s*/i, "E")
+            .replace(/^E\s*/i, "E")
+            .replace(/^RV\s*/i, "Rv ")
             .replace(/^Rv\s*/i, "Rv ")
+            .replace(/^FV\s*/i, "Fv ")
             .replace(/^Fv\s*/i, "Fv ")
+            .replace(/^KV\s*/i, "Kv ")
             .replace(/^Kv\s*/i, "Kv ")
+            .replace(/^PV\s*/i, "Pv ")
             .replace(/^Pv\s*/i, "Pv ");
         }
-
         return s;
       }
 
+      function roadDisplayFromOsmTags(tags) {
+        const ref = normalizeRoadRef(tags.ref || tags.official_ref || tags["destination:ref"] || "");
+        if (ref) return ref;
+        return String(tags.name || tags["name:sv"] || tags["name:no"] || "").trim();
+      }
+
       function extractRoadRefFromKortform(kortform) {
-        if (!kortform) return "";
-        const m = String(kortform).match(/\b(E\s?\d+|Rv\s?\d+|Fv\s?\d+|Kv\s?\d+|Pv\s?\d+|EV\s?\d+|RV\s?\d+|FV\s?\d+|KV\s?\d+|PV\s?\d+)\b/i);
-        return m ? normalizeRoadRef(m[1]) : "";
+        return normalizeRoadRef(kortform || "");
       }
 
       function buildRoadLabelFromVegsystemRef(vsr) {
         if (!vsr || typeof vsr !== "object") return "";
 
-        const directKortform = extractRoadRefFromKortform(vsr.kortform);
-        if (directKortform) return directKortform;
+        const direct = extractRoadRefFromKortform(vsr.kortform || vsr.vegsystemreferanse?.kortform);
+        if (direct) return direct;
 
-        const vegsystem = vsr.vegsystem || {};
+        const vegsystem = vsr.vegsystem || vsr.vegsystemreferanse?.vegsystem || {};
         const nummer = vegsystem.nummer ?? vsr.nummer;
         let kategori = vegsystem.vegkategori ?? vsr.vegkategori ?? "";
-
         if (!nummer) return "";
 
         kategori = String(kategori).toUpperCase();
-
         if (kategori === "E") return `E${nummer}`;
         if (kategori === "R") return `Rv ${nummer}`;
         if (kategori === "F") return `Fv ${nummer}`;
         if (kategori === "K") return `Kv ${nummer}`;
         if (kategori === "P") return `Pv ${nummer}`;
-
         return String(nummer);
       }
 
@@ -791,51 +801,96 @@
           getNested(obj, "lokasjon.vegsystemreferanser"),
           getNested(obj, "vegsystemreferanser"),
           getNested(obj, "lokasjon.vegsegmenter"),
-          getNested(obj, "vegsegmenter")
+          getNested(obj, "vegsegmenter"),
+          getNested(obj, "lokasjon.stedfestinger"),
+          getNested(obj, "stedfestinger")
         ];
 
         for (const candidate of candidates) {
           if (!candidate) continue;
-
-          if (Array.isArray(candidate)) {
-            for (const item of candidate) {
-              const label = buildRoadLabelFromVegsystemRef(item);
-              if (label) return label;
-
-              const ref = extractRoadRefFromKortform(item?.kortform);
-              if (ref) return ref;
-            }
-          } else {
-            const label = buildRoadLabelFromVegsystemRef(candidate);
+          const arr = Array.isArray(candidate) ? candidate : [candidate];
+          for (const item of arr) {
+            const label = buildRoadLabelFromVegsystemRef(item);
             if (label) return label;
           }
         }
 
         let found = "";
-
-        function walk(value) {
-          if (found || !value || typeof value !== "object") return;
-
-          if (Array.isArray(value)) {
-            for (const item of value) walk(item);
+        function walk(value, keyHint = "") {
+          if (found || value === null || value === undefined) return;
+          if (typeof value === "string") {
+            if (/kortform|vegsystem|vegref/i.test(keyHint) || /\b(EV|RV|FV|KV|PV|E|Rv|Fv|Kv|Pv)\s?\d+\b/i.test(value)) {
+              const r = normalizeRoadRef(value);
+              if (r) found = r;
+            }
             return;
           }
-
-          if (typeof value.kortform === "string") {
-            const ref = extractRoadRefFromKortform(value.kortform);
-            if (ref) {
-              found = ref;
-              return;
-            }
+          if (typeof value !== "object") return;
+          if (Array.isArray(value)) {
+            for (const item of value) walk(item, keyHint);
+            return;
           }
-
-          for (const child of Object.values(value)) {
-            if (child && typeof child === "object") walk(child);
-          }
+          const direct = buildRoadLabelFromVegsystemRef(value);
+          if (direct) { found = direct; return; }
+          for (const [k, child] of Object.entries(value)) walk(child, k);
         }
-
         walk(obj);
         return found;
+      }
+
+      function applyCandidateLimit(candidate) {
+        const speed = Number.isFinite(current.speedKmh) ? current.speedKmh : 0;
+
+        if (!candidate || !candidate.limit) {
+          dataState.missingHits += 1;
+          if (dataState.speedLimit && dataState.missingHits < CFG.keepOldOnMissingHits) {
+            return;
+          }
+          dataState.speedLimit = null;
+          dataState.roadLabel = "";
+          dataState.pendingLimit = null;
+          dataState.pendingRoadLabel = "";
+          dataState.pendingHits = 0;
+          return;
+        }
+
+        dataState.missingHits = 0;
+        const roadLabel = candidate.roadLabel || "";
+
+        if (!dataState.speedLimit) {
+          dataState.speedLimit = candidate.limit;
+          dataState.roadLabel = roadLabel;
+          dataState.pendingLimit = null;
+          dataState.pendingRoadLabel = "";
+          dataState.pendingHits = 0;
+          return;
+        }
+
+        if (candidate.limit === dataState.speedLimit && roadLabel === dataState.roadLabel) {
+          dataState.pendingLimit = null;
+          dataState.pendingRoadLabel = "";
+          dataState.pendingHits = 0;
+          return;
+        }
+
+        // Ved lav fart/stillstand skal ikke OSM/NVDB få hoppe fritt mellom sideveger.
+        const needed = speed < CFG.slowSpeedKmh ? CFG.stableHitsSlow : CFG.stableHitsMoving;
+
+        if (dataState.pendingLimit === candidate.limit && dataState.pendingRoadLabel === roadLabel) {
+          dataState.pendingHits += 1;
+        } else {
+          dataState.pendingLimit = candidate.limit;
+          dataState.pendingRoadLabel = roadLabel;
+          dataState.pendingHits = 1;
+        }
+
+        if (dataState.pendingHits >= needed) {
+          dataState.speedLimit = candidate.limit;
+          dataState.roadLabel = roadLabel;
+          dataState.pendingLimit = null;
+          dataState.pendingRoadLabel = "";
+          dataState.pendingHits = 0;
+        }
       }
 
 
@@ -1040,13 +1095,14 @@
           if (!limit) continue;
 
           const dist = objectDistanceToGps(obj, lat, lon);
+          if (dist > CFG.maxAcceptedRoadDistanceM) continue;
 
           if (!best || dist < best.dist) {
-            best = { limit, dist };
+            best = { limit, dist, roadLabel: extractNvdbRoadLabel(obj) };
           }
         }
 
-        return best ? best.limit : null;
+        return best || null;
       }
 
       function buildOverpassQuery(lat, lon, includeRoads) {
@@ -1096,7 +1152,7 @@ out geom tags center;
       function processOsm(data, lat, lon, allowSpeedLimit) {
         const elements = Array.isArray(data.elements) ? data.elements : [];
 
-        let bestLimit = null;
+        let bestCandidate = null;
         let bestDist = Infinity;
         const cameras = [];
 
@@ -1122,9 +1178,13 @@ out geom tags center;
               d = distanceM(lat, lon, el.center.lat, el.center.lon);
             }
 
-            if (d < bestDist) {
+            if (d < bestDist && d <= CFG.maxAcceptedRoadDistanceM) {
               bestDist = d;
-              bestLimit = limit;
+              bestCandidate = {
+                limit,
+                dist: d,
+                roadLabel: roadDisplayFromOsmTags(tags)
+              };
             }
           }
 
@@ -1148,7 +1208,7 @@ out geom tags center;
           }
         }
 
-        return { speedLimit: bestLimit, cameras };
+        return { candidate: bestCandidate, cameras };
       }
 
       function shouldFetchData(lat, lon) {
@@ -1193,10 +1253,10 @@ out geom tags center;
           if (inNorway) {
             dataState.lastRequestKind = "NVDB";
             setMessage("Henter fartsgrense fra NVDB…");
-            const limit = await fetchNvdbSpeedLimit(lat, lon);
+            const candidate = await fetchNvdbSpeedLimit(lat, lon);
 
-            if (limit) {
-              dataState.speedLimit = limit;
+            if (candidate) {
+              applyCandidateLimit(candidate);
               dataState.speedLimitSource = "NVDB 105";
 
               // OSM brukes bare for ATK når NVDB faktisk ga norsk fartsgrense.
@@ -1214,8 +1274,8 @@ out geom tags center;
               setMessage("NVDB uten treff – prøver OSM…");
               const osmData = await fetchOverpass(lat, lon, true);
               const osm = processOsm(osmData, lat, lon, true);
-              dataState.speedLimit = osm.speedLimit;
-              dataState.speedLimitSource = osm.speedLimit ? "OSM fallback" : "OSM: ikke treff";
+              applyCandidateLimit(osm.candidate);
+              dataState.speedLimitSource = osm.candidate ? "OSM fallback" : "OSM: ikke treff";
               dataState.cameras = osm.cameras;
             }
           } else {
@@ -1223,8 +1283,8 @@ out geom tags center;
             setMessage("Henter fartsgrense fra OSM…");
             const osmData = await fetchOverpass(lat, lon, true);
             const osm = processOsm(osmData, lat, lon, true);
-            dataState.speedLimit = osm.speedLimit;
-            dataState.speedLimitSource = osm.speedLimit ? "OSM maxspeed" : "OSM: ikke treff";
+            applyCandidateLimit(osm.candidate);
+            dataState.speedLimitSource = osm.candidate ? "OSM maxspeed" : "OSM: ikke treff";
             dataState.cameras = osm.cameras;
           }
 
@@ -1236,16 +1296,16 @@ out geom tags center;
               setMessage("NVDB feilet – prøver OSM…");
               const osmData = await fetchOverpass(lat, lon, true);
               const osm = processOsm(osmData, lat, lon, true);
-              dataState.speedLimit = osm.speedLimit;
-              dataState.speedLimitSource = osm.speedLimit ? "OSM fallback" : "ikke treff";
+              applyCandidateLimit(osm.candidate);
+              dataState.speedLimitSource = osm.candidate ? "OSM fallback" : "ikke treff";
               dataState.cameras = osm.cameras;
             } catch (_) {
-              dataState.speedLimit = null;
+              applyCandidateLimit(null);
               dataState.speedLimitSource = "oppslag feilet";
               dataState.cameras = [];
             }
           } else {
-            dataState.speedLimit = null;
+            applyCandidateLimit(null);
             dataState.speedLimitSource = "oppslag feilet";
             dataState.cameras = [];
           }
@@ -1305,13 +1365,9 @@ out geom tags center;
         if (limit) {
           els.speedSign.textContent = String(limit);
           els.speedSign.classList.remove("unknown");
-          els.limitText.textContent = `${limit} km/t`;
-          els.warnText.textContent = `${limit + 5} km/t`;
         } else {
           els.speedSign.textContent = "?";
           els.speedSign.classList.add("unknown");
-          els.limitText.textContent = "?";
-          els.warnText.textContent = "+5";
         }
 
         const over = speed !== null && limit && speed > limit + 5;
@@ -1319,12 +1375,12 @@ out geom tags center;
         els.speedSign.classList.toggle("blink", Boolean(over));
         updateGauge(speed, limit, over);
 
-        if (camera) {
-          els.atkLine.classList.add("show");
-          els.atkText.textContent = `${Math.max(0, Math.round(camera.distanceM))} m`;
+        if (dataState.roadLabel) {
+          els.roadText.textContent = dataState.roadLabel;
+          els.roadText.classList.remove("unknown");
         } else {
-          els.atkLine.classList.remove("show");
-          els.atkText.textContent = "--";
+          els.roadText.textContent = "Veg ukjent";
+          els.roadText.classList.add("unknown");
         }
 
         els.accuracyText.textContent = Number.isFinite(current.accuracy)
