@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-‘’’
 Bygger v2.0.52-ios fra v2.0.49.1-ios baseline.
 
 Inkluderer ALT:
