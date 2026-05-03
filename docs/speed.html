@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0b0f17">
-<title>Speedometer stabil GPS</title>
+<title>Speedometer stabil GPS vegnummer fix</title>
 <style>
 :root{--bg:#0b0f17;--text:#f7fafc;--muted:#9aa7b8;--ok:#2ee59d;--warn:#ffcc00;--danger:#ff3030;--border:rgba(255,255,255,.14);--shadow:0 24px 70px rgba(0,0,0,.45);--safeTop:env(safe-area-inset-top);--safeBottom:env(safe-area-inset-bottom)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -43,7 +43,7 @@ body{position:fixed;inset:0;padding:calc(10px + var(--safeTop)) 12px calc(10px +
 <main class="app">
   <div class="topbar">
     <div class="pill status"><span id="gpsDot" class="dot"></span><span id="gpsStatus">Starter GPS…</span></div>
-    <div class="pill"><span>GPS Fart</span></div>
+    <div class="pill"><span>GPS fra Kjørelogg · vegfix</span></div>
   </div>
   <section class="card main">
     <div class="speed-wrap">
@@ -85,7 +85,7 @@ const el={
 };
 
 let gps={watching:false,watchId:null,lastPos:null,acc:null,speed:null,heading:null,altitude:null,altitudeAccuracy:null,detectedFylke:null,_lastFixTs:null,_lastTransientErrTs:0};
-let speedLimits=[],currentSpeedLimit=null,currentRoadLabel='',lastSpeedLimitRefreshPos=null,speedLimitRefreshInFlight=false,speedLimitStartRefreshPending=false,osmEndpointIndex=0;
+let speedLimits=[],roadRefs=[],currentSpeedLimit=null,currentSpeedLimitRoadLabel='',currentRoadLabel='',lastSpeedLimitRefreshPos=null,speedLimitRefreshInFlight=false,speedLimitStartRefreshPending=false,osmEndpointIndex=0;
 let _wakeLockRef=null,_wakeLockOn=false,_gpsHealthTimer=null,_gpsStaleNotified=false;
 
 function isNativeApp(){try{return !!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform())}catch(e){return false}}
@@ -111,7 +111,36 @@ function getSpeedLimitFromObject(obj){const direct=parseSpeedLimitNumber(obj?.fa
 function mergePartsUnique(oldParts,newParts){const out=[];const seen=new Set();function sig(part){const p=(part||[]).filter(isVLL);if(p.length<2)return'';const a=p[0],b=p[p.length-1];return`${a[0].toFixed(6)},${a[1].toFixed(6)}>${b[0].toFixed(6)},${b[1].toFixed(6)}#${p.length}`}for(const part of[...(oldParts||[]),...(newParts||[])]){const clean=(part||[]).filter(isVLL);if(clean.length<2)continue;const s=sig(clean),r=sig(clean.slice().reverse());if(seen.has(s)||seen.has(r))continue;seen.add(s);out.push(clean)}return out}
 function speedLimitPartsFromObject(obj){const parts=[];const addWkt=w=>{for(const p of parseWkt(w||'')){const clean=p.filter(isVLL);if(clean.length>=2)parts.push(clean)}};addWkt(obj?.geometri?.wkt);for(const seg of(obj?.vegsegmenter||obj?.vegSegmenter||[]))addWkt(seg?.geometri?.wkt);for(const loc of(obj?.lokasjon?.vegsegmenter||[]))addWkt(loc?.geometri?.wkt);return mergePartsUnique([],parts)}
 function extractRoadRefFromText(text){if(!text)return'';const m=String(text).match(/\b(EV|RV|FV|KV|PV|E|Rv|Fv|Kv|Pv)\s?(\d+)\b/i);if(!m)return'';const type=m[1].toLowerCase(),nr=m[2];if(type==='e'||type==='ev')return`E${nr}`;if(type==='rv')return`Rv ${nr}`;if(type==='fv')return`Fv ${nr}`;if(type==='kv')return`Kv ${nr}`;if(type==='pv')return`Pv ${nr}`;return`${m[1]} ${nr}`}
-function extractRoadLabelFromNvdbObject(obj){let found='';function walk(v){if(found||v==null)return;if(typeof v==='string'){const ref=extractRoadRefFromText(v);if(ref)found=ref;return}if(typeof v!=='object')return;if(Array.isArray(v)){for(const i of v)walk(i);return}const vegsystem=v.vegsystem||v.vegsystemreferanse?.vegsystem||{};const nr=vegsystem.nummer??v.nummer,kat=String(vegsystem.vegkategori??v.vegkategori??'').toUpperCase();const direct=extractRoadRefFromText(v.kortform||v.vegsystemreferanse?.kortform||'');if(direct){found=direct;return}if(nr&&kat){found=kat==='E'?`E${nr}`:kat==='R'?`Rv ${nr}`:kat==='F'?`Fv ${nr}`:kat==='K'?`Kv ${nr}`:kat==='P'?`Pv ${nr}`:'';if(found)return}for(const c of Object.values(v))walk(c)}walk(obj);return found}
+function roadLabelFromVegsystemRef(vs){
+ if(!vs||typeof vs!=='object')return'';
+ const direct=extractRoadRefFromText(vs.kortform||vs.vegsystemreferanse?.kortform||'');
+ if(direct)return direct;
+ const vegsystem=vs.vegsystem||vs.vegsystemreferanse?.vegsystem||{};
+ const nr=vegsystem.nummer??vs.nummer;
+ const kat=String(vegsystem.vegkategori??vs.vegkategori??'').toUpperCase();
+ if(!nr||!kat)return'';
+ if(kat==='E')return`E${nr}`;
+ if(kat==='R')return`Rv${nr}`;
+ if(kat==='F')return`Fv${nr}`;
+ if(kat==='K')return`Kv${nr}`;
+ if(kat==='P')return`Pv${nr}`;
+ return'';
+}
+function extractRoadLabelFromNvdbObject(obj){
+ const candidates=[
+  obj?.vegsystemreferanse,
+  obj?.lokasjon?.vegsystemreferanse,
+  ...(Array.isArray(obj?.vegsystemreferanser)?obj.vegsystemreferanser:[]),
+  ...(Array.isArray(obj?.lokasjon?.vegsystemreferanser)?obj.lokasjon.vegsystemreferanser:[]),
+  ...(Array.isArray(obj?.vegsegmenter)?obj.vegsegmenter:[]),
+  ...(Array.isArray(obj?.lokasjon?.vegsegmenter)?obj.lokasjon.vegsegmenter:[])
+ ];
+ for(const c of candidates){
+  const label=roadLabelFromVegsystemRef(c)||roadLabelFromVegsystemRef(c?.vegsystemreferanse);
+  if(label)return label;
+ }
+ return'';
+}
 function normalizeSpeedLimitObject(obj,i){const speed=getSpeedLimitFromObject(obj),parts=speedLimitPartsFromObject(obj);if(!speed||!parts.length)return null;return{key:`sl_${obj?.id??i}`,id:obj?.id??null,speed,parts,roadLabel:extractRoadLabelFromNvdbObject(obj),minDist:null}}
 
 async function fetchSpeedLimitPage(url){const resp=await fetch(url,{headers:{'X-Client':'oddis-speedometer-stabil','Accept':'application/json'}});if(!resp.ok)throw new Error(`NVDB fartsgrense ${resp.status}`);return await resp.json()}
@@ -119,13 +148,116 @@ async function detectFylkeFromAPI(lat,lon){try{const resp=await fetch(`https://w
 function isProbablyNorwayByBounds(lat,lon){return Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=57.7&&lat<=71.4&&lon>=4&&lon<=31.5}
 async function loadSpeedLimitsAround(lat,lon,radiusKm,fylkeNr){const [minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm),base=new URL(`${NVDB}/vegobjekter/api/v4/vegobjekter/${SPEED_LIMIT_TYPE_ID}`);base.searchParams.set('srid','4326');base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);if(fylkeNr)base.searchParams.set('fylke',String(fylkeNr));base.searchParams.set('inkluder','egenskaper,vegsegmenter,geometri,lokasjon');base.searchParams.set('inkluderAntall','false');base.searchParams.set('antall','1000');const out=[];let url=base.toString(),pages=0;try{while(url&&pages<20){pages++;const data=await fetchSpeedLimitPage(url);for(const o of(data.objekter||[])){const sl=normalizeSpeedLimitObject(o,out.length);if(sl)out.push(sl)}url=data?.metadata?.neste?.href||null}}catch(e){console.warn('Kunne ikke hente fartsgrenser 105',e)}return out}
 
+
+async function loadRoadRefsAround(lat,lon,radiusKm,fylkeNr){
+ const [minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm);
+ const base=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
+ base.searchParams.set('srid','4326');
+ base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);
+ base.searchParams.set('vegsystemreferanse','E,R,F,K,P');
+ if(fylkeNr)base.searchParams.set('fylke',String(fylkeNr));
+ base.searchParams.set('inkluderAntall','false');
+ base.searchParams.set('antall','1000');
+ const out=[];
+ let url=base.toString(),pages=0;
+ try{
+  while(url&&pages<8){
+   pages++;
+   const resp=await fetch(url,{headers:{'X-Client':'oddis-speedometer-vegnett-ref','Accept':'application/json'}});
+   if(!resp.ok)throw new Error(`NVDB vegnett ${resp.status}`);
+   const data=await resp.json();
+   for(const s of(data.objekter||[])){
+    const label=roadLabelFromVegsystemRef(s?.vegsystemreferanse);
+    const parts=parseWkt(s?.geometri?.wkt).map(p=>p.filter(isVLL)).filter(p=>p.length>=2);
+    if(label&&parts.length){
+     out.push({key:`road_${s?.id??out.length}_${label}`,label,parts,minDist:null});
+    }
+   }
+   url=data?.metadata?.neste?.href||null;
+  }
+ }catch(e){console.warn('Kunne ikke hente vegnummer fra NVDB vegnett',e)}
+ return out;
+}
+
+function updateCurrentRoadLabel(lat,lon){
+ currentRoadLabel='';
+ if(Number.isFinite(lat)&&Number.isFinite(lon)&&roadRefs.length){
+  let best=null,bestD=Infinity;
+  for(const r of roadRefs){
+   const d=roadDist(lat,lon,r);
+   r.minDist=d;
+   if(d<bestD){best=r;bestD=d}
+  }
+  if(best&&bestD<=60){
+   currentRoadLabel=best.label||'';
+   return currentRoadLabel;
+  }
+ }
+ currentRoadLabel=currentSpeedLimitRoadLabel||'';
+ return currentRoadLabel;
+}
+
 function parseOsmMaxspeed(value){if(!value)return null;const raw=String(value).trim().toLowerCase();if(['none','signals','variable','walk','implicit'].includes(raw))return null;const m=raw.match(/(\d+(?:[.,]\d+)?)/);if(!m)return null;let num=Number(m[1].replace(',','.'));if(!Number.isFinite(num))return null;if(raw.includes('mph'))num*=1.609344;num=Math.round(num);return num>=5&&num<=140?num:null}
 function roadLabelFromOsmTags(tags){return String(tags.ref||tags.official_ref||tags['destination:ref']||tags.name||tags['name:sv']||tags['name:no']||'').trim().replace(/\s+/g,' ')}
 async function fetchOverpass(lat,lon,radiusKm){const [west,south,east,north]=bboxFromPoint(lat,lon,radiusKm);const q=`[out:json][timeout:8];(way["highway"]["maxspeed"](${south},${west},${north},${east}););out geom tags center;`;for(let attempt=0;attempt<OVERPASS_URLS.length;attempt++){const idx=(osmEndpointIndex+attempt)%OVERPASS_URLS.length,url=OVERPASS_URLS[idx];try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(q)});if(!res.ok)throw new Error('HTTP '+res.status);osmEndpointIndex=idx;return await res.json()}catch(err){if(attempt===OVERPASS_URLS.length-1)throw err}}}
 async function loadOsmSpeedLimitsAround(lat,lon,radiusKm){try{const data=await fetchOverpass(lat,lon,radiusKm),elements=Array.isArray(data.elements)?data.elements:[],out=[];for(const el of elements){const tags=el.tags||{};if(el.type!=='way'||!tags.maxspeed)continue;const speed=parseOsmMaxspeed(tags.maxspeed),geom=Array.isArray(el.geometry)?el.geometry:[],part=geom.map(p=>[p.lon,p.lat]).filter(p=>Number.isFinite(p[0])&&Number.isFinite(p[1]));if(speed&&part.length>=2)out.push({key:`osm_${el.id||out.length}`,id:el.id||null,speed,parts:[part],roadLabel:roadLabelFromOsmTags(tags),minDist:null})}return out}catch(e){console.warn('OSM fartsgrense feilet',e);return[]}}
 
-function updateCurrentSpeedLimit(lat,lon){currentSpeedLimit=null;currentRoadLabel='';if(!speedLimits.length||!Number.isFinite(lat)||!Number.isFinite(lon))return null;let best=null,bestD=Infinity;for(const sl of speedLimits){const d=roadDist(lat,lon,sl);sl.minDist=d;if(d<bestD){best=sl;bestD=d}}if(best&&bestD<=SPEED_LIMIT_MAX_DIST_M){currentSpeedLimit=best.speed;currentRoadLabel=best.roadLabel||''}return currentSpeedLimit}
-async function refreshSpeedLimitsLight(lat,lon,reason='auto',force=false){if(!Number.isFinite(lat)||!Number.isFinite(lon)||speedLimitRefreshInFlight)return false;if(!force&&lastSpeedLimitRefreshPos&&dM(lastSpeedLimitRefreshPos[0],lastSpeedLimitRefreshPos[1],lat,lon)<SPEED_LIMIT_REFRESH_DISTANCE_M)return false;speedLimitRefreshInFlight=true;try{let fresh=[],fylke=await detectFylkeFromAPI(lat,lon);gps.detectedFylke=fylke;if(fylke&&isProbablyNorwayByBounds(lat,lon))fresh=await loadSpeedLimitsAround(lat,lon,SPEED_LIMIT_REFRESH_RADIUS_KM,fylke);else fresh=await loadOsmSpeedLimitsAround(lat,lon,SPEED_LIMIT_REFRESH_RADIUS_KM);if(!fresh.length&&isProbablyNorwayByBounds(lat,lon)){fresh=await loadSpeedLimitsAround(lat,lon,SPEED_LIMIT_REFRESH_RADIUS_KM,null);if(!fresh.length)fresh=await loadOsmSpeedLimitsAround(lat,lon,SPEED_LIMIT_REFRESH_RADIUS_KM)}speedLimits=Array.isArray(fresh)?fresh:[];lastSpeedLimitRefreshPos=[lat,lon];updateCurrentSpeedLimit(lat,lon);renderDashboard();return true}catch(e){console.warn('Fartsgrense-refresh feilet',e);return false}finally{speedLimitRefreshInFlight=false}}
+function updateCurrentSpeedLimit(lat,lon){
+ currentSpeedLimit=null;
+ currentSpeedLimitRoadLabel='';
+ if(!speedLimits.length||!Number.isFinite(lat)||!Number.isFinite(lon))return null;
+ let best=null,bestD=Infinity;
+ for(const sl of speedLimits){
+  const d=roadDist(lat,lon,sl);
+  sl.minDist=d;
+  if(d<bestD){best=sl;bestD=d}
+ }
+ if(best&&bestD<=SPEED_LIMIT_MAX_DIST_M){
+  currentSpeedLimit=best.speed;
+  currentSpeedLimitRoadLabel=best.roadLabel||'';
+ }
+ return currentSpeedLimit;
+}
+async function refreshSpeedLimitsLight(lat,lon,reason='auto',force=false){
+ if(!Number.isFinite(lat)||!Number.isFinite(lon)||speedLimitRefreshInFlight)return false;
+ if(!force&&lastSpeedLimitRefreshPos&&dM(lastSpeedLimitRefreshPos[0],lastSpeedLimitRefreshPos[1],lat,lon)<SPEED_LIMIT_REFRESH_DISTANCE_M)return false;
+ speedLimitRefreshInFlight=true;
+ try{
+  let fresh=[];
+  let refs=[];
+  const fylke=await detectFylkeFromAPI(lat,lon);
+  gps.detectedFylke=fylke;
+
+  if(fylke&&isProbablyNorwayByBounds(lat,lon)){
+   fresh=await loadSpeedLimitsAround(lat,lon,SPEED_LIMIT_REFRESH_RADIUS_KM,fylke);
+   refs=await loadRoadRefsAround(lat,lon,0.9,fylke);
+  }else{
+   fresh=await loadOsmSpeedLimitsAround(lat,lon,SPEED_LIMIT_REFRESH_RADIUS_KM);
+   refs=[];
+  }
+
+  if(!fresh.length&&isProbablyNorwayByBounds(lat,lon)){
+   fresh=await loadSpeedLimitsAround(lat,lon,SPEED_LIMIT_REFRESH_RADIUS_KM,null);
+   refs=await loadRoadRefsAround(lat,lon,0.9,null);
+   if(!fresh.length){
+    fresh=await loadOsmSpeedLimitsAround(lat,lon,SPEED_LIMIT_REFRESH_RADIUS_KM);
+    refs=[];
+   }
+  }
+
+  speedLimits=Array.isArray(fresh)?fresh:[];
+  roadRefs=Array.isArray(refs)?refs:[];
+  lastSpeedLimitRefreshPos=[lat,lon];
+
+  updateCurrentSpeedLimit(lat,lon);
+  updateCurrentRoadLabel(lat,lon);
+  renderDashboard();
+  return true;
+ }catch(e){
+  console.warn('Fartsgrense-refresh feilet',e);
+  return false;
+ }finally{speedLimitRefreshInFlight=false}
+}
 function maybeRefreshSpeedLimitsLight(lat,lon,force=false){refreshSpeedLimitsLight(lat,lon,force?'start':'500m',force).catch(e=>console.warn(e))}
 
 function updateGauge(speed,limit,over){const s=Number.isFinite(speed)?Math.max(0,Math.min(140,speed)):0,arc=(s/140)*260;let col='var(--ok)';if(limit&&speed>limit)col='var(--warn)';if(over)col='var(--danger)';el.speedometer.style.setProperty('--arc',`${arc}deg`);el.speedometer.style.setProperty('--arcColor',col)}
@@ -144,7 +276,7 @@ function stopGpsHealthWatchdog(){if(_gpsHealthTimer){clearInterval(_gpsHealthTim
 async function startGPS(){if(!('geolocation'in navigator)&&!isNativeApp()){gps.watching=false;setGpsState('bad','GPS mangler');setMessage('Denne nettleseren støtter ikke GPS');el.tap.classList.add('show');renderDashboard();return}if(!await ensureLocationPermission()){gps.watching=false;setGpsState('bad','GPS nektet');setMessage('Posisjonstillatelse ble ikke gitt');el.tap.classList.add('show');renderDashboard();return}gps.watching=true;gps._lastFixTs=null;speedLimitStartRefreshPending=true;setGpsState('','Starter GPS…');setMessage('Henter GPS-signal');renderDashboard();ensureWakeLock();startGpsHealthWatchdog();try{if(await startNativeForegroundGPS()){setGpsState('ok','GPS aktiv');el.tap.classList.remove('show');renderDashboard();return}gps.watchId=navigator.geolocation.watchPosition(onPos,onPosErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000})}catch(e){gps.watching=false;gps.watchId=null;stopGpsHealthWatchdog();releaseWakeLock();setGpsState('bad','GPS-feil');setMessage('GPS-feil: '+(e?.message||e));el.tap.classList.add('show');renderDashboard()}}
 function stopGPS(){if(gps.watchId!==null&&navigator.geolocation&&typeof gps.watchId==='number')navigator.geolocation.clearWatch(gps.watchId);gps.watching=false;gps.watchId=null;gps.acc=null;gps._lastFixTs=null;stopGpsHealthWatchdog();releaseWakeLock();setGpsState('','GPS stoppet');renderDashboard()}
 function onPosErr(err){const m={1:'Tillatelse avslått',2:'Posisjon utilgjengelig',3:'Timeout'};if(gps.watching&&err?.code!==1){const now=Date.now();if(now-(gps._lastTransientErrTs||0)>15000){gps._lastTransientErrTs=now;setMessage((m[err?.code]||'GPS-feil')+' – GPS-watch beholdes')}return}gps.watching=false;gps.watchId=null;stopGpsHealthWatchdog();releaseWakeLock();setGpsState('bad',m[err?.code]||'GPS-feil');setMessage(m[err?.code]||'GPS-feil');el.tap.classList.add('show');renderDashboard()}
-function onPos(pos){const lat=Number(pos?.coords?.latitude),lon=Number(pos?.coords?.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180)return;const prev=gps.lastPos?[gps.lastPos[0],gps.lastPos[1]]:null,acc=Number(pos.coords.accuracy),spd=Number(pos.coords.speed),rawHeading=Number(pos.coords.heading);let heading=Number.isFinite(rawHeading)&&rawHeading>0?rawHeading:null;if(heading==null&&prev&&Number.isFinite(spd)&&spd>1&&dM(prev[0],prev[1],lat,lon)>3)heading=bearingBetween(prev[0],prev[1],lat,lon);gps._lastFixTs=Date.now();gps.lastPos=[lat,lon];gps.acc=Number.isFinite(acc)?acc:null;gps.speed=(Number.isFinite(spd)&&spd>=0)?spd:null;gps.heading=heading;gps.altitude=Number.isFinite(pos.coords.altitude)?pos.coords.altitude:null;gps.altitudeAccuracy=Number.isFinite(pos.coords.altitudeAccuracy)?pos.coords.altitudeAccuracy:null;el.tap.classList.remove('show');setGpsState('ok','GPS aktiv');const force=!!speedLimitStartRefreshPending;if(force)speedLimitStartRefreshPending=false;maybeRefreshSpeedLimitsLight(lat,lon,force);updateCurrentSpeedLimit(lat,lon);renderDashboard()}
+function onPos(pos){const lat=Number(pos?.coords?.latitude),lon=Number(pos?.coords?.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180)return;const prev=gps.lastPos?[gps.lastPos[0],gps.lastPos[1]]:null,acc=Number(pos.coords.accuracy),spd=Number(pos.coords.speed),rawHeading=Number(pos.coords.heading);let heading=Number.isFinite(rawHeading)&&rawHeading>0?rawHeading:null;if(heading==null&&prev&&Number.isFinite(spd)&&spd>1&&dM(prev[0],prev[1],lat,lon)>3)heading=bearingBetween(prev[0],prev[1],lat,lon);gps._lastFixTs=Date.now();gps.lastPos=[lat,lon];gps.acc=Number.isFinite(acc)?acc:null;gps.speed=(Number.isFinite(spd)&&spd>=0)?spd:null;gps.heading=heading;gps.altitude=Number.isFinite(pos.coords.altitude)?pos.coords.altitude:null;gps.altitudeAccuracy=Number.isFinite(pos.coords.altitudeAccuracy)?pos.coords.altitudeAccuracy:null;el.tap.classList.remove('show');setGpsState('ok','GPS aktiv');const force=!!speedLimitStartRefreshPending;if(force)speedLimitStartRefreshPending=false;maybeRefreshSpeedLimitsLight(lat,lon,force);updateCurrentSpeedLimit(lat,lon);updateCurrentRoadLabel(lat,lon);renderDashboard()}
 
 document.addEventListener('visibilitychange',async()=>{if(document.hidden)return;if(gps.watching){if(!_wakeLockOn)ensureWakeLock();if(gps._lastFixTs){const since=Date.now()-gps._lastFixTs;if(since>GPS_LONG_GAP_MS){setMessage('Appen ble vekket. Henter fersk GPS');await restartWatchPosition('app gjenopptatt')}}}});
 window.addEventListener('pagehide',()=>{});
