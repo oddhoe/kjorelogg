@@ -2,7 +2,7 @@
 // Uten denne fallbacken blir kartfanene bare en grå flate.
 if(!window.L){
  document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
-}</script><script src="./vendor/jspdf.umd.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'"></script><script src="./vendor/jspdf.plugin.autotable.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js'"></script><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}body,html{height:100%;background:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}button,input,select{font-family:inherit}#app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}.top-bar{background:#002171;color:#fff;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-shrink:0}.top-bar .label{font-size:10px;opacity:.75;letter-spacing:.8px;text-transform:uppercase;font-weight:800}.top-bar h1{font-size:18px;font-weight:900;margin-top:2px;line-height:1.12}.top-bar .sub{font-size:11px;opacity:.92;margin-top:3px;line-height:1.2;max-width:260px}.top-actions{display:flex;align-items:flex-start;gap:6px}.menu-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:16px;padding:8px 12px;font-size:24px;font-weight:900;line-height:1;cursor:pointer;min-width:48px}#top-menu{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 52px);z-index:5000;background:#1f1f24;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:8px;box-shadow:0 8px 30px rgba(0,0,0,.55);display:none;min-width:220px;width:min(340px,calc(100vw - 20px));max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 64px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}#top-menu.visible{display:block}.menu-item{display:flex;width:100%;align-items:center;gap:8px;background:0 0;color:#fff;border:none;text-align:left;padding:12px 12px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer}.menu-item:hover{background:#2b2b31}.menu-sep{height:1px;background:rgba(255,255,255,.08);margin:6px 0}.menu-section-title{padding:8px 12px 6px;font-size:11px;color:#98a6c8;font-weight:900;letter-spacing:.4px;text-transform:uppercase}.menu-cat-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:4px 10px 10px}#top-menu .cat-chip,#top-menu .cat-mini{padding:7px 10px;font-size:12px}.hidden-file{display:none}.gps-sticky{background:#1a1a20;border-bottom:1px solid rgba(255,255,255,.08);padding:6px 10px;flex-shrink:0}.gps-inner{display:flex;align-items:center;gap:10px;background:#1f1f24;border-radius:16px;padding:10px 12px;box-shadow:0 1px 3px rgba(0,0,0,.2)}.gps-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}.gps-dot.on{background:#7cb342;animation:gpsdot 1.2s infinite}.gps-dot.off{background:#777}@keyframes gpsdot{0%,100%{opacity:1}50%{opacity:.35}}.gps-info{flex:1;min-width:0}.gps-coord{font-size:10px;color:#b6b6bd;font-weight:700;font-variant-numeric:tabular-nums;min-height:13px}.gps-speed{font-size:26px;font-weight:900;line-height:1.05;margin:1px 0;display:flex;align-items:center;gap:10px}.speed-limit-sign{width:44px;height:44px;border-radius:50%;background:#fff;color:#111;border:5px solid #d71920;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:1000;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.35);flex-shrink:0}.speed-limit-sign.unknown{border-color:#777;color:#777;font-size:14px;background:#f5f5f5}@media(max-width:430px){.speed-limit-sign{width:40px;height:40px;border-width:4px;font-size:16px}.gps-speed{gap:8px}}.gps-sub{font-size:11px;color:#b6b6bd;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.gps-heading{display:inline-flex;align-items:center;gap:5px;background:#2a2a34;border-radius:8px;padding:3px 8px}.compass-arrow{display:inline-block;font-size:13px;transition:transform .4s ease}.heading-val{font-size:12px;font-weight:900;color:#f9a825;font-variant-numeric:tabular-nums}.heading-dir{font-size:10px;color:#b6b6bd}.gps-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap}.gps-btn.start{background:#2e7d32;color:#fff}.gps-btn.stop{background:#7a5054;color:#ffd7d7}.tab-bar{display:flex;background:#1b1b1d;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}.tab{flex:1;padding:10px 3px 9px;font-size:12px;font-weight:900;text-align:center;cursor:pointer;background:0 0;border:none;color:#b7b7bc;position:relative}.tab.active{color:#7bc1ff}.tab.active::after{content:'';position:absolute;bottom:0;left:18%;right:18%;height:3px;background:#1e88ff;border-radius:3px}.content{flex:1;display:none;flex-direction:column;overflow:hidden;background:linear-gradient(90deg,#1e1e22,#17171b)}.content.active{display:flex}.notice{margin:8px 10px 0;background:#5f4b1d;color:#ffe8aa;border:1px solid #8f7641;padding:10px 12px;border-radius:14px;font-size:12px}.error{margin:8px 10px 0;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;padding:10px 12px;border-radius:14px;font-size:12px}.success{margin:8px 10px 0;background:#18361f;color:#c8ffd1;border:1px solid #2b6a39;padding:10px 12px;border-radius:14px;font-size:12px}.loading{display:flex;align-items:center;justify-content:center;padding:22px;font-size:14px;color:#c7c7cd}#overview-tools{padding:8px 10px 8px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px;flex-shrink:0}.ov-row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.ov-field{display:flex;flex-direction:column;gap:4px}.ov-field span{font-size:11px;color:#b6b6bd;font-weight:800}.ov-field input,.ov-field select{padding:9px 12px;border:none;border-radius:14px;font-size:14px;background:#323237;color:#fff}.ov-field input{width:82px}.ov-field select{min-width:190px;max-width:100%}.ov-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a}.ov-primary{background:#0059c9;border-color:#0059c9;color:#fff}.cat-row{align-items:center}.cat-label{font-size:12px;color:#b6b6bd;font-weight:900;margin-right:1px}.cat-chip,.cat-mini{border:none;cursor:pointer;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:900;transition:opacity .12s,box-shadow .12s;-webkit-appearance:none;appearance:none}.cat-chip{background:#1f1f24;color:#9a9aa3;border:1px dashed #3a3a44;opacity:.72}.cat-chip[data-cat="E"]{background:#2a1837;color:#d8b2ff;border-color:#6a1b9a}.cat-chip[data-cat=EGSV]{background:#32173d;color:#efb4ff;border-color:#8e24aa}.cat-chip[data-cat="R"]{background:#142946;color:#aad0ff;border-color:#1565c0}.cat-chip[data-cat=RGSV]{background:#14304d;color:#b6dcff;border-color:#1976d2}.cat-chip[data-cat="F"]{background:#17341c;color:#b7efbd;border-color:#2e7d32}.cat-chip[data-cat=FGSV]{background:#173c22;color:#c2f7c7;border-color:#43a047}.cat-chip.active{opacity:1;border-style:solid;box-shadow:0 0 0 2px rgba(255,255,255,.35) inset}.cat-chip.active[data-cat="E"]{background:#6a1b9a;color:#fff;border-color:#6a1b9a}.cat-chip.active[data-cat=EGSV]{background:#8e24aa;color:#fff;border-color:#8e24aa}.cat-chip.active[data-cat="R"]{background:#1565c0;color:#fff;border-color:#1565c0}.cat-chip.active[data-cat=RGSV]{background:#1976d2;color:#fff;border-color:#1976d2}.cat-chip.active[data-cat="F"]{background:#2e7d32;color:#fff;border-color:#2e7d32}.cat-chip.active[data-cat=FGSV]{background:#43a047;color:#fff;border-color:#43a047}.cat-mini{background:#1f1f24;color:#b6b6bd;border:1px solid #444}.stats-bar{padding:6px 10px}.stats-inner{background:#1f1f24;border-radius:14px;padding:9px 12px}.prog-row{display:flex;align-items:center;gap:10px}.prog-bar{flex:1;background:#2a2a31;border-radius:4px;height:6px;overflow:hidden}.prog-fill{background:#1e88ff;height:6px;border-radius:4px;transition:width .3s}.stat-text{font-size:11px;color:#d7d7db}#road-list{flex:1;overflow-y:auto;padding:6px 10px;padding-bottom:max(12px,env(safe-area-inset-bottom))}.road-card{background:#1f1f24;border-radius:16px;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.18);display:flex}.road-card.active-gps{border:2px solid #1e88ff}.road-accent{width:4px;flex-shrink:0}.road-body{padding:9px 11px;flex:1;min-width:0}.road-top{display:flex;align-items:center;gap:8px}.road-veg{font-size:14px;font-weight:900;flex:1}.road-status{font-size:15px}.road-meta{font-size:11px;color:#b6b6bd;margin-top:2px}.road-gps{font-size:11px;font-weight:900;margin-top:4px}.road-gps.near{color:#7bc1ff}.nav-btns{display:flex;gap:6px;margin-top:8px}.nav-btn{flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none}.nb-g{background:#e6f1fb;color:#185fa5}.table-controls{padding:8px 10px 6px;background:0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0}#table-filter{flex:1;min-width:150px;padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}#table-sort{padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}.table-btn{padding:11px 13px;border:none;border-radius:15px;font-size:13px;font-weight:900;cursor:pointer}.table-btn.sel{background:#323237;color:#fff}.table-btn.done{background:#1a3a1a;color:#8fca8f}.table-btn.clear{background:#3a1a1a;color:#ffb8b8}.table-wrap{flex:1;overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;white-space:nowrap}th{background:#1a1a1f;font-weight:900;font-size:11px;position:sticky;top:0;z-index:1}tr.active-row{background:#19334c}.progress-filter{padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}.progress-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.progress-mobile-summary{display:none}.progress-filter input,.progress-filter select{padding:9px 10px;border:none;border-radius:12px;background:#323237;color:#fff;font-size:13px}.progress-filter label{font-size:11px;color:#b6b6bd;font-weight:800;display:flex;align-items:center;gap:5px}.progress-filter .pf-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}.progress-filter .pf-btn:disabled{background:#22252c;color:#7f8794;border-color:#363b45;cursor:not-allowed;opacity:.75}.progress-filter .pf-quick{background:#24313f;color:#bfe1ff;border-color:#355371}.progress-filter .pf-quick.warn{background:#5f4b1d;color:#ffe8aa;border-color:#8f7641}.progress-summary-chip{display:inline-flex;align-items:center;border-radius:999px;padding:8px 11px;background:#1f1f24;border:1px solid #3d4654;color:#dfe9ff;font-size:12px;font-weight:900;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:100%}.progress-report-status{font-size:12px;font-weight:800;color:#7bc1ff;min-height:18px;line-height:1.25}.plan-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08)}.plan-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer}.plan-btn.active{background:#0d5bd7;color:#fff}.plan-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:6px 10px;background:#2b2b31;color:#d7d7db;font-size:12px;font-weight:900}.plan-card{border-left:4px solid #42a5f5}.manual-marker-dot{width:22px;height:22px;border-radius:50%;background:#ff3b30;border:3px solid #fff;box-shadow:0 0 0 4px rgba(255,59,48,.35)}#tab-map,#tab-progress{position:relative;min-height:0}#map-container,#progress-map-container{width:100%;height:100%;min-height:240px;background:#e5e3df;flex:1;position:relative}.map-error{position:absolute;left:12px;right:12px;top:12px;z-index:1200;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;border-radius:14px;padding:10px 12px;font-size:12px;font-weight:800;line-height:1.35}.map-tools{position:absolute;right:12px;bottom:12px;z-index:900;display:flex;flex-direction:column;gap:8px}.map-tool-btn{background:rgba(31,31,36,.95);color:#fff;border:none;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}#progress-stats{padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:620px){#tab-progress .progress-filter{padding:6px 8px;gap:6px;display:block}#tab-progress .progress-mobile-summary{display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress .progress-mobile-summary::-webkit-scrollbar{display:none}#tab-progress .progress-controls{display:none;margin-top:6px;padding:8px;background:#1f1f24;border:1px solid rgba(255,255,255,.1);border-radius:16px;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}#tab-progress .progress-filter.expanded .progress-controls{display:grid}#tab-progress .progress-controls label{flex-direction:column;align-items:stretch;gap:4px;font-size:10px;color:#b6b6bd}#tab-progress .progress-controls label:nth-child(3){grid-column:1/-1}#tab-progress .progress-controls select{width:100%;min-height:42px;font-size:15px}#tab-progress .progress-controls .pf-btn{min-height:42px;font-size:13px}#tab-progress #progress-report-btn{grid-column:1/2}#tab-progress #progress-show-all-btn{grid-column:2/3}#tab-progress #progress-repair-fylke-btn{grid-column:1/-1}#tab-progress .progress-report-status{display:block;margin-top:4px;font-size:11px;min-height:15px;max-height:32px;overflow:hidden}#tab-progress #progress-stats{flex-wrap:nowrap;overflow-x:auto;padding:6px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress #progress-stats::-webkit-scrollbar{display:none}#tab-progress #progress-stats>div{flex:0 0 auto;white-space:nowrap}#progress-map-container{min-height:300px}}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:430px){.top-bar h1{font-size:17px}.menu-btn{padding:7px 10px;min-width:44px}.ov-field select{min-width:170px}.cat-chip,.cat-mini{padding:8px 10px}#top-menu{left:10px;right:10px;width:auto;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 60px)}}.leaflet-control-layers{border-radius:12px!important;box-shadow:0 2px 10px rgba(0,0,0,.25)!important}.leaflet-control-layers-toggle{width:36px!important;height:36px!important}.leaflet-control-layers-expanded{font-size:13px;line-height:1.35}</style></head><body><div id="app"><div class="top-bar"><div><div class="label" id="hdr-label">Vegmåling · v2.0.52-ios</div><h1 id="hdr-title">Kjørelogg</h1><div class="sub" id="hdr-sub">Klar</div></div><div class="top-actions"><button class="menu-btn" id="menu-btn" title="Meny">⋯</button></div></div><div id="top-menu"><div class="menu-section-title">Daglig bruk</div><button class="menu-item" id="btn-refreshcenter">🔄 Oppdater området</button><button class="menu-item" id="btn-manualcenter">📍 Sett manuell kartmarkør</button><button class="menu-item" id="btn-clearmanual">🧹 Fjern manuell markør</button><div class="menu-sep"></div><div class="menu-section-title">Backup og data</div><button class="menu-item" id="btn-export">📤 Eksporter fremdrift</button><button class="menu-item" id="btn-exportgpx">🛰 Eksporter GPX-spor</button><button class="menu-item" id="btn-import">📥 Importer</button><button class="menu-item" id="btn-restoresnap">⏪ Gjenopprett fra snapshot</button><button class="menu-item" id="btn-export-errorlog">📋 Eksporter feillogg</button><button class="menu-item" id="btn-clear-errorlog">🧹 Tøm feillogg</button><div class="menu-sep"></div><div class="menu-section-title">Verktøy</div><button class="menu-item" id="btn-repairdir">🔧 Reparer falske R2-spor</button><div class="menu-sep"></div><div class="menu-section-title">Innstillinger</div><button class="menu-item" id="btn-backgroundgps">📍 Bakgrunns-GPS PÅ</button><div style="display:none"><button id="btn-offline"></button><button id="btn-offlinemode"></button><button id="btn-datasaver"></button><button id="btn-sideanlegg"></button><button id="btn-cleansideanlegg"></button><button id="btn-repairgeom"></button><button id="btn-planmode"></button><button id="btn-clear-plan-menu"></button></div><div class="menu-sep"></div><div class="menu-sep"></div><div class="menu-section-title">Vegkategorier</div><div class="menu-cat-wrap"><button class="cat-chip" data-cat="E">EV</button> <button class="cat-chip" data-cat="EGSV">EV-GSV</button> <button class="cat-chip" data-cat="R">RV</button> <button class="cat-chip" data-cat="RGSV">RV-GSV</button> <button class="cat-chip active" data-cat="F">FV</button> <button class="cat-chip" data-cat="FGSV">FV-GSV</button> <button class="cat-mini" id="cat-all">Alle</button> <button class="cat-mini" id="cat-none">Ingen</button></div><div class="menu-sep"></div><button class="menu-item" onclick="resetAll()">🗑 Nullstill</button></div><input type="file" id="import-file" class="hidden-file" accept="application/json,.json,.geojson"><div class="gps-sticky"><div id="gps-ui"></div></div><div class="tab-bar"><button class="tab active" data-tab="overview">Oversikt</button> <button class="tab" data-tab="table">Tabell</button> <button class="tab" data-tab="map">🗺 Kart</button> <button class="tab" data-tab="progress">📊 Fremdrift</button></div><div class="content active" id="tab-overview"><div id="secure-warning" class="notice" style="display:none">GPS krever normalt HTTPS eller localhost.</div><div id="overview-tools"><div class="ov-row"><label class="ov-field"><span>Radius</span> <input id="radius" type="number" min="1" max="100" step="1" value="10"></label> <label class="ov-field"><span>Fylke</span> <select id="fylke"><option value="">Fylke fra posisjon</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <button id="refresh" class="ov-btn ov-primary">Oppdater</button></div></div><div id="message-area"></div><div class="stats-bar"><div class="stats-inner"><div class="prog-row"><div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div><div class="stat-text" id="stat-text">0 · 0 km</div></div></div></div><div id="road-list"><div class="loading">Ingen data ennå.</div></div></div><div class="content" id="tab-table"><div class="table-controls"><input id="table-filter" placeholder="Filtrer veg / segment..."> <select id="table-sort"><option value="dist-asc">Avstand (nærmest)</option><option value="veg-asc">Veg (A–Å)</option><option value="veg-desc">Veg (Å–A)</option><option value="len-desc">Lengde (lengst)</option><option value="len-asc">Lengde (kortest)</option><option value="dist-desc">Avstand (lengst)</option></select> <button id="table-select-all" class="table-btn sel">☑️ Velg alle</button> <button id="table-add-plan" class="table-btn sel" style="display:none">🗺 Legg i dagsrute</button> <button id="table-set-done" class="table-btn done">✅ Sett ferdig</button> <button id="table-set-skip" class="table-btn clear">⛔ Kjøres ikke</button> <button id="table-clear-selection" class="table-btn clear">↩ Nullstill valg</button></div><div class="table-wrap"><table id="road-table"><thead><tr><th>Kat</th><th>Veg</th><th>Segment</th><th>Lengde km</th><th>Avstand m</th><th>Rute</th><th>Plan</th></tr></thead><tbody></tbody></table></div></div><div class="content" id="tab-map"><div class="plan-toolbar" id="plan-toolbar" style="display:none"><span class="plan-badge" id="plan-count">Dagsrute: 0 valgt</span> <button class="plan-btn" id="btn-fit-plan" type="button">Tilpass dagsrute</button> <button class="plan-btn" id="btn-clear-plan" type="button">Nullstill dagsrute</button></div><div id="map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-map-btn">🎯 Tilpass kart</button></div></div><div class="content" id="tab-progress"><div class="progress-filter" id="progress-filter-box"><div class="progress-mobile-summary" aria-label="Fremdrift hurtigvalg"><button class="pf-btn pf-quick" id="progress-filter-toggle" type="button" aria-expanded="false">⚙ Filter</button> <button class="pf-btn pf-quick" id="progress-show-all-btn-mobile" type="button">Vis alt</button> <button class="pf-btn" id="progress-report-btn-mobile" type="button" disabled="disabled">PDF</button> <span class="progress-summary-chip" id="progress-filter-summary">Alt · Alle fylker · ingen PDF</span></div><div class="progress-controls" id="progress-controls"><label>Periode <select id="progress-range"><option value="all">Alt</option><option value="today">I dag</option><option value="7">Siste 7 dager</option><option value="14">Siste 14 dager</option><option value="month">Inneværende måned</option></select></label> <label>Fylke <select id="progress-fylke"><option value="">Alle fylker</option><option value="__unknown">Ukjent/uten fylke</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <label>Rapport <select id="progress-report-kind"><option value="">Velg rapport</option><option value="day">Dagsrapport PDF</option><option value="week">Ukerapport PDF</option><option value="month">Månedsrapport PDF</option></select></label> <button class="pf-btn" id="progress-report-btn" type="button" disabled="disabled">Lag PDF</button> <button class="pf-btn pf-quick" id="progress-show-all-btn" type="button">Vis alt</button> <button class="pf-btn" id="progress-repair-fylke-btn" type="button" title="Slår opp fylke mot Geonorge for importert fremdrift">🧭 Korriger fylke</button></div><div class="progress-report-status" id="progress-report-status">Velg rapporttype for å aktivere PDF.</div></div><div id="progress-stats"></div><div id="progress-map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-progress-btn">🎯 Tilpass kart</button></div></div></div><div id="progress-edit-section" style="display:none;border-top:2px solid #2a2a31;background:#16161b;flex-shrink:0"><div id="progress-splitter" style="height:6px;background:#2a3a5a;cursor:ns-resize;display:flex;align-items:center;justify-content:center" title="Dra for å justere størrelse"><div style="width:40px;height:3px;background:#7bc1ff;border-radius:2px"></div></div><div id="progress-edit-controls" style="padding:6px 10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid rgba(255,255,255,.08)"><input id="progress-edit-search" placeholder="🔍 Søk veg/segment..." style="flex:1;min-width:120px;padding:8px;border:none;border-radius:10px;font-size:13px;background:#323237;color:#fff"><select id="progress-edit-sort" style="padding:8px;border:none;border-radius:10px;font-size:13px;background:#323237;color:#fff"><option value="recent">Sist endret</option><option value="veg">Veg A–Å</option><option value="km-desc">Lengde (lengst)</option><option value="km-asc">Lengde (kortest)</option></select><button class="pf-btn" id="progress-edit-select-all">☑️ Velg alle</button><button class="pf-btn" id="progress-edit-clear-sel">↩ Tøm valg</button></div><div id="progress-edit-batch-actions" style="padding:6px 10px;display:none;gap:6px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.08);background:#1a1a2e"><span id="progress-edit-sel-count" style="font-size:11px;font-weight:900;color:#7bc1ff;align-self:center"></span><button class="pf-btn" id="progress-edit-set-done" style="background:#1a3a1a;color:#8fca8f;border-color:#2a5a2a">✅ Ferdig</button><button class="pf-btn" id="progress-edit-set-oneway" style="background:#3a3000;color:#f9a825;border-color:#7a6500">🟡 1 retning</button><button class="pf-btn" id="progress-edit-set-skip" style="background:#1a1a1a;color:#aaa;border-color:#444">⛔ Kjøres ikke</button><button class="pf-btn" id="progress-edit-reset" style="background:#2a1a1a;color:#ffb8b8;border-color:#5a2a2a">↩ Nullstill</button><button class="pf-btn" id="progress-edit-delete" style="background:#3a1a1a;color:#ffb8b8;border-color:#5a2a2a">🗑 Slett valgte</button></div><div id="progress-edit-list" style="overflow-y:auto;padding:4px 8px"></div><div id="progress-edit-load-more" style="padding:8px;text-align:center;display:none"><button class="pf-btn" id="progress-edit-show-more">Vis flere…</button></div></div><div id="offline-modal" class="hidden"><div class="offline-box"><div class="offline-title">📥 Last ned vegnett offline</div><div class="offline-sub">Laster rutenett av tiles. Bruk på wifi!</div><div class="offline-row"><label>Fylke</label> <select id="dl-fylke"><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15" selected="selected">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></div><div class="offline-row"><label>Tile-rad.</label> <select id="dl-radius"><option value="10" selected="selected">10 km</option><option value="15">15 km</option><option value="20">20 km</option></select></div><div class="offline-prog-wrap"><div class="offline-prog-fill" id="dl-prog"></div></div><div class="offline-status" id="dl-status">Klar</div><div class="offline-btns"><button class="offline-btn-start" id="dl-start">Last ned</button> <button class="offline-btn-close" id="dl-close">Lukk</button></div><div class="offline-btns" style="margin-top:8px"><button class="offline-btn-close" id="dl-clear" style="flex:1;background:#3a1a1a;color:#ffb8b8;border:1px solid #5a2a2a">🗑 Slett cache for dette fylket</button></div><div class="offline-cache-info" id="dl-cache-info"></div></div></div><script>'use strict';
+}</script><script src="./vendor/jspdf.umd.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'"></script><script src="./vendor/jspdf.plugin.autotable.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js'"></script><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}body,html{height:100%;background:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}button,input,select{font-family:inherit}#app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}.top-bar{background:#002171;color:#fff;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-shrink:0}.top-bar .label{font-size:10px;opacity:.75;letter-spacing:.8px;text-transform:uppercase;font-weight:800}.top-bar h1{font-size:18px;font-weight:900;margin-top:2px;line-height:1.12}.top-bar .sub{font-size:11px;opacity:.92;margin-top:3px;line-height:1.2;max-width:260px}.top-actions{display:flex;align-items:flex-start;gap:6px}.menu-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:16px;padding:8px 12px;font-size:24px;font-weight:900;line-height:1;cursor:pointer;min-width:48px}#top-menu{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 52px);z-index:5000;background:#1f1f24;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:8px;box-shadow:0 8px 30px rgba(0,0,0,.55);display:none;min-width:220px;width:min(340px,calc(100vw - 20px));max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 64px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}#top-menu.visible{display:block}.menu-item{display:flex;width:100%;align-items:center;gap:8px;background:0 0;color:#fff;border:none;text-align:left;padding:12px 12px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer}.menu-item:hover{background:#2b2b31}.menu-sep{height:1px;background:rgba(255,255,255,.08);margin:6px 0}.menu-section-title{padding:8px 12px 6px;font-size:11px;color:#98a6c8;font-weight:900;letter-spacing:.4px;text-transform:uppercase}.menu-cat-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:4px 10px 10px}#top-menu .cat-chip,#top-menu .cat-mini{padding:7px 10px;font-size:12px}.hidden-file{display:none}.gps-sticky{background:#1a1a20;border-bottom:1px solid rgba(255,255,255,.08);padding:6px 10px;flex-shrink:0}.gps-inner{display:flex;align-items:center;gap:10px;background:#1f1f24;border-radius:16px;padding:10px 12px;box-shadow:0 1px 3px rgba(0,0,0,.2)}.gps-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}.gps-dot.on{background:#7cb342;animation:gpsdot 1.2s infinite}.gps-dot.off{background:#777}@keyframes gpsdot{0%,100%{opacity:1}50%{opacity:.35}}.gps-info{flex:1;min-width:0}.gps-coord{font-size:10px;color:#b6b6bd;font-weight:700;font-variant-numeric:tabular-nums;min-height:13px}.gps-speed{font-size:26px;font-weight:900;line-height:1.05;margin:1px 0;display:flex;align-items:center;gap:10px}.speed-limit-sign{width:44px;height:44px;border-radius:50%;background:#fff;color:#111;border:5px solid #d71920;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:1000;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.35);flex-shrink:0}.speed-limit-sign.unknown{border-color:#777;color:#777;font-size:14px;background:#f5f5f5}@media(max-width:430px){.speed-limit-sign{width:40px;height:40px;border-width:4px;font-size:16px}.gps-speed{gap:8px}}.gps-sub{font-size:11px;color:#b6b6bd;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.gps-heading{display:inline-flex;align-items:center;gap:5px;background:#2a2a34;border-radius:8px;padding:3px 8px}.compass-arrow{display:inline-block;font-size:13px;transition:transform .4s ease}.heading-val{font-size:12px;font-weight:900;color:#f9a825;font-variant-numeric:tabular-nums}.heading-dir{font-size:10px;color:#b6b6bd}.gps-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap}.gps-btn.start{background:#2e7d32;color:#fff}.gps-btn.stop{background:#7a5054;color:#ffd7d7}.tab-bar{display:flex;background:#1b1b1d;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}.tab{flex:1;padding:10px 3px 9px;font-size:12px;font-weight:900;text-align:center;cursor:pointer;background:0 0;border:none;color:#b7b7bc;position:relative}.tab.active{color:#7bc1ff}.tab.active::after{content:'';position:absolute;bottom:0;left:18%;right:18%;height:3px;background:#1e88ff;border-radius:3px}.content{flex:1;display:none;flex-direction:column;overflow:hidden;background:linear-gradient(90deg,#1e1e22,#17171b)}.content.active{display:flex}.notice{margin:8px 10px 0;background:#5f4b1d;color:#ffe8aa;border:1px solid #8f7641;padding:10px 12px;border-radius:14px;font-size:12px}.error{margin:8px 10px 0;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;padding:10px 12px;border-radius:14px;font-size:12px}.success{margin:8px 10px 0;background:#18361f;color:#c8ffd1;border:1px solid #2b6a39;padding:10px 12px;border-radius:14px;font-size:12px}.loading{display:flex;align-items:center;justify-content:center;padding:22px;font-size:14px;color:#c7c7cd}#overview-tools{padding:8px 10px 8px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px;flex-shrink:0}.ov-row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.ov-field{display:flex;flex-direction:column;gap:4px}.ov-field span{font-size:11px;color:#b6b6bd;font-weight:800}.ov-field input,.ov-field select{padding:9px 12px;border:none;border-radius:14px;font-size:14px;background:#323237;color:#fff}.ov-field input{width:82px}.ov-field select{min-width:190px;max-width:100%}.ov-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a}.ov-primary{background:#0059c9;border-color:#0059c9;color:#fff}.cat-row{align-items:center}.cat-label{font-size:12px;color:#b6b6bd;font-weight:900;margin-right:1px}.cat-chip,.cat-mini{border:none;cursor:pointer;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:900;transition:opacity .12s,box-shadow .12s;-webkit-appearance:none;appearance:none}.cat-chip{background:#1f1f24;color:#9a9aa3;border:1px dashed #3a3a44;opacity:.72}.cat-chip[data-cat="E"]{background:#2a1837;color:#d8b2ff;border-color:#6a1b9a}.cat-chip[data-cat=EGSV]{background:#32173d;color:#efb4ff;border-color:#8e24aa}.cat-chip[data-cat="R"]{background:#142946;color:#aad0ff;border-color:#1565c0}.cat-chip[data-cat=RGSV]{background:#14304d;color:#b6dcff;border-color:#1976d2}.cat-chip[data-cat="F"]{background:#17341c;color:#b7efbd;border-color:#2e7d32}.cat-chip[data-cat=FGSV]{background:#173c22;color:#c2f7c7;border-color:#43a047}.cat-chip.active{opacity:1;border-style:solid;box-shadow:0 0 0 2px rgba(255,255,255,.35) inset}.cat-chip.active[data-cat="E"]{background:#6a1b9a;color:#fff;border-color:#6a1b9a}.cat-chip.active[data-cat=EGSV]{background:#8e24aa;color:#fff;border-color:#8e24aa}.cat-chip.active[data-cat="R"]{background:#1565c0;color:#fff;border-color:#1565c0}.cat-chip.active[data-cat=RGSV]{background:#1976d2;color:#fff;border-color:#1976d2}.cat-chip.active[data-cat="F"]{background:#2e7d32;color:#fff;border-color:#2e7d32}.cat-chip.active[data-cat=FGSV]{background:#43a047;color:#fff;border-color:#43a047}.cat-mini{background:#1f1f24;color:#b6b6bd;border:1px solid #444}.stats-bar{padding:6px 10px}.stats-inner{background:#1f1f24;border-radius:14px;padding:9px 12px}.prog-row{display:flex;align-items:center;gap:10px}.prog-bar{flex:1;background:#2a2a31;border-radius:4px;height:6px;overflow:hidden}.prog-fill{background:#1e88ff;height:6px;border-radius:4px;transition:width .3s}.stat-text{font-size:11px;color:#d7d7db}#road-list{flex:1;overflow-y:auto;padding:6px 10px;padding-bottom:max(12px,env(safe-area-inset-bottom))}.road-card{background:#1f1f24;border-radius:16px;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.18);display:flex}.road-card.active-gps{border:2px solid #1e88ff}.road-accent{width:4px;flex-shrink:0}.road-body{padding:9px 11px;flex:1;min-width:0}.road-top{display:flex;align-items:center;gap:8px}.road-veg{font-size:14px;font-weight:900;flex:1}.road-status{font-size:15px}.road-meta{font-size:11px;color:#b6b6bd;margin-top:2px}.road-gps{font-size:11px;font-weight:900;margin-top:4px}.road-gps.near{color:#7bc1ff}.nav-btns{display:flex;gap:6px;margin-top:8px}.nav-btn{flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none}.nb-g{background:#e6f1fb;color:#185fa5}.table-controls{padding:8px 10px 6px;background:0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0}#table-filter{flex:1;min-width:150px;padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}#table-sort{padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}.table-btn{padding:11px 13px;border:none;border-radius:15px;font-size:13px;font-weight:900;cursor:pointer}.table-btn.sel{background:#323237;color:#fff}.table-btn.done{background:#1a3a1a;color:#8fca8f}.table-btn.clear{background:#3a1a1a;color:#ffb8b8}.table-wrap{flex:1;overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;white-space:nowrap}th{background:#1a1a1f;font-weight:900;font-size:11px;position:sticky;top:0;z-index:1}tr.active-row{background:#19334c}.progress-filter{padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}.progress-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.progress-mobile-summary{display:none}.progress-filter input,.progress-filter select{padding:9px 10px;border:none;border-radius:12px;background:#323237;color:#fff;font-size:13px}.progress-filter label{font-size:11px;color:#b6b6bd;font-weight:800;display:flex;align-items:center;gap:5px}.progress-filter .pf-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}.progress-filter .pf-btn:disabled{background:#22252c;color:#7f8794;border-color:#363b45;cursor:not-allowed;opacity:.75}.progress-filter .pf-quick{background:#24313f;color:#bfe1ff;border-color:#355371}.progress-filter .pf-quick.warn{background:#5f4b1d;color:#ffe8aa;border-color:#8f7641}.progress-summary-chip{display:inline-flex;align-items:center;border-radius:999px;padding:8px 11px;background:#1f1f24;border:1px solid #3d4654;color:#dfe9ff;font-size:12px;font-weight:900;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:100%}.progress-report-status{font-size:12px;font-weight:800;color:#7bc1ff;min-height:18px;line-height:1.25}.plan-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08)}.plan-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer}.plan-btn.active{background:#0d5bd7;color:#fff}.plan-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:6px 10px;background:#2b2b31;color:#d7d7db;font-size:12px;font-weight:900}.plan-card{border-left:4px solid #42a5f5}.manual-marker-dot{width:22px;height:22px;border-radius:50%;background:#ff3b30;border:3px solid #fff;box-shadow:0 0 0 4px rgba(255,59,48,.35)}#tab-map,#tab-progress{position:relative;min-height:0}#map-container,#progress-map-container{width:100%;height:100%;min-height:240px;background:#e5e3df;flex:1;position:relative}.map-error{position:absolute;left:12px;right:12px;top:12px;z-index:1200;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;border-radius:14px;padding:10px 12px;font-size:12px;font-weight:800;line-height:1.35}.map-tools{position:absolute;right:12px;bottom:12px;z-index:900;display:flex;flex-direction:column;gap:8px}.map-tool-btn{background:rgba(31,31,36,.95);color:#fff;border:none;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}#progress-stats{padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:620px){#tab-progress .progress-filter{padding:6px 8px;gap:6px;display:block}#tab-progress .progress-mobile-summary{display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress .progress-mobile-summary::-webkit-scrollbar{display:none}#tab-progress .progress-controls{display:none;margin-top:6px;padding:8px;background:#1f1f24;border:1px solid rgba(255,255,255,.1);border-radius:16px;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}#tab-progress .progress-filter.expanded .progress-controls{display:grid}#tab-progress .progress-controls label{flex-direction:column;align-items:stretch;gap:4px;font-size:10px;color:#b6b6bd}#tab-progress .progress-controls label:nth-child(3){grid-column:1/-1}#tab-progress .progress-controls select{width:100%;min-height:42px;font-size:15px}#tab-progress .progress-controls .pf-btn{min-height:42px;font-size:13px}#tab-progress #progress-report-btn{grid-column:1/2}#tab-progress #progress-show-all-btn{grid-column:2/3}#tab-progress #progress-repair-fylke-btn{grid-column:1/-1}#tab-progress .progress-report-status{display:block;margin-top:4px;font-size:11px;min-height:15px;max-height:32px;overflow:hidden}#tab-progress #progress-stats{flex-wrap:nowrap;overflow-x:auto;padding:6px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress #progress-stats::-webkit-scrollbar{display:none}#tab-progress #progress-stats>div{flex:0 0 auto;white-space:nowrap}#progress-map-container{min-height:300px}}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:430px){.top-bar h1{font-size:17px}.menu-btn{padding:7px 10px;min-width:44px}.ov-field select{min-width:170px}.cat-chip,.cat-mini{padding:8px 10px}#top-menu{left:10px;right:10px;width:auto;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 60px)}}.leaflet-control-layers{border-radius:12px!important;box-shadow:0 2px 10px rgba(0,0,0,.25)!important}.leaflet-control-layers-toggle{width:36px!important;height:36px!important}.leaflet-control-layers-expanded{font-size:13px;line-height:1.35}</style></head><body><div id="app"><div class="top-bar"><div><div class="label" id="hdr-label">Vegmåling · v2.0.49-ios</div><h1 id="hdr-title">Kjørelogg</h1><div class="sub" id="hdr-sub">Klar</div></div><div class="top-actions"><button class="menu-btn" id="menu-btn" title="Meny">⋯</button></div></div><div id="top-menu"><button class="menu-item" id="btn-refreshcenter">🔄 Oppdater området</button><div class="menu-sep"></div><button class="menu-item" id="btn-export">📤 Eksporter</button> <button class="menu-item" id="btn-restoresnap">⏪ Gjenopprett fra snapshot</button> <button class="menu-item" id="btn-exportgpx">🛰 Eksporter GPX-spor</button> <button class="menu-item" id="btn-import">📥 Importer</button><div class="menu-sep"></div><button class="menu-item" id="btn-offline">💾 Offline-cache</button> <button class="menu-item" id="btn-offlinemode">✈️ Offline-modus AV</button> <button class="menu-item" id="btn-datasaver">💾 Datasparing PÅ</button> <button class="menu-item" id="btn-backgroundgps">📍 Bakgrunns-GPS PÅ</button> <button class="menu-item" id="btn-sideanlegg">🅿️ Sideanlegg AV</button> <button class="menu-item" id="btn-cleansideanlegg">🧹 Rens sideanlegg fra historikk</button> <button class="menu-item" id="btn-repairgeom">🔧 Reparer geometri</button> <button class="menu-item" id="btn-repairdir">🔄 Korriger retning</button> <button class="menu-item" id="btn-manualcenter">📍 Sett manuell kartmarkør</button> <button class="menu-item" id="btn-clearmanual">🧹 Fjern manuell markør</button> <button class="menu-item" id="btn-planmode">🗺 Planmodus AV</button> <button class="menu-item" id="btn-clear-plan-menu">🧹 Nullstill dagsrute</button><div class="menu-sep"></div><div class="menu-section-title">Vegkategorier</div><div class="menu-cat-wrap"><button class="cat-chip" data-cat="E">EV</button> <button class="cat-chip" data-cat="EGSV">EV-GSV</button> <button class="cat-chip" data-cat="R">RV</button> <button class="cat-chip" data-cat="RGSV">RV-GSV</button> <button class="cat-chip active" data-cat="F">FV</button> <button class="cat-chip" data-cat="FGSV">FV-GSV</button> <button class="cat-mini" id="cat-all">Alle</button> <button class="cat-mini" id="cat-none">Ingen</button></div><div class="menu-sep"></div><button class="menu-item" onclick="resetAll()">🗑 Nullstill</button></div><input type="file" id="import-file" class="hidden-file" accept="application/json,.json,.geojson"><div class="gps-sticky"><div id="gps-ui"></div></div><div class="tab-bar"><button class="tab active" data-tab="overview">Oversikt</button> <button class="tab" data-tab="table">Tabell</button> <button class="tab" data-tab="map">🗺 Kart</button> <button class="tab" data-tab="progress">📊 Fremdrift</button></div><div class="content active" id="tab-overview"><div id="secure-warning" class="notice" style="display:none">GPS krever normalt HTTPS eller localhost.</div><div id="overview-tools"><div class="ov-row"><label class="ov-field"><span>Radius</span> <input id="radius" type="number" min="1" max="100" step="1" value="10"></label> <label class="ov-field"><span>Fylke</span> <select id="fylke"><option value="">Fylke fra posisjon</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <button id="refresh" class="ov-btn ov-primary">Oppdater</button></div></div><div id="message-area"></div><div class="stats-bar"><div class="stats-inner"><div class="prog-row"><div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div><div class="stat-text" id="stat-text">0 · 0 km</div></div></div></div><div id="road-list"><div class="loading">Ingen data ennå.</div></div></div><div class="content" id="tab-table"><div class="table-controls"><input id="table-filter" placeholder="Filtrer veg / segment..."> <select id="table-sort"><option value="dist-asc">Avstand (nærmest)</option><option value="veg-asc">Veg (A–Å)</option><option value="veg-desc">Veg (Å–A)</option><option value="len-desc">Lengde (lengst)</option><option value="len-asc">Lengde (kortest)</option><option value="dist-desc">Avstand (lengst)</option></select> <button id="table-select-all" class="table-btn sel">☑️ Velg alle</button> <button id="table-add-plan" class="table-btn sel" style="display:none">🗺 Legg i dagsrute</button> <button id="table-set-done" class="table-btn done">✅ Sett ferdig</button> <button id="table-set-skip" class="table-btn clear">⛔ Kjøres ikke</button> <button id="table-clear-selection" class="table-btn clear">↩ Nullstill valg</button></div><div class="table-wrap"><table id="road-table"><thead><tr><th>Kat</th><th>Veg</th><th>Segment</th><th>Lengde km</th><th>Avstand m</th><th>Rute</th><th>Plan</th></tr></thead><tbody></tbody></table></div></div><div class="content" id="tab-map"><div class="plan-toolbar" id="plan-toolbar" style="display:none"><span class="plan-badge" id="plan-count">Dagsrute: 0 valgt</span> <button class="plan-btn" id="btn-fit-plan" type="button">Tilpass dagsrute</button> <button class="plan-btn" id="btn-clear-plan" type="button">Nullstill dagsrute</button></div><div id="map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-map-btn">🎯 Tilpass kart</button></div></div><div class="content" id="tab-progress"><div class="progress-filter" id="progress-filter-box"><div class="progress-mobile-summary" aria-label="Fremdrift hurtigvalg"><button class="pf-btn pf-quick" id="progress-filter-toggle" type="button" aria-expanded="false">⚙ Filter</button> <button class="pf-btn pf-quick" id="progress-show-all-btn-mobile" type="button">Vis alt</button> <button class="pf-btn" id="progress-report-btn-mobile" type="button" disabled="disabled">PDF</button> <span class="progress-summary-chip" id="progress-filter-summary">Alt · Alle fylker · ingen PDF</span></div><div class="progress-controls" id="progress-controls"><label>Periode <select id="progress-range"><option value="all">Alt</option><option value="today">I dag</option><option value="7">Siste 7 dager</option><option value="14">Siste 14 dager</option><option value="month">Inneværende måned</option></select></label> <label>Fylke <select id="progress-fylke"><option value="">Alle fylker</option><option value="__unknown">Ukjent/uten fylke</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <label>Rapport <select id="progress-report-kind"><option value="">Velg rapport</option><option value="day">Dagsrapport PDF</option><option value="week">Ukerapport PDF</option><option value="month">Månedsrapport PDF</option></select></label> <button class="pf-btn" id="progress-report-btn" type="button" disabled="disabled">Lag PDF</button> <button class="pf-btn pf-quick" id="progress-show-all-btn" type="button">Vis alt</button> <button class="pf-btn" id="progress-repair-fylke-btn" type="button" title="Slår opp fylke mot Geonorge for importert fremdrift">🧭 Korriger fylke</button></div><div class="progress-report-status" id="progress-report-status">Velg rapporttype for å aktivere PDF.</div></div><div id="progress-stats"></div><div id="progress-map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-progress-btn">🎯 Tilpass kart</button></div></div></div><div id="offline-modal" class="hidden"><div class="offline-box"><div class="offline-title">📥 Last ned vegnett offline</div><div class="offline-sub">Laster rutenett av tiles. Bruk på wifi!</div><div class="offline-row"><label>Fylke</label> <select id="dl-fylke"><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15" selected="selected">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></div><div class="offline-row"><label>Tile-rad.</label> <select id="dl-radius"><option value="10" selected="selected">10 km</option><option value="15">15 km</option><option value="20">20 km</option></select></div><div class="offline-prog-wrap"><div class="offline-prog-fill" id="dl-prog"></div></div><div class="offline-status" id="dl-status">Klar</div><div class="offline-btns"><button class="offline-btn-start" id="dl-start">Last ned</button> <button class="offline-btn-close" id="dl-close">Lukk</button></div><div class="offline-btns" style="margin-top:8px"><button class="offline-btn-close" id="dl-clear" style="flex:1;background:#3a1a1a;color:#ffb8b8;border:1px solid #5a2a2a">🗑 Slett cache for dette fylket</button></div><div class="offline-cache-info" id="dl-cache-info"></div></div></div><script>'use strict';
 
 /* ───────────────────── KONFIG ───────────────────── */
 const NVDB='https://nvdbapiles.atlas.vegvesen.no';
@@ -58,7 +58,7 @@ let speedLimits=[],currentSpeedLimit=null,lastSpeedLimitFetchKey='',lastSpeedLim
 let lastCenter=null,lastCenterRadius=null,lastCenterFylke=null,nvdbLoading=false,offlineMode=false,nativeGpsTimer=null,nativeWatchId=null,lastNativeFixTs=0;
 let lastRenderTime=0,lastRenderPos=null;
 const RENDER_INTERVAL_MS=5000,RENDER_MOVE_M=10;
-const IDB_NAME='nvdb_tiles',IDB_STORE='tiles',IDB_META_STORE='appdata',IDB_SNAPSHOT_STORE='progress_snapshots',IDB_PROGRESS_SNAPSHOT_STORE='progress_snapshots',IDB_ERROR_LOG_STORE='error_log',IDB_VER=4;let _idb=null;
+const IDB_NAME='nvdb_tiles',IDB_STORE='tiles',IDB_META_STORE='appdata',IDB_SNAPSHOT_STORE='progress_snapshots',IDB_VER=3;let _idb=null;
 const PROGRESS_IDB_KEY='__kjorelogg_progress_state_v3';
 const PROGRESS_META_STORE='mr_veg_progress_meta_v3';
 let _progressSaveTimer=null;
@@ -68,7 +68,7 @@ const FYLKER=[
 {id:'34',name:'Innlandet'},{id:'39',name:'Vestfold'},{id:'40',name:'Telemark'},{id:'42',name:'Agder'},
 {id:'11',name:'Rogaland'},{id:'46',name:'Vestland'},{id:'15',name:'Møre og Romsdal'},{id:'50',name:'Trøndelag'},
 {id:'18',name:'Nordland'},{id:'55',name:'Troms'},{id:'56',name:'Finnmark'}];
-const APP_VERSION='v2.0.52-ios';
+const APP_VERSION='v2.0.49-ios';
 
 const FYLKE_BBOX={
 '31':[10.5,58.8,12.0,59.7],'32':[10.4,59.5,12.0,60.4],'3':[10.6,59.8,10.9,60.0],
@@ -194,15 +194,8 @@ function scheduleProgressIDBSave(){
 }
 async function saveProgressSnapshotToIDB(){
  if(!HAS_INDEXED_DB)return false;
- try{
-  await idbSetAppData(PROGRESS_IDB_KEY,progressSnapshot());
-  if(typeof markSaveSuccess==='function')markSaveSuccess('progress-snapshot');
-  return true;
- }catch(e){
-  if(typeof markSaveError==='function')markSaveError('progress-snapshot',e);
-  else console.warn('Kunne ikke lagre samlet fremdrift i IndexedDB',e);
-  return false;
- }
+ try{await idbSetAppData(PROGRESS_IDB_KEY,progressSnapshot());return true}
+ catch(e){console.warn('Kunne ikke lagre samlet fremdrift i IndexedDB',e);return false}
 }
 async function loadProgressSnapshotFromIDB(){
  if(!HAS_INDEXED_DB)return false;
@@ -933,175 +926,7 @@ function cacheGeomForTrackedRoads(list){
 }
 
 /* ───────────────────── IDB CACHE ───────────────────── */
-function openIDB(){if(!HAS_INDEXED_DB)return Promise.reject(new Error('IndexedDB er ikke tilgjengelig'));if(_idb)return Promise.resolve(_idb);return new Promise((res,rej)=>{const req=indexedDB.open(IDB_NAME,IDB_VER);req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE);if(!db.objectStoreNames.contains(IDB_META_STORE))db.createObjectStore(IDB_META_STORE);if(!db.objectStoreNames.contains(IDB_SNAPSHOT_STORE))db.createObjectStore(IDB_SNAPSHOT_STORE)if(!db.objectStoreNames.contains(IDB_PROGRESS_SNAPSHOT_STORE))db.createObjectStore(IDB_PROGRESS_SNAPSHOT_STORE,{keyPath:'ts'});if(!db.objectStoreNames.contains(IDB_ERROR_LOG_STORE))db.createObjectStore(IDB_ERROR_LOG_STORE,{keyPath:'id',autoIncrement:true});};req.onsuccess=e=>{_idb=e.target.result;res(_idb)};req.onerror=()=>rej(req.error)})}
-/* ─────────────── v2.0.52: ERROR LOG SYSTEM ─────────────── */
-// Error-log lagres i IDB_ERROR_LOG_STORE. Buffer på 500 oppføringer, FIFO-rotasjon.
-// Hver oppføring: {id, ts, level, source, message, context}
-// Levels: 'error', 'warn', 'info'
-const ERROR_LOG_KEEP=500;
-let _errorLogBuffer=[]; // In-memory buffer som flushes til IDB periodisk
-let _errorLogFlushTimer=null;
-let _errorLogFlushing=false;
-
-function logError(level,source,message,context){
- const entry={ts:Date.now(),level:String(level||'info'),source:String(source||'unknown'),message:String(message||''),context:context==null?null:(()=>{try{return JSON.parse(JSON.stringify(context))}catch(e){return String(context)}})()};
- _errorLogBuffer.push(entry);
- // Speil til console for utviklerverktøy
- const consoleFn=level==='error'?console.error:(level==='warn'?console.warn:console.log);
- try{consoleFn(`[${source}] ${message}`,context||'')}catch(e){}
- scheduleErrorLogFlush();
-}
-function scheduleErrorLogFlush(){
- if(_errorLogFlushTimer)return;
- _errorLogFlushTimer=setTimeout(()=>{_errorLogFlushTimer=null;flushErrorLogToIDB()},2000);
-}
-async function flushErrorLogToIDB(){
- if(_errorLogFlushing||!HAS_INDEXED_DB||!_errorLogBuffer.length)return;
- _errorLogFlushing=true;
- const toWrite=_errorLogBuffer.splice(0,_errorLogBuffer.length);
- try{
-  const db=await openIDB();
-  await new Promise((res,rej)=>{
-   const tx=db.transaction(IDB_ERROR_LOG_STORE,'readwrite');
-   const store=tx.objectStore(IDB_ERROR_LOG_STORE);
-   for(const entry of toWrite)store.add(entry);
-   tx.oncomplete=()=>res();
-   tx.onerror=()=>rej(tx.error);
-   tx.onabort=()=>rej(tx.error||new Error('error-log abort'));
-  });
-  // Rotasjon: behold bare siste ERROR_LOG_KEEP oppføringer
-  await new Promise(res=>{
-   const tx=db.transaction(IDB_ERROR_LOG_STORE,'readwrite');
-   const store=tx.objectStore(IDB_ERROR_LOG_STORE);
-   const countReq=store.count();
-   countReq.onsuccess=()=>{
-    const total=countReq.result;
-    if(total<=ERROR_LOG_KEEP){res();return}
-    const toDelete=total-ERROR_LOG_KEEP;
-    const cursorReq=store.openCursor();
-    let deleted=0;
-    cursorReq.onsuccess=e=>{
-     const cursor=e.target.result;
-     if(cursor&&deleted<toDelete){store.delete(cursor.primaryKey);deleted++;cursor.continue()}
-     else res();
-    };
-    cursorReq.onerror=()=>res();
-   };
-   countReq.onerror=()=>res();
-  });
- }catch(e){
-  console.warn('Error-log flush feilet',e);
-  // Returner oppføringene til bufferet for retry
-  _errorLogBuffer.unshift(...toWrite);
- }finally{_errorLogFlushing=false}
-}
-async function exportErrorLogTxt(){
- try{
-  await flushErrorLogToIDB();
-  if(!HAS_INDEXED_DB){setMessage('IndexedDB er ikke tilgjengelig.','error');return}
-  const db=await openIDB();
-  const entries=await new Promise((res,rej)=>{
-   const tx=db.transaction(IDB_ERROR_LOG_STORE,'readonly');
-   const req=tx.objectStore(IDB_ERROR_LOG_STORE).getAll();
-   req.onsuccess=()=>res(req.result||[]);
-   req.onerror=()=>rej(req.error);
-  });
-  if(!entries.length){setMessage('Ingen feilloggoppføringer å eksportere.','notice');return}
-  entries.sort((a,b)=>(a.ts||0)-(b.ts||0));
-  const lines=[`Kjørelogg feillogg ${APP_VERSION}`,`Eksportert: ${new Date().toISOString()}`,`Antall oppføringer: ${entries.length}`,''];
-  for(const e of entries){
-   const ts=new Date(e.ts).toISOString();
-   const ctx=e.context?' '+JSON.stringify(e.context):'';
-   lines.push(`${ts} [${e.level.toUpperCase()}] [${e.source}] ${e.message}${ctx}`);
-  }
-  const text=lines.join('\n');
-  const stamp=new Date().toISOString().slice(0,16).replace(/[-:]/g,'').replace('T','-');
-  const fileName=`kjorelogg-feillogg-${stamp}.txt`;
-  if(isNativeApp()){
-   try{const saved=await saveTextNativeIfPossible(text,fileName);setMessage(`Feillogg lagret som ${saved.relPath}. Plassering: ${saved.label}. ${entries.length} oppføringer.`,'success');return}
-   catch(e){logError('error','export-log','Native lagring feilet',{err:String(e)})}
-  }
-  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  setMessage(`Feillogg eksportert: ${entries.length} oppføringer i ${fileName}.`,'success');
- }catch(e){setMessage('Eksport av feillogg feilet: '+(e?.message||e),'error');logError('error','export-log','Eksport feilet',{err:String(e)})}
-}
-async function clearErrorLog(){
- if(!confirm('Slette hele feilloggen?\n\nDette kan ikke angres.'))return;
- try{
-  _errorLogBuffer=[];
-  if(HAS_INDEXED_DB){
-   const db=await openIDB();
-   await new Promise((res,rej)=>{
-    const tx=db.transaction(IDB_ERROR_LOG_STORE,'readwrite');
-    const req=tx.objectStore(IDB_ERROR_LOG_STORE).clear();
-    req.onsuccess=()=>res();
-    req.onerror=()=>rej(req.error);
-   });
-  }
-  setMessage('Feillogg tømt.','success');
- }catch(e){setMessage('Kunne ikke tømme feillogg: '+(e?.message||e),'error')}
-}
-// Samlet best-effort persist. Brukes ved fylkesbytte og pagehide.
-async function forcePersistProgressNow(source){
- let ok=false;
- try{if(typeof flushAllPendingWritesNow==='function'){await flushAllPendingWritesNow();ok=true}}catch(e){logError('error',source||'persist','flushAllPendingWritesNow feilet',{err:String(e)})}
- try{if(typeof flushProgressPersistence==='function'){await flushProgressPersistence();ok=true}}catch(e){logError('error',source||'persist','flushProgressPersistence feilet',{err:String(e)})}
- try{if(typeof saveProgressSnapshotToIDB==='function'){await saveProgressSnapshotToIDB();ok=true}}catch(e){logError('error',source||'persist','saveProgressSnapshotToIDB feilet',{err:String(e)})}
- try{if(typeof saveGeomCache==='function')saveGeomCache()}catch(e){logError('warn',source||'persist','saveGeomCache feilet',{err:String(e)})}
- try{await flushErrorLogToIDB()}catch(e){}
- if(ok)markSaveSuccess(source||'persist');
- return ok;
-}
-// Flush ved app-bytte slik at vi ikke mister oppføringer
-window.addEventListener('pagehide',()=>{try{forcePersistProgressNow('pagehide')}catch(e){try{flushErrorLogToIDB()}catch(_){}}});
-
-/* ─────────────── v2.0.52: SAVE STATUS TRACKING ─────────────── */
-// Holder rede på siste vellykkede IDB-skriv av fremdriftsdata. Vises i GPS-header.
-let _lastSaveTs=null;
-let _lastSaveError=null;
-function markSaveSuccess(source){
- _lastSaveTs=Date.now();
- _lastSaveError=null;
- // Trigger GPS-header re-render hvis GPS er aktiv
- if(typeof gps!=='undefined'&&gps.watching)try{updateSaveStatusBadge()}catch(e){}
-}
-function markSaveError(source,err){
- _lastSaveError={ts:Date.now(),source,msg:String(err?.message||err)};
- logError('error',source,'IDB-skriv feilet',{err:String(err?.message||err)});
- if(typeof gps!=='undefined'&&gps.watching)try{updateSaveStatusBadge()}catch(e){}
-}
-function formatSaveStatusText(){
- if(!_lastSaveTs)return '💾 Ikke lagret enda';
- const ageSec=Math.round((Date.now()-_lastSaveTs)/1000);
- const t=new Date(_lastSaveTs);
- const hhmmss=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}:${String(t.getSeconds()).padStart(2,'0')}`;
- if(ageSec<60)return `💾 ${hhmmss} (${ageSec}s)`;
- if(ageSec<3600)return `💾 ${hhmmss} (${Math.floor(ageSec/60)}m)`;
- return `💾 ${hhmmss} (>1t)`;
-}
-function getSaveStatusColor(){
- if(_lastSaveError&&Date.now()-_lastSaveError.ts<10000)return '#ff4444';
- if(!_lastSaveTs)return '#999';
- const ageSec=(Date.now()-_lastSaveTs)/1000;
- if(ageSec<30)return '#7cb342';
- if(ageSec<120)return '#f9a825';
- return '#ff4444';
-}
-function updateSaveStatusBadge(){
- const el=document.getElementById('gps-save-status');
- if(!el)return;
- el.textContent=formatSaveStatusText();
- el.style.color=getSaveStatusColor();
- if(_lastSaveError&&Date.now()-_lastSaveError.ts<10000)el.title='Siste lagrings-feil: '+_lastSaveError.msg;
- else el.title='Siste vellykkede lagring av fremdriftsdata';
-}
-// Tikk hvert 5. sek for å oppdatere alder-fargen
-setInterval(()=>{if(typeof gps!=='undefined'&&gps.watching)try{updateSaveStatusBadge()}catch(e){}},5000);
-
-
+function openIDB(){if(!HAS_INDEXED_DB)return Promise.reject(new Error('IndexedDB er ikke tilgjengelig'));if(_idb)return Promise.resolve(_idb);return new Promise((res,rej)=>{const req=indexedDB.open(IDB_NAME,IDB_VER);req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE);if(!db.objectStoreNames.contains(IDB_META_STORE))db.createObjectStore(IDB_META_STORE);if(!db.objectStoreNames.contains(IDB_SNAPSHOT_STORE))db.createObjectStore(IDB_SNAPSHOT_STORE)};req.onsuccess=e=>{_idb=e.target.result;res(_idb)};req.onerror=()=>rej(req.error)})}
 function tileKey(lat,lon,r,f){const dLat=TILE_SIZE_KM/111.32,cos=Math.cos(lat*Math.PI/180)||1,dLon=TILE_SIZE_KM/(111.32*Math.max(0.2,Math.abs(cos)));return`nvdb_t${ROAD_TILE_SCHEMA}_${Math.round(lat/dLat)}_${Math.round(lon/dLon)}_r${Math.round(r)}_f${f||'0'}`}
 async function saveTile(lat,lon,r,f,data){if(!HAS_INDEXED_DB)return;try{const db=await openIDB();db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).put({data,ts:Date.now()},tileKey(lat,lon,r,f))}catch(e){}}
 async function loadTile(lat,lon,r,f){if(!HAS_INDEXED_DB)return null;try{const db=await openIDB();return await new Promise(res=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get(tileKey(lat,lon,r,f));req.onsuccess=()=>{const o=req.result;if(!o||!Array.isArray(o.data))return res(null);if(Date.now()-o.ts>30*24*3600*1000)return res(null);res(o.data)};req.onerror=()=>res(null)})}catch(e){return null}}
@@ -1844,7 +1669,7 @@ async function detectFylkeFromAPI(lat,lon){try{const resp=await fetch(`https://w
  return FYLKER.find(f=>f.id===fid)||null;
 }catch(e){return null}}
 let lastFylkeCheckPos=null;
-async function updateFylkeFromPosition(lat,lon){const sel=document.getElementById('fylke');if(lastFylkeCheckPos&&dM(lastFylkeCheckPos[0],lastFylkeCheckPos[1],lat,lon)<10000)return;lastFylkeCheckPos=[lat,lon];let f;try{f=await detectFylkeFromAPI(lat,lon)}catch(e){if(typeof logError==='function')logError('warn','fylke-detect','Geonorge feilet',{err:String(e),lat,lon});return}if(!f)return;const prevFylke=gps.detectedFylke;if(prevFylke&&prevFylke!==f.id){ if(typeof logError==='function')logError('info','fylke-bytte','Krysset fylkesgrense, lagrer før fylke skiftes',{fra:prevFylke,til:f.id,lat,lon}); try{if(typeof forcePersistProgressNow==='function')await forcePersistProgressNow('fylke-bytte-før');else if(typeof saveProgressSnapshotToIDB==='function')await saveProgressSnapshotToIDB()} catch(e){if(typeof logError==='function')logError('error','fylke-bytte','Lagring før fylke-bytte feilet',{err:String(e)})}}gps.detectedFylke=f.id;if(sel&&sel.dataset.manual!=='1'&&sel.value)sel.value='';updateHeaderTitle();if(prevFylke&&prevFylke!==f.id){ try{if(typeof forcePersistProgressNow==='function')await forcePersistProgressNow('fylke-bytte-etter');else if(typeof saveProgressSnapshotToIDB==='function')await saveProgressSnapshotToIDB()} catch(e){if(typeof logError==='function')logError('error','fylke-bytte','Lagring etter fylke-bytte feilet',{err:String(e)})}}}
+async function updateFylkeFromPosition(lat,lon){const sel=document.getElementById('fylke');if(lastFylkeCheckPos&&dM(lastFylkeCheckPos[0],lastFylkeCheckPos[1],lat,lon)<10000)return;lastFylkeCheckPos=[lat,lon];const f=await detectFylkeFromAPI(lat,lon);if(!f)return;gps.detectedFylke=f.id;if(sel&&sel.dataset.manual!=='1'&&sel.value)sel.value='';updateHeaderTitle()}
 async function loadRoadsAround(lat,lon,radiusKm,fylkeNr){
  const profile=currentProfile(),perPage=Math.max(profile.maxPerPage,ROAD_FETCH_MAX_PER_PAGE),maxPages=Math.max(profile.maxPages,ROAD_FETCH_MAX_PAGES),[minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm),base=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
  base.searchParams.set('srid','4326');base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);base.searchParams.set('vegsystemreferanse',ROAD_FETCH_REFS);if(fylkeNr)base.searchParams.set('fylke',String(fylkeNr));base.searchParams.set('inkluderAntall','false');base.searchParams.set('antall',String(perPage));
@@ -1928,7 +1753,7 @@ function buildGpsUiOnce(){
      <span class="compass-arrow" id="gps-arrow">↑</span>
      <span class="heading-val" id="gps-heading-val"></span>
      <span class="heading-dir" id="gps-heading-dir"></span>
-    </span><span class="gps-save-status" id="gps-save-status" style="font-size:10px;font-weight:900;margin-left:6px;font-variant-numeric:tabular-nums"></span>
+    </span>
    </div>
   </div>
   <button class="gps-btn start" id="gps-btn">Start GPS</button>
@@ -1977,7 +1802,6 @@ function renderGPS(){
    headWrap.style.display='none';
   }
  }
- updateSaveStatusBadge();
 }
 function showSecureWarning(){const w=document.getElementById('secure-warning'),loc=location.hostname;w.style.display=(window.isSecureContext||loc==='localhost'||loc==='127.0.0.1'||isNativeApp())?'none':'block'}
 function toggleGPS(){gps.watching?stopGPS():startGPS()}
@@ -2867,7 +2691,6 @@ async function showTab(t){
   setTimeout(()=>{safeInvalidate(map);updateMapOverlay(false);if(gps.lastPos)updateMap(gps.lastPos[0],gps.lastPos[1]);setTimeout(()=>safeInvalidate(map),350)},80);
  }
  if(t==='progress'){
-  showProgressEditSection();
   const ok=await ensureLeafletReady();
   if(!ok){setMapError('progress-map-container','Leaflet ble ikke lastet. Legg vendor/leaflet.js + vendor/leaflet.css i apppakken, eller test med nett slik at CDN-fallback virker.');closeMenu();return}
   initProgressMap();
@@ -2974,18 +2797,6 @@ document.getElementById('progress-report-kind')?.addEventListener('change',updat
 document.getElementById('progress-report-btn')?.addEventListener('click',exportProgressPdfReport);
 document.getElementById('progress-report-btn-mobile')?.addEventListener('click',exportProgressPdfReport);
 document.getElementById('progress-show-all-btn')?.addEventListener('click',setProgressFilterAll);
-// v2.0.50: progress edit list listeners
-document.getElementById('progress-edit-search')?.addEventListener('input',renderProgressEditList);
-document.getElementById('progress-edit-sort')?.addEventListener('change',renderProgressEditList);
-document.getElementById('progress-edit-select-all')?.addEventListener('click',()=>{const rows=getProgressEditEntries().slice(0,_progressEditRenderLimit);rows.forEach(r=>_progressEditSelected.add(r.key));renderProgressEditList()});
-document.getElementById('progress-edit-clear-sel')?.addEventListener('click',()=>{_progressEditSelected.clear();renderProgressEditList()});
-document.getElementById('progress-edit-set-done')?.addEventListener('click',()=>applyProgressEditBatch('done'));
-document.getElementById('progress-edit-set-oneway')?.addEventListener('click',()=>applyProgressEditBatch('oneway'));
-document.getElementById('progress-edit-set-skip')?.addEventListener('click',()=>applyProgressEditBatch('skip'));
-document.getElementById('progress-edit-reset')?.addEventListener('click',()=>applyProgressEditBatch('reset'));
-document.getElementById('progress-edit-delete')?.addEventListener('click',()=>applyProgressEditBatch('delete'));
-document.getElementById('progress-edit-show-more')?.addEventListener('click',()=>{_progressEditRenderLimit+=200;renderProgressEditList()});
-
 document.getElementById('progress-show-all-btn-mobile')?.addEventListener('click',setProgressFilterAll);
 document.getElementById('progress-filter-toggle')?.addEventListener('click',()=>{const box=document.getElementById('progress-filter-box');box?.classList.toggle('expanded');updateProgressCompactSummary();});
 document.getElementById('progress-repair-fylke-btn')?.addEventListener('click',()=>repairProgressFylkerFromAPI({force:true}));
@@ -3092,153 +2903,4 @@ async function bootApp(){
  }
  setTimeout(()=>checkExportReminder(),3000);
 }
-bootApp();
-/* ─────────────── v2.0.50: PROGRESS EDIT LIST ─────────────── */
-let _progressEditSelected=new Set();
-let _progressEditRenderLimit=200;
-let _progressEditVisible=false;
-
-function getProgressEditEntries(){
- const search=(document.getElementById('progress-edit-search')?.value||'').toLowerCase().trim();
- const sort=document.getElementById('progress-edit-sort')?.value||'recent';
- const fylkeId=getProgressFylkeId();
- const rangeInfo=getProgressRangeInfo();
- const allKeys=new Set([...drivenKeys,...oneWayKeys,...skipKeys]);
- const rows=[];
- for(const key of allKeys){
-  if(!keyPassesCategoryFilter(key))continue;
-  if(!keyPassesProgressFylke(key,fylkeId))continue;
-  if(!keyHasTimeInRange(key,rangeInfo))continue;
-  const meta=getReportRoadMeta(key);
-  const status=drivenKeys.has(key)?'done':oneWayKeys.has(key)?'oneway':'skip';
-  if(search){const hay=(meta.veg+' '+meta.seg).toLowerCase();if(!hay.includes(search))continue}
-  const times=getKeyEventTimes(key);
-  rows.push({key,veg:meta.veg,seg:meta.seg,km:meta.lenKm||0,status,fylke:meta.fylkeName||'–',lastTs:times[times.length-1]||0,firstTs:times[0]||0});
- }
- if(sort==='recent')rows.sort((a,b)=>(b.lastTs||0)-(a.lastTs||0));
- else if(sort==='veg')rows.sort((a,b)=>a.veg.localeCompare(b.veg,'no'));
- else if(sort==='km-desc')rows.sort((a,b)=>b.km-a.km);
- else if(sort==='km-asc')rows.sort((a,b)=>a.km-b.km);
- return rows;
-}
-function renderProgressEditList(){
- const listEl=document.getElementById('progress-edit-list');
- if(!listEl)return;
- const allRows=getProgressEditEntries();
- const visible=allRows.slice(0,_progressEditRenderLimit);
- const loadMore=document.getElementById('progress-edit-load-more');
- if(loadMore)loadMore.style.display=allRows.length>visible.length?'block':'none';
- if(!visible.length){listEl.innerHTML='<div style="padding:12px;text-align:center;color:#888;font-size:12px">Ingen strekninger matcher filteret.</div>';return}
- listEl.innerHTML=visible.map(r=>{
-  const sel=_progressEditSelected.has(r.key);
-  const statusIcon=r.status==='done'?'🟢':r.status==='oneway'?'🟡':'⛔';
-  const statusColor=r.status==='done'?'#8fca8f':r.status==='oneway'?'#f9a825':'#aaa';
-  const lastTxt=r.lastTs?formatDateTime(r.lastTs):'–';
-  return `<div class="pe-row" data-pekey="${esc(r.key)}" style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;${sel?'background:#24364a':''}">
-   <input type="checkbox" data-pecb="${esc(r.key)}" ${sel?'checked':''} style="flex-shrink:0">
-   <div style="flex:1;min-width:0">
-    <div style="font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${statusIcon} ${esc(r.veg)} <span style="color:#b6b6bd;font-weight:400">${esc(r.seg||'')}</span></div>
-    <div style="font-size:10px;color:#888;margin-top:2px">${r.km.toFixed(2)} km · ${esc(r.fylke)} · ${lastTxt}</div>
-   </div>
-   <span style="font-size:11px;font-weight:900;color:${statusColor};flex-shrink:0">${r.status==='done'?'Ferdig':r.status==='oneway'?'1 rtn':'Skip'}</span>
-  </div>`;
- }).join('');
- listEl.querySelectorAll('[data-pecb]').forEach(cb=>cb.addEventListener('change',e=>{
-  e.stopPropagation();
-  const k=cb.getAttribute('data-pecb');
-  if(cb.checked)_progressEditSelected.add(k);else _progressEditSelected.delete(k);
-  updateProgressEditBatchUI();
-  cb.closest('.pe-row').style.background=cb.checked?'#24364a':'';
- }));
- listEl.querySelectorAll('.pe-row').forEach(row=>row.addEventListener('click',e=>{
-  if(e.target.closest('input,button'))return;
-  const key=row.getAttribute('data-pekey');
-  if(_progressEditSelected.has(key))_progressEditSelected.delete(key);else _progressEditSelected.add(key);
-  renderProgressEditList();updateProgressEditBatchUI();
-  // Highlight på kart
-  highlightProgressListKey(key);
- }));
- updateProgressEditBatchUI();
-}
-function updateProgressEditBatchUI(){
- const ba=document.getElementById('progress-edit-batch-actions');
- const cnt=document.getElementById('progress-edit-sel-count');
- if(!ba)return;
- const n=_progressEditSelected.size;
- ba.style.display=n>0?'flex':'none';
- if(cnt)cnt.textContent=n+' valgt';
-}
-function highlightProgressListKey(key){
- if(!progressMap)return;
- const r=geomCache[key]||roadByKeyAny(key);
- if(!r)return;
- const parts=getGeomParts(r);
- if(!parts.length)return;
- // Fjern eksisterende highlight
- progressMap.eachLayer(l=>{if(l._isProgressHighlight)progressMap.removeLayer(l)});
- const bounds=[];
- for(const part of parts){
-  const lls=part.filter(isVLL).map(c=>[c[1],c[0]]);
-  if(lls.length<2)continue;
-  const pl=L.polyline(lls,{color:'#00d4ff',weight:10,opacity:0.7}).addTo(progressMap);
-  pl._isProgressHighlight=true;
-  bounds.push(...lls);
- }
- if(bounds.length)progressMap.fitBounds(L.latLngBounds(bounds),{padding:[40,40],maxZoom:15});
- // Auto-fjern highlight etter 5 sek
- setTimeout(()=>{if(progressMap)progressMap.eachLayer(l=>{if(l._isProgressHighlight)progressMap.removeLayer(l)})},5000);
-}
-function showProgressEditSection(){
- const sec=document.getElementById('progress-edit-section');
- if(!sec)return;
- _progressEditVisible=true;
- sec.style.display='flex';
- sec.style.flexDirection='column';
- // Default-høyde: 40% av tab-progress-høyde
- const tab=document.getElementById('tab-progress');
- const tabH=tab?tab.clientHeight:600;
- sec.style.height=Math.round(tabH*0.40)+'px';
- renderProgressEditList();
- setupProgressSplitter();
-}
-function setupProgressSplitter(){
- const splitter=document.getElementById('progress-splitter');
- const sec=document.getElementById('progress-edit-section');
- const tab=document.getElementById('tab-progress');
- if(!splitter||!sec||!tab||splitter._wired)return;
- splitter._wired=true;
- let dragging=false,startY=0,startH=0;
- const onMove=e=>{
-  if(!dragging)return;
-  const y=(e.touches?e.touches[0].clientY:e.clientY);
-  const dy=startY-y; // dra opp = høyere edit-section
-  const tabH=tab.clientHeight;
-  const newH=Math.max(80,Math.min(tabH-200,startH+dy));
-  sec.style.height=newH+'px';
-  if(progressMap)setTimeout(()=>safeInvalidate(progressMap),50);
- };
- const onUp=()=>{dragging=false;document.removeEventListener('mousemove',onMove);document.removeEventListener('touchmove',onMove);document.removeEventListener('mouseup',onUp);document.removeEventListener('touchend',onUp)};
- const onDown=e=>{dragging=true;startY=(e.touches?e.touches[0].clientY:e.clientY);startH=sec.clientHeight;document.addEventListener('mousemove',onMove);document.addEventListener('touchmove',onMove,{passive:false});document.addEventListener('mouseup',onUp);document.addEventListener('touchend',onUp)};
- splitter.addEventListener('mousedown',onDown);
- splitter.addEventListener('touchstart',onDown,{passive:false});
-}
-async function applyProgressEditBatch(action){
- const keys=[..._progressEditSelected];
- if(!keys.length)return;
- if(action==='delete'&&!confirm(`Slette ${keys.length} strekninger fra historikken?\n\nDette kan ikke angres.`))return;
- for(const key of keys){
-  if(action==='done')setRoadDoneFull(key);
-  else if(action==='oneway'){if(!directionState[key])directionState[key]={fwd:false,rev:false};markDirectionDriven(key,'fwd')}
-  else if(action==='skip')setRoadSkipFromTable(key);
-  else if(action==='reset')clearRoadProgressForKey(key,{clearSkip:true});
-  else if(action==='delete'){clearRoadProgressForKey(key,{clearSkip:true});delete geomCache[key]}
- }
- await flushProgressPersistence();
- saveGeomCache();
- _progressEditSelected.clear();
- renderAllViews();
- renderProgressEditList();
- setMessage(`${keys.length} strekninger oppdatert.`,'success');
-}
-
-</script></body></html>
+bootApp();</script></body></html>
