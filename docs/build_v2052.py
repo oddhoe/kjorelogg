@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-“””
+‘’’
 Bygger v2.0.52-ios fra v2.0.49.1-ios baseline.
 
 Inkluderer ALT:
@@ -26,7 +26,7 @@ ENDRER IKKE:
 
 Brukes via GitHub Actions workflow build-v2052.yml.
 Genererer ny docs/index.html basert på docs/index.html.v2049_1.bak.
-“””
+‘’’
 
 import re
 import sys
@@ -58,7 +58,7 @@ f”Fant ingen baseline-fil. Sjekket: {[str(c) for c in candidates]}”
 return SOURCE_FILE.read_text(encoding=‘utf-8’), SOURCE_FILE
 
 def patch_version(html):
-“”“Bytt APP_VERSION og synlig versjons-tag.”””
+‘’‘Bytt APP_VERSION og synlig versjons-tag.’’’
 html = re.sub(
 r”const APP_VERSION=‘v2.0.\d+(?:.\d+)?-ios’;”,
 f”const APP_VERSION=’{NEW_VERSION}’;”,
@@ -72,7 +72,7 @@ html
 return html
 
 def patch_idb_version(html):
-“”“Øk IDB_VER fra 3 til 4 for å legge til error_log store.”””
+‘’‘Øk IDB_VER fra 3 til 4 for å legge til error_log store.’’’
 html = re.sub(
 r”const IDB_NAME=‘nvdb_tiles’,IDB_STORE=‘tiles’,IDB_META_STORE=‘appdata’,IDB_PROGRESS_SNAPSHOT_STORE=‘progress_snapshots’,IDB_VER=3;”,
 “const IDB_NAME=‘nvdb_tiles’,IDB_STORE=‘tiles’,IDB_META_STORE=‘appdata’,IDB_PROGRESS_SNAPSHOT_STORE=‘progress_snapshots’,IDB_ERROR_LOG_STORE=‘error_log’,IDB_VER=4;”,
@@ -88,7 +88,7 @@ html, count=1
 return html
 
 def patch_open_idb(html):
-“”“Utvid openIDB() til å opprette error_log store ved upgrade.”””
+‘’‘Utvid openIDB() til å opprette error_log store ved upgrade.’’’
 old = (
 “function openIDB(){if(!HAS_INDEXED_DB)return Promise.reject(new Error(‘IndexedDB er ikke tilgjengelig’));”
 “if(_idb)return Promise.resolve(_idb);”
@@ -135,8 +135,8 @@ print(”[WARN] openIDB() ble ikke patchet — sjekk source manuelt”)
 return html
 
 def inject_error_log_module(html):
-“”“Sett inn error-log-modul rett etter openIDB().”””
-error_log_module = r”””
+‘’‘Sett inn error-log-modul rett etter openIDB().’’’
+error_log_module = r’’’
 /* ─────────────── v2.0.52: ERROR LOG SYSTEM ─────────────── */
 // Error-log lagres i IDB_ERROR_LOG_STORE. Buffer på 500 oppføringer, FIFO-rotasjon.
 // Hver oppføring: {id, ts, level, source, message, context}
@@ -293,7 +293,7 @@ else el.title=‘Siste vellykkede lagring av fremdriftsdata’;
 // Tikk hvert 5. sek for å oppdatere alder-fargen
 setInterval(()=>{if(gps.watching)try{updateSaveStatusBadge()}catch(e){}},5000);
 
-“””
+‘’’
 # Sett inn rett etter openIDB-funksjonen, før tileKey
 marker = “function tileKey(lat,lon,r,f){”
 if marker in html:
@@ -303,7 +303,7 @@ print(”[WARN] Fant ikke tileKey-marker for error-log-injeksjon”)
 return html
 
 def patch_save_progress_snapshot(html):
-“”“Wrapp saveProgressSnapshotToIDB med try/catch + markSaveSuccess/Error.”””
+‘’‘Wrapp saveProgressSnapshotToIDB med try/catch + markSaveSuccess/Error.’’’
 old = (
 “async function saveProgressSnapshotToIDB(){\n”
 “ if(!HAS_INDEXED_DB)return false;\n”
@@ -345,7 +345,7 @@ print(”[WARN] saveProgressSnapshotToIDB ble ikke patchet”)
 return html
 
 def patch_update_fylke(html):
-“”“Synkron flush ved fylke-bytte for å unngå datatap ved fylkesgrenser.”””
+‘’‘Synkron flush ved fylke-bytte for å unngå datatap ved fylkesgrenser.’’’
 old = (
 “async function updateFylkeFromPosition(lat,lon){”
 “const sel=document.getElementById(‘fylke’);”
@@ -382,7 +382,7 @@ print(”[WARN] updateFylkeFromPosition ble ikke patchet — sjekk syntax”)
 return html
 
 def patch_gps_ui_save_status(html):
-“”“Legg til save-status-badge i GPS-UI.”””
+‘’‘Legg til save-status-badge i GPS-UI.’’’
 old = (
 “   <span class="gps-heading" id="gps-heading" style="display:none">\n”
 “     <span class="compass-arrow" id="gps-arrow">↑</span>\n”
@@ -405,7 +405,7 @@ print(”[WARN] GPS-UI save-status badge ble ikke injisert — sjekk template-st
 return html
 
 def patch_render_gps_save_status(html):
-“”“Sørg for at save-status oppdateres ved hver renderGPS().”””
+‘’‘Sørg for at save-status oppdateres ved hver renderGPS().’’’
 # Finn slutten av renderGPS-funksjonen og legg til kall
 marker = “ if(headWrap){\n  if(on&&Number.isFinite(gps.heading)&&gps.heading!=null){”
 if marker in html:
@@ -427,8 +427,8 @@ print(”[WARN] renderGPS-slutt ikke funnet for save-status-injeksjon”)
 return html
 
 def patch_menu_v2051(html):
-“”“v2.0.51 meny-rydding: fjern ubrukte knapper og legg til seksjoner.
-Også legg til ny “📋 Eksporter feillogg”-knapp i v2.0.52.”””
+‘’‘v2.0.51 meny-rydding: fjern ubrukte knapper og legg til seksjoner.
+Også legg til ny “📋 Eksporter feillogg”-knapp i v2.0.52.’’’
 old_menu = (
 “<div id="top-menu">”
 “<button class="menu-item" id="btn-refreshcenter">🔄 Oppdater området</button>”
@@ -504,7 +504,7 @@ print(”[ERROR] Fallback-menyfjerning lyktes heller ikke”)
 return html
 
 def patch_event_listeners(html):
-“”“Legg til event-listenere for nye knapper.”””
+‘’‘Legg til event-listenere for nye knapper.’’’
 # Finn et trygt sted å legge til, f.eks. etter btn-export-listener
 marker = (
 “document.getElementById(‘btn-export’).addEventListener(‘click’,async()=>”
@@ -523,7 +523,7 @@ print(”[WARN] Fant ikke btn-export-listener for å legge til feillogg-listener
 return html
 
 def patch_progress_split_view(html):
-“”“v2.0.50: Fremdrift-fanen redigeringsliste under kart med dragbar splitter.”””
+‘’‘v2.0.50: Fremdrift-fanen redigeringsliste under kart med dragbar splitter.’’’
 # Bytt ut Fremdrift-tab innholdet for å støtte split-view
 old_progress_tab = (
 “<div class="content" id="tab-progress">”
@@ -583,7 +583,7 @@ edit_list_html = (
 html = html[:offline_modal_idx] + edit_list_html + html[offline_modal_idx:]
 
 # Legg til JS-modulen for redigeringslisten
-progress_edit_js = r"""
+progress_edit_js = r'''
 ```
 
 /* ─────────────── v2.0.50: PROGRESS EDIT LIST ─────────────── */
@@ -735,7 +735,7 @@ async function applyProgressEditBatch(action){
  setMessage(`${keys.length} strekninger oppdatert.`,'success');
 }
 
-“””
+‘’’
 # Sett inn JS-modulen før </script>
 script_close = “</script></body></html>”
 if script_close in html:
@@ -779,7 +779,7 @@ return html
 ```
 
 def patch_restoresnap_button(html):
-“”“Legg til handler for restoresnap-knapp hvis den ikke finnes.”””
+‘’‘Legg til handler for restoresnap-knapp hvis den ikke finnes.’’’
 # I v2.0.49 finnes showSnapshotPicker. Bare wire opp btn-restoresnap til den.
 if “btn-restoresnap” in html and “showSnapshotPicker” in html:
 marker = “document.getElementById(‘btn-export-errorlog’)?.addEventListener”
@@ -791,7 +791,7 @@ html = html.replace(marker, addition + marker)
 return html
 
 def patch_repairdir_button(html):
-“”“Legg til handler for repairdir-knapp.”””
+‘’‘Legg til handler for repairdir-knapp.’’’
 if “btn-repairdir” in html and “repairFalseRevTracks” in html:
 marker = “document.getElementById(‘btn-export-errorlog’)?.addEventListener”
 addition = (
