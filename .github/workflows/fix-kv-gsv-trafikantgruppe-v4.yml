@@ -1,0 +1,207 @@
+name: Fix KV-GSV trafikantgruppe (index1.html)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Write patch script
+        run: |
+          cat > docs/build_v4_kv_gsv_trafikantgruppe.py <<'PY'
+          #!/usr/bin/env python3
+          # KV-GSV v4: bruk trafikantgruppe=G, ikke vegsystem.fase=G.
+          # I NVDB API Les V4 er fase typisk V/A/P/F, mens G for gang-/sykkelveg ligger
+          # på strekning.trafikantgruppe. Kortform brukes som ekstra fallback.
+
+          import re
+          import sys
+          from pathlib import Path
+
+          REPO_ROOT = Path(__file__).resolve().parent.parent
+          DOCS_DIR = REPO_ROOT / 'docs'
+          TARGETS = [DOCS_DIR / 'index1.html', DOCS_DIR / 'index.html']
+          TARGET = next((p for p in TARGETS if p.exists()), None)
+          if TARGET is None:
+              print('[ERROR] Fant verken docs/index1.html eller docs/index.html')
+              sys.exit(1)
+
+          html = TARGET.read_text(encoding='utf-8')
+          print(f'[INFO] Leste {TARGET.relative_to(REPO_ROOT)} ({len(html)} bytes)')
+          changes = []
+
+          def find_function_span(src, name):
+              start = src.find(f'function {name}(')
+              if start < 0:
+                  return None
+              brace = src.find('{', start)
+              if brace < 0:
+                  return None
+              depth = 0
+              quote = None
+              esc = False
+              for i in range(brace, len(src)):
+                  ch = src[i]
+                  if quote:
+                      if esc:
+                          esc = False
+                      elif ch == '\\':
+                          esc = True
+                      elif ch == quote:
+                          quote = None
+                      continue
+                  if ch in ('"', "'", '`'):
+                      quote = ch
+                      continue
+                  if ch == '{':
+                      depth += 1
+                  elif ch == '}':
+                      depth -= 1
+                      if depth == 0:
+                          return start, i + 1
+              return None
+
+          def replace_function(name, new_code, label):
+              global html
+              span = find_function_span(html, name)
+              if not span:
+                  print(f'[WARN] Fant ikke function {name}')
+                  return False
+              old = html[span[0]:span[1]]
+              if old == new_code:
+                  print(f'[OK] {label} allerede korrekt')
+                  return True
+              html = html[:span[0]] + new_code + html[span[1]:]
+              changes.append(label)
+              print(f'[PATCH] {label}')
+              return True
+
+          # 1) Metadata fra lagrede nøkler.
+          # For kommunal veg skal D>=100 IKKE alene gi KGSV; bare Kv{nr}G-nøkkel gjør det.
+          new_meta = "function getRoadMetaFromKey(key){let kat='F';let kvG=false;if(/^Ev/i.test(key))kat='E';else if(/^Rv/i.test(key))kat='R';else if(/^Kv/i.test(key)){kat='K';kvG=/^Kv\\d+G/i.test(String(key))}const m=String(key).match(/S\\d+D(\\d+)/i);const gsv=(kat==='K')?kvG:!!(m&&Number(m[1])>=100);return{kat,gsv}}"
+          if 'function getRoadMetaFromKey(' in html:
+              replace_function('getRoadMetaFromKey', new_meta, 'getRoadMetaFromKey: K bruker kun Kv{nr}G, ikke D>=100')
+          else:
+              print('[WARN] getRoadMetaFromKey finnes ikke')
+
+          # 2) Filterklassifisering.
+          # Støtter nye felt (trafikantgruppe/kortform), nye nøkler (Kv399G), og gamle v3-felt (fase=G) som fallback.
+          new_filter = "function roadFilterKey(r){const txt=String(r.veg||r.key||'');const kort=String(r.kortform||'');const isKvGsv=(r.kat==='K'&&(String(r.trafikantgruppe||'').toUpperCase()==='G'||String(r.fase||'').toUpperCase()==='G'||/^Kv\\d+G/i.test(txt)||/\\bKV\\s*\\d+\\s+G\\b/i.test(kort)));const isGsv=(r.kat==='K')?isKvGsv:!!r.gsv;return r.kat+(isGsv?'GSV':'')}"
+          if 'function roadFilterKey(' in html:
+              replace_function('roadFilterKey', new_filter, 'roadFilterKey: KGSV styres av trafikantgruppe=G/kortform')
+          else:
+              print('[WARN] roadFilterKey finnes ikke')
+
+          # 3) loadRoadsAround: bygg road-objekt med riktig KV-GSV-regel.
+          # Matcher både gammel kode og forrige feilpatch som brukte _kvFase.
+          new_load = ("const strek=vs.strekning,seg=`S${strek.strekning}D${strek.delstrekning}`,"
+                      "_kvKort=String(vs.kortform||s?.vegsystemreferanse?.kortform||''),"
+                      "_kvTrafikantgruppe=String(strek.trafikantgruppe||vs.trafikantgruppe||'').toUpperCase(),"
+                      "_kvKortErG=/\\bKV\\s*\\d+\\s+G\\b/i.test(_kvKort),"
+                      "_isKvGsv=(kat==='K'&&(_kvTrafikantgruppe==='G'||_kvKortErG)),"
+                      "gsv=(kat==='K')?_isKvGsv:isGSV(seg),"
+                      "_kvGsvSuffix=_isKvGsv?'G':'',"
+                      "vegnavn=`${roadPrefixFromKat(kat)}${vegsys.nummer}${_kvGsvSuffix}${vs.klasse||vegsys.klasse||''}`,"
+                      "parts=parseWkt(s?.geometri?.wkt).map(p=>p.filter(isVLL)).filter(p=>p.length>=2);")
+
+          load_pat = (r"const strek=vs\.strekning,seg=`S\$\{strek\.strekning\}D\$\{strek\.delstrekning\}`"
+                      r".*?parts=parseWkt\(s\?\.geometri\?\.wkt\)\.map\(p=>p\.filter\(isVLL\)\)\.filter\(p=>p\.length>=2\);")
+          html2, n = re.subn(load_pat, lambda m: new_load, html, count=1, flags=re.DOTALL)
+          if n:
+              html = html2
+              changes.append('loadRoadsAround: bruker strekning.trafikantgruppe=G for KV-GSV')
+              print('[PATCH] loadRoadsAround: bruker strekning.trafikantgruppe=G for KV-GSV')
+          elif '_isKvGsv=(kat===\'K\'' in html and '_kvTrafikantgruppe' in html:
+              print('[OK] loadRoadsAround har allerede trafikantgruppe-regel')
+          else:
+              print('[ERROR] loadRoadsAround-anchor ikke funnet')
+              sys.exit(1)
+
+          # 4) out.push: lagre trafikantgruppe og kortform på road-objektet.
+          new_push = ("out.push({key:`${vegnavn}_${seg}_${out.length}`,veg:vegnavn,kat,gsv,"
+                      "trafikantgruppe:_kvTrafikantgruppe,kortform:_kvKort,"
+                      "nr:Number(vegsys.nummer)||0,"
+                      "seg,str:Number(strek.strekning)||0,dstr:Number(strek.delstrekning)||0,"
+                      "fra:fraM,til:tilM,len:Number(s.lengde)||0,fylke:fylkeNr?String(fylkeNr):'',"
+                      "typeVeg:s.typeVeg||'',detaljnivaa:s.detaljnivå||s.detaljniva||'',"
+                      "partsWithMeter:parts.map(p=>({coords:p,fra:fraM,til:tilM})),parts,minDist:null})")
+          push_pat = (r"out\.push\(\{key:`\$\{vegnavn\}_\$\{seg\}_\$\{out\.length\}`"
+                      r".*?partsWithMeter:parts\.map\(p=>\(\{coords:p,fra:fraM,til:tilM\}\)\),parts,minDist:null\}\)")
+          html2, n = re.subn(push_pat, lambda m: new_push, html, count=1, flags=re.DOTALL)
+          if n:
+              html = html2
+              changes.append('loadRoadsAround: lagrer trafikantgruppe og kortform')
+              print('[PATCH] loadRoadsAround: lagrer trafikantgruppe og kortform')
+          elif 'trafikantgruppe:_kvTrafikantgruppe,kortform:_kvKort' in html:
+              print('[OK] road-objekt lagrer allerede trafikantgruppe/kortform')
+          else:
+              print('[ERROR] out.push-anchor ikke funnet')
+              sys.exit(1)
+
+          # 5) Hvis UI har eksplisitte filterlister med FGSV + K, legg til KGSV.
+          def add_kgsv_to_array(m):
+              arr = m.group(0)
+              if "'KGSV'" in arr or '"KGSV"' in arr:
+                  return arr
+              if "'K'" in arr:
+                  return arr.replace("'K'", "'K','KGSV'", 1)
+              if '"K"' in arr:
+                  return arr.replace('"K"', '"K","KGSV"', 1)
+              return arr
+
+          html2, n = re.subn(r"\[[^\[\]]{0,180}(?:'FGSV'|\"FGSV\")[^\[\]]{0,180}(?:'K'|\"K\")[^\[\]]{0,180}\]",
+                             add_kgsv_to_array, html)
+          if n:
+              html = html2
+              changes.append('UI/filter: legger KGSV inn i eksplisitte kategori-lister')
+              print(f'[PATCH] UI/filter: oppdaterte {n} kategori-liste(r) med KGSV')
+
+          # 6) Hvis det finnes label-map for FGSV, legg inn KGSV-label.
+          label_replacements = [
+              ("FGSV:'FV-GSV'", "FGSV:'FV-GSV',KGSV:'KV-GSV'"),
+              ('FGSV:"FV-GSV"', 'FGSV:"FV-GSV",KGSV:"KV-GSV"'),
+              ("FGSV:'F-GSV'", "FGSV:'F-GSV',KGSV:'KV-GSV'"),
+              ('FGSV:"F-GSV"', 'FGSV:"F-GSV",KGSV:"KV-GSV"'),
+          ]
+          if not re.search(r"KGSV\s*:\s*['\"]KV-GSV['\"]", html):
+              for old, new in label_replacements:
+                  if old in html:
+                      html = html.replace(old, new, 1)
+                      changes.append('UI/label: legger til KGSV=KV-GSV')
+                      print('[PATCH] UI/label: legger til KGSV=KV-GSV')
+                      break
+
+          TARGET.write_text(html, encoding='utf-8')
+          print(f'[INFO] Skrev {TARGET.relative_to(REPO_ROOT)} ({len(html)} bytes)')
+          print(f'[INFO] Endringer: {len(changes)}')
+          for c in changes:
+              print(f'  - {c}')
+          print('=== Ferdig ===')
+          PY
+          python3 -c "import ast; ast.parse(open('docs/build_v4_kv_gsv_trafikantgruppe.py', encoding='utf-8').read()); print('Syntax OK')"
+
+      - name: Run patch script
+        run: python docs/build_v4_kv_gsv_trafikantgruppe.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index1.html docs/index.html docs/build_v4_kv_gsv_trafikantgruppe.py || true
+          if git diff --cached --quiet; then
+            echo "Ingen endringer"
+          else
+            git commit -m "Fix: KV-GSV bruker trafikantgruppe G"
+            git push
+          fi
