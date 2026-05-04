@@ -83,8 +83,8 @@ function getReloadDistKm(){return currentProfile().reloadDistKm}
 function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;")}
 function setMessage(t,type='notice'){document.getElementById('message-area').innerHTML=t?`<div class="${type}">${esc(t)}</div>`:''}
 function headingToCompass(h){const dirs=['N','NØ','Ø','SØ','S','SV','V','NV'];return dirs[Math.round(h/45)%8]}
-function roadPrefixFromKat(k){return k==='E'?'Ev':k==='R'?'Rv':'Fv'}
-function roadMainKatLabel(k){return k==='E'?'EV':k==='R'?'RV':'FV'}
+function roadPrefixFromKat(k){return k==='E'?'Ev':k==='R'?'Rv':k==='K'?'Kv':'Fv'}
+function roadMainKatLabel(k){return k==='E'?'EV':k==='R'?'RV':k==='K'?'KV':'FV'}
 function getRoadMetaFromKey(key){let kat='F';let kvG=false;if(/^Ev/i.test(key))kat='E';else if(/^Rv/i.test(key))kat='R';else if(/^Kv/i.test(key)){kat='K';kvG=/^Kv\d+G/i.test(String(key))||/\bKV\s*\d+\s+G\b/i.test(String(key))}const m=String(key).match(/S\d+D(\d+)/i);const gsv=(kat==='K')?kvG:!!(m&&Number(m[1])>=100);return{kat,gsv}}
 function roadPassesCategoryFilter(r){return !!settings.categoryFilter[roadFilterKey(r)]}
 function keyPassesCategoryFilter(key){const m=getRoadMetaFromKey(key);return !!settings.categoryFilter[m.kat+(m.gsv?'GSV':'')]}
@@ -2239,7 +2239,7 @@ try {
   try { saveSettings(); } catch(e) {}
 } catch(e) {}
 function renderStats(){const vis=activeFilteredRoads(),n=vis.length,km=(vis.reduce((s,r)=>s+roadRenderLen(r),0)/1000).toFixed(1),cat=activeCategoryText(),fylkeName=getActiveFylkeName();document.getElementById('stat-text').textContent=`${n} strekninger · ${km} km · ${cat}`;document.getElementById('prog-fill').style.width='100%';updateHeaderTitle();document.getElementById('hdr-sub').textContent=`${n} stk · ${km} km · ${cat}${fylkeName?` · ${fylkeName}`:''}`}
-function catBadgeHtml(r){const k=roadFilterKey(r),color=k==='E'?'#6a1b9a':k==='EGSV'?'#8e24aa':k==='R'?'#1565c0':k==='RGSV'?'#1976d2':k==='F'?'#2e7d32':'#43a047';return`<span style="display:inline-block;background:${color};color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:900;margin-right:6px">${roadMainKatLabel(r.kat)}${r.gsv?'-GSV':''}</span>`}
+function catBadgeHtml(r){const k=roadFilterKey(r),color=k==='E'?'#6a1b9a':k==='EGSV'?'#8e24aa':k==='R'?'#1565c0':k==='RGSV'?'#1976d2':k==='F'?'#2e7d32':k==='FGSV'?'#43a047':k==='K'?'#e65100':k==='KGSV'?'#ef6c00':'#555';return`<span style="display:inline-block;background:${color};color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:900;margin-right:6px">${roadMainKatLabel(r.kat)}${r.gsv?'-GSV':''}</span>`}
 function renderRoads(){
  const el=document.getElementById('road-list'),vis=activeFilteredRoads().sort((a,b)=>(a.minDist??1e9)-(b.minDist??1e9));if(!vis.length){el.innerHTML='<div class="loading">Ingen veger funnet innen søkeradiusen.</div>';return}
  el.innerHTML=vis.map(r=>{const status=getRoadStatus(r.key),isAct=gps.activeKey===r.key,isDriven=status==='done',isOneWay=status==='oneway',isSkipR=skipKeys.has(r.key),ds=getDirectionState(r.key),icon=isAct?'🔵':isDriven?'🟢':isOneWay?'🟡':isSkipR?'⛔':'⬜',color=isAct?'#1e88ff':isDriven?'#43a047':isOneWay?'#f9a825':isSkipR?'#333':'#555',km=(roadRenderLen(r)/1000).toFixed(2),meter=`${Math.round(r.fra)}–${Math.round(r.til)}`,p=getRoadStartLatLon(r),google=p?`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving`:'#',distTxt=Number.isFinite(r.minDist)?` · ca ${Math.round(r.minDist)} m`:'';
