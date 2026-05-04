@@ -1,0 +1,115 @@
+name: Test KV-radius-cap (index1.html)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Write patch script from base64
+        env:
+          SCRIPT_B64: |
+            IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwojIEtWLXJhZGl1cy1jYXA6IGh2aXMgSyBlbGxlciBLR1NW
+            IGVyIGFrdGl2IGkgY2F0ZWdvcnlGaWx0ZXIsIGJlZ3JlbnMgZWZmZWt0aXYKIyBOVkRCLWZldGNo
+            LXJhZGl1cyB0aWwgMyBrbS4gQnJ1a2VyZW4gc2VyIHJhZGl1cy1mZWx0ZXQgdWVuZHJldC4gU3lu
+            bGlnCiMgbWVsZGluZyBuYXIgY2FwLWVuIHNsYXIgaW5uLgojIElkZW1wb3RlbnQuCgppbXBvcnQg
+            c3lzCmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAoKUkVQT19ST09UID0gUGF0aChfX2ZpbGVfXyku
+            cmVzb2x2ZSgpLnBhcmVudC5wYXJlbnQKRE9DU19ESVIgPSBSRVBPX1JPT1QgLyAnZG9jcycKVEFS
+            R0VUID0gRE9DU19ESVIgLyAnaW5kZXgxLmh0bWwnCgppZiBub3QgVEFSR0VULmV4aXN0cygpOgog
+            ICAgcHJpbnQoZidbRVJST1JdIHtUQVJHRVR9IGZpbm5lcyBpa2tlJykKICAgIHN5cy5leGl0KDEp
+            CgpodG1sID0gVEFSR0VULnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKQpwcmludChmJ1tJTkZP
+            XSBMZXN0ZSB7VEFSR0VULm5hbWV9ICh7bGVuKGh0bWwpfSBieXRlcyknKQoKaWYgJ0tWX1JBRElV
+            U19DQVBfS00nIGluIGh0bWw6CiAgICBwcmludCgnW0lORk9dIEtWLXJhZGl1cy1jYXAgZmlubmVz
+            IGFsbGVyZWRlLCBob3BwZXIgb3ZlcicpCiAgICBzeXMuZXhpdCgwKQoKY2hhbmdlcyA9IFtdCgoj
+            IDEuIExlZ2cgdGlsIGtvbnN0YW50IHJldHQgZXR0ZXIgREVGQVVMVF9DQVRFR09SWV9GSUxURVIK
+            b2xkMSA9ICJjb25zdCBERUZBVUxUX0NBVEVHT1JZX0ZJTFRFUj17RTpmYWxzZSxFR1NWOmZhbHNl
+            LFI6ZmFsc2UsUkdTVjpmYWxzZSxGOnRydWUsRkdTVjpmYWxzZSxLOmZhbHNlLEtHU1Y6ZmFsc2V9
+            OyIKbmV3MSA9IG9sZDEgKyAiXG5jb25zdCBLVl9SQURJVVNfQ0FQX0tNPTM7IgppZiBvbGQxIGlu
+            IGh0bWw6CiAgICBodG1sID0gaHRtbC5yZXBsYWNlKG9sZDEsIG5ldzEpCiAgICBjaGFuZ2VzLmFw
+            cGVuZCgnS1ZfUkFESVVTX0NBUF9LTSBrb25zdGFudCcpCmVsc2U6CiAgICBwcmludCgnW0VSUk9S
+            XSBGb3J1dHNldHRlciBhdCBLVi1rYXRlZ29yaS1wYXRjaCBlciBram9ydC4gREVGQVVMVF9DQVRF
+            R09SWV9GSUxURVIgbWVkIEs9ZmFsc2UgaWtrZSBmdW5uZXQuJykKICAgIHN5cy5leGl0KDEpCgoj
+            IDIuIEhqZWxwZWZ1bmtzam9uOiBnZXRFZmZlY3RpdmVSYWRpdXMocmVxdWVzdGVkS20pLiBQbGFz
+            c2VyZXMgcmV0dCBldHRlciBjdXJyZW50UHJvZmlsZS4Kb2xkMiA9ICJmdW5jdGlvbiBjdXJyZW50
+            UHJvZmlsZSgpe3JldHVybiBzZXR0aW5ncy5kYXRhU2F2ZXI/REFUQV9TQVZFUl9PTjpEQVRBX1NB
+            VkVSX09GRn0iCm5ldzIgPSAob2xkMiArCiAgICAgICAgIlxuZnVuY3Rpb24ga3ZGaWx0ZXJBY3Rp
+            dmUoKXtyZXR1cm4gISEoc2V0dGluZ3MuY2F0ZWdvcnlGaWx0ZXImJihzZXR0aW5ncy5jYXRlZ29y
+            eUZpbHRlci5LfHxzZXR0aW5ncy5jYXRlZ29yeUZpbHRlci5LR1NWKSl9IgogICAgICAgICJcbmZ1
+            bmN0aW9uIGdldEVmZmVjdGl2ZVJhZGl1c0ttKHJlcXVlc3RlZEttKXsiCiAgICAgICAgImNvbnN0
+            IHI9TnVtYmVyKHJlcXVlc3RlZEttKTsiCiAgICAgICAgImlmKCFOdW1iZXIuaXNGaW5pdGUocil8
+            fHI8PTApcmV0dXJuIHI7IgogICAgICAgICJpZihrdkZpbHRlckFjdGl2ZSgpJiZyPktWX1JBRElV
+            U19DQVBfS00pcmV0dXJuIEtWX1JBRElVU19DQVBfS007IgogICAgICAgICJyZXR1cm4gcjsiCiAg
+            ICAgICAgIn0iKQppZiBvbGQyIGluIGh0bWw6CiAgICBodG1sID0gaHRtbC5yZXBsYWNlKG9sZDIs
+            IG5ldzIpCiAgICBjaGFuZ2VzLmFwcGVuZCgna3ZGaWx0ZXJBY3RpdmUgKyBnZXRFZmZlY3RpdmVS
+            YWRpdXNLbScpCmVsc2U6CiAgICBwcmludCgnW1dBUk5dIGN1cnJlbnRQcm9maWxlLWFuY2hvciBp
+            a2tlIGZ1bm5ldCcpCgojIDMuIHVwZGF0ZUZyb21DZW50ZXI6IGJ5dHQgcmFkaXVzLWJlcmVnbmlu
+            Z2VuIHRpbCBhIGJydWtlIGVmZmVjdGl2ZSByYWRpdXMuCiMgVmkgZmlubmVyIGRlbiBla3Npc3Rl
+            cmVuZGUgbGluamVuIG9nIGxlZ2dlciBpbm4gY2FwLWxvZ2lrayBwYSB0b3BwZW4gYXYgZGVuLgoj
+            IE9yaWdpbmFsLWxpbmplbiBlciBzdmFlcnQgbGFuZyBvZyBrb21wbGVrczsgdmkgZ2pvciBlbiBt
+            ZXIgZm9rdXNlcnQgZW5kcmluZy4Kb2xkMyA9ICJjb25zdCBsYXQ9Yy5sYXQsbG9uPWMubG9uLHJl
+            cXVlc3RlZFJhZGl1cz1wYXJzZUZsb2F0KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyYWRpdXMn
+            KS52YWx1ZSl8fGN1cnJlbnRQcm9maWxlKCkucmFkaXVzRGVmYXVsdCxkZW5zZUNpdHlSdWxlPWdl
+            dERlbnNlQ2l0eVJhZGl1c1J1bGUobGF0LGxvbixyZXF1ZXN0ZWRSYWRpdXMpLHJhZGl1cz1kZW5z
+            ZUNpdHlSdWxlP0RFTlNFX0NJVFlfUkFESVVTX0xJTUlUX0tNOnJlcXVlc3RlZFJhZGl1czsiCm5l
+            dzMgPSAoImNvbnN0IGxhdD1jLmxhdCxsb249Yy5sb24sX3VzZXJSYWRpdXM9cGFyc2VGbG9hdChk
+            b2N1bWVudC5nZXRFbGVtZW50QnlJZCgncmFkaXVzJykudmFsdWUpfHxjdXJyZW50UHJvZmlsZSgp
+            LnJhZGl1c0RlZmF1bHQsIgogICAgICAgICJfa3ZDYXBwZWRSYWRpdXM9Z2V0RWZmZWN0aXZlUmFk
+            aXVzS20oX3VzZXJSYWRpdXMpLCIKICAgICAgICAiX2t2Q2FwQXBwbGllZD1fa3ZDYXBwZWRSYWRp
+            dXM8X3VzZXJSYWRpdXMsIgogICAgICAgICJyZXF1ZXN0ZWRSYWRpdXM9X2t2Q2FwcGVkUmFkaXVz
+            LCIKICAgICAgICAiZGVuc2VDaXR5UnVsZT1nZXREZW5zZUNpdHlSYWRpdXNSdWxlKGxhdCxsb24s
+            cmVxdWVzdGVkUmFkaXVzKSwiCiAgICAgICAgInJhZGl1cz1kZW5zZUNpdHlSdWxlP0RFTlNFX0NJ
+            VFlfUkFESVVTX0xJTUlUX0tNOnJlcXVlc3RlZFJhZGl1czsiKQppZiBvbGQzIGluIGh0bWw6CiAg
+            ICBodG1sID0gaHRtbC5yZXBsYWNlKG9sZDMsIG5ldzMpCiAgICBjaGFuZ2VzLmFwcGVuZCgndXBk
+            YXRlRnJvbUNlbnRlciByYWRpdXMtY2FwJykKZWxzZToKICAgIHByaW50KCdbV0FSTl0gdXBkYXRl
+            RnJvbUNlbnRlciByYWRpdXMtbGluamUgaWtrZSBmdW5uZXQnKQoKIyA0LiBWaXMgbWVsZGluZyBu
+            YXIgY2FwLWVuIHNsYXIgaW5uLiBQbGFzc2VyZXMgZXR0ZXIgZGVuc2VDaXR5UnVsZS1tZWxkaW5n
+            ZW4uCiMgT3JpZ2luYWwgbG9hZGluZy1tZWxkaW5nIGVyOgojICAgc2V0TWVzc2FnZShjLm1hbnVh
+            bD8nTGFzdGVyIHZlZ25ldHQgcnVuZHQgbWFudWVsbCBtYXJrb3IuLi4nOihkZW5zZUNpdHlSdWxl
+            Py4uLjonJykpOwojIFZpIGxhciBkZW4gdmFlcmU7IGV0dGVyIGRlbiBsaW5qZW4gbG9nZ2VyIHZp
+            IGkgdGlsbGVnZyBLVi1jYXAtaW5mbyBodmlzIGFrdHVlbHQuCm9sZDQgPSAic2V0TWVzc2FnZShj
+            Lm1hbnVhbD8nTGFzdGVyIHZlZ25ldHQgcnVuZHQgbWFudWVsbCBtYXJrw7hy4oCmJzooZGVuc2VD
+            aXR5UnVsZT9gJHtkZW5zZUNpdHlSdWxlLm5hbWV9OiB0ZXR0IHZlZ25ldHQsIHJhZGl1cyBzYXR0
+            IHRpbCAke0RFTlNFX0NJVFlfUkFESVVTX0xJTUlUX0tNfSBrbSBmb3Iga29tcGxldHQgbGFzdGlu
+            Zy5gOicnKSk7IgpuZXc0ID0gKG9sZDQgKwogICAgICAgICJcbiAgaWYoX2t2Q2FwQXBwbGllZCYm
+            IWRlbnNlQ2l0eVJ1bGUpeyIKICAgICAgICAic2V0TWVzc2FnZShgS29tbXVuYWxlIHZlZ2VyIGFr
+            dGl2IC0gcmFkaXVzIGJlZ3JlbnNldCBmcmEgJHtfdXNlclJhZGl1c30gdGlsICR7S1ZfUkFESVVT
+            X0NBUF9LTX0ga20uIFNsYSBhdiBLViBpIGthdGVnb3JpZXIgZm9yIGZ1bGwgcmFkaXVzLmAsJ25v
+            dGljZScpOyIKICAgICAgICAifSIpCmlmIG9sZDQgaW4gaHRtbDoKICAgIGh0bWwgPSBodG1sLnJl
+            cGxhY2Uob2xkNCwgbmV3NCkKICAgIGNoYW5nZXMuYXBwZW5kKCdLVi1jYXAgYnJ1a2VybWVsZGlu
+            ZycpCmVsc2U6CiAgICBwcmludCgnW1dBUk5dIGRlbnNlQ2l0eVJ1bGUtbWVsZGluZ2VuIGlra2Ug
+            ZnVubmV0JykKCiMgNS4gYXBwbHlTZXR0aW5nc1RvVUk6IGlra2Ugb3ZlcnN0eXIgcmFkaXVzLWZl
+            bHRldCBiYXNlcnQgcGEgS1YtY2FwIChicnVrZXJlbiBzZXIKIyBmb3J0c2F0dCBzaW4gZWdlbiB2
+            ZXJkaSkuIEluZ2VuIGVuZHJpbmcgaGVyIC0gZmVsdGV0IHNrYWwgdmFlcmUgdWVuZHJldC4KCiMg
+            U2tyaXYgcmVzdWx0YXQKVEFSR0VULndyaXRlX3RleHQoaHRtbCwgZW5jb2Rpbmc9J3V0Zi04JykK
+            cHJpbnQoZidbSU5GT10gU2tyZXYge1RBUkdFVC5uYW1lfSAoe2xlbihodG1sKX0gYnl0ZXMpJykK
+            cHJpbnQoZidbSU5GT10gRW5kcmluZ2VyOiB7bGVuKGNoYW5nZXMpfScpCmZvciBjIGluIGNoYW5n
+            ZXM6CiAgICBwcmludChmJyAgLSB7Y30nKQpwcmludCgnPT09IEZlcmRpZyA9PT0nKQo=
+        run: |
+          echo "$SCRIPT_B64" | base64 -d > docs/build_v2_kv_radius.py
+          python3 -c "import ast; ast.parse(open('docs/build_v2_kv_radius.py').read()); print('Syntax OK')"
+
+      - name: Run patch script
+        run: python docs/build_v2_kv_radius.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index1.html docs/build_v2_kv_radius.py || true
+          if git diff --cached --quiet; then
+            echo "Ingen endringer"
+          else
+            git commit -m "Test: KV-radius-cap til 3 km nar KV/KV-GSV er aktiv"
+            git push
+          fi
