@@ -1,0 +1,54 @@
+name: Diagnostikk index1.html
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Write diagnose script from base64
+        env:
+          SCRIPT_B64: |
+            IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwojIERpYWdub3N0aWtrIGZvciBpbmRleDEuaHRtbC4gRW5k
+            cmVyIGlra2UgZmlsZW4uCgppbXBvcnQgcmUKaW1wb3J0IHN5cwpmcm9tIHBhdGhsaWIgaW1wb3J0
+            IFBhdGgKClJFUE9fUk9PVCA9IFBhdGgoX19maWxlX18pLnJlc29sdmUoKS5wYXJlbnQucGFyZW50
+            CkRPQ1NfRElSID0gUkVQT19ST09UIC8gJ2RvY3MnClRBUkdFVCA9IERPQ1NfRElSIC8gJ2luZGV4
+            MS5odG1sJwoKaHRtbCA9IFRBUkdFVC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKcHJpbnQo
+            J0ZpbHN0b3JyZWxzZTonLCBsZW4oaHRtbCksICdieXRlcycpCgojIEZpbm4gZ2V0Um9hZE1ldGFG
+            cm9tS2V5LWZ1bmtzam9uZW4KbSA9IHJlLnNlYXJjaChyJ2Z1bmN0aW9uIGdldFJvYWRNZXRhRnJv
+            bUtleVwoa2V5XClcey4qP3JldHVyblx7W159XSpcfVx9JywgaHRtbCkKaWYgbToKICAgIGZ1bmMg
+            PSBtLmdyb3VwKDApCiAgICBwcmludCgnLS0tIGdldFJvYWRNZXRhRnJvbUtleSAtLS0nKQogICAg
+            cHJpbnQoZnVuYykKICAgIHByaW50KCctLS0gc2x1dHQgLS0tJykKICAgIHByaW50KCdGdW5rc2pv
+            bnNsZW5nZGU6JywgbGVuKGZ1bmMpKQplbHNlOgogICAgcHJpbnQoJ0FEVkFSU0VMOiBnZXRSb2Fk
+            TWV0YUZyb21LZXkgaWtrZSBmdW5uZXQgbWVkIHJlZ2V4JykKCiMgU2pla2sgcGF0Y2gtbWFya29y
+            ZXIKbWFya2VycyA9IHsKICAgICdLVi1rYXQgQUxMT1dFRF9LQVRTJzogIkFMTE9XRURfS0FUUz1u
+            ZXcgU2V0KFsnRScsJ1InLCdGJywnSyddKSIsCiAgICAnZXJybG9nIEVSUkxPR19EQl9OQU1FJzog
+            J0VSUkxPR19EQl9OQU1FJywKICAgICdLVi1yYWRpdXMtY2FwJzogJ0tWX1JBRElVU19DQVBfS00n
+            LAogICAgJ0tWLWZhc2UgdjEgKGdhbW1lbCknOiAnX2lzS3ZGYXNlRycsCiAgICAnS1YtZmFzZSBj
+            b21iaW5lZCc6ICdfa3ZHc3ZGaXgnLAogICAgJ0tWLXByZWZpa3MgZGV0ZWtzam9uJzogJy9eS3Yv
+            aS50ZXN0KGtleSknLAogICAgJ0sta2F0ZWdvcmkgaSBtZXRha2V5JzogImthdD0nSyciLAp9CnBy
+            aW50KCctLS0gTWFya29yZXIgLS0tJykKZm9yIG5hbWUsIG1hcmtlciBpbiBtYXJrZXJzLml0ZW1z
+            KCk6CiAgICBwcmludChmJyAge25hbWV9OiB7bWFya2VyIGluIGh0bWx9JykKCiMgUHJpbnQgcm9h
+            ZEZpbHRlcktleQptMiA9IHJlLnNlYXJjaChyJ2Z1bmN0aW9uIHJvYWRGaWx0ZXJLZXlcKHJcKVx7
+            W159XSpcfScsIGh0bWwpCmlmIG0yOgogICAgcHJpbnQoJy0tLSByb2FkRmlsdGVyS2V5IC0tLScp
+            CiAgICBwcmludChtMi5ncm91cCgwKSkKCiMgUHJpbnQgbG9hZFJvYWRzQXJvdW5kIHNpZ25hdHVy
+            IChmb3JzdGUgMjAwIHRlZ24pCmlkeCA9IGh0bWwuZmluZCgnYXN5bmMgZnVuY3Rpb24gbG9hZFJv
+            YWRzQXJvdW5kJykKaWYgaWR4ID49IDA6CiAgICBwcmludCgnLS0tIGxvYWRSb2Fkc0Fyb3VuZCBz
+            dGFydCAtLS0nKQogICAgcHJpbnQoaHRtbFtpZHg6aWR4KzI1MF0pCg==
+        run: |
+          echo "$SCRIPT_B64" | base64 -d > /tmp/diag.py
+          python3 -c "import ast; ast.parse(open('/tmp/diag.py').read()); print('Syntax OK')"
+
+      - name: Run diagnose
+        run: python /tmp/diag.py
