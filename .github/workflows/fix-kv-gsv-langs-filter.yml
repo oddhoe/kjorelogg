@@ -1,0 +1,252 @@
+name: Fix KV-GSV langs-filter (index1.html)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Write patch script
+        run: |
+          cat > docs/build_v5_kv_gsv_langs_filter.py <<'PY'
+          #!/usr/bin/env python3
+          # KV-GSV v5:
+          # - Beholder v4-regelen: KV-GSV = kommunal veg der strekning.trafikantgruppe er G
+          #   eller kortform inneholder "KV ... G".
+          # - Legger til underfilter for KV-GSV langs FV, RV eller EV.
+          # - Underfilteret beregnes geometrisk mot nærmeste ordinære F/R/E-veg i innlastet NVDB-data.
+
+          import re
+          import sys
+          from pathlib import Path
+
+          REPO_ROOT = Path(__file__).resolve().parent.parent
+          DOCS_DIR = REPO_ROOT / 'docs'
+          TARGETS = [DOCS_DIR / 'index1.html', DOCS_DIR / 'index.html']
+          TARGET = next((p for p in TARGETS if p.exists()), None)
+          if TARGET is None:
+              print('[ERROR] Fant verken docs/index1.html eller docs/index.html')
+              sys.exit(1)
+
+          html = TARGET.read_text(encoding='utf-8')
+          print(f'[INFO] Leste {TARGET.relative_to(REPO_ROOT)} ({len(html)} bytes)')
+          changes = []
+
+
+          def find_function_span(src, name):
+              start = src.find(f'function {name}(')
+              if start < 0:
+                  return None
+              brace = src.find('{', start)
+              if brace < 0:
+                  return None
+              depth = 0
+              quote = None
+              esc = False
+              for i in range(brace, len(src)):
+                  ch = src[i]
+                  if quote:
+                      if esc:
+                          esc = False
+                      elif ch == '\\':
+                          esc = True
+                      elif ch == quote:
+                          quote = None
+                      continue
+                  if ch in ('"', "'", '`'):
+                      quote = ch
+                      continue
+                  if ch == '{':
+                      depth += 1
+                  elif ch == '}':
+                      depth -= 1
+                      if depth == 0:
+                          return start, i + 1
+              return None
+
+
+          def replace_function(name, new_code, label):
+              global html
+              span = find_function_span(html, name)
+              if not span:
+                  print(f'[WARN] Fant ikke function {name}')
+                  return False
+              old = html[span[0]:span[1]]
+              if old == new_code:
+                  print(f'[OK] {label} allerede korrekt')
+                  return True
+              html = html[:span[0]] + new_code + html[span[1]:]
+              changes.append(label)
+              print(f'[PATCH] {label}')
+              return True
+
+
+          # Fjern tidligere v5-helperblokk slik at workflowen er idempotent.
+          html, removed = re.subn(
+              r"\n?/\* === KV-GSV langs filter v5 === \*/.*?/\* === /KV-GSV langs filter v5 === \*/\n?",
+              "\n",
+              html,
+              flags=re.DOTALL,
+          )
+          if removed:
+              print(f'[INFO] Fjernet gammel KV-GSV langs-helperblokk ({removed})')
+
+          # 1) Metadata fra lagrede nøkler.
+          # For kommunal veg skal D>=100 IKKE alene gi KGSV; bare Kv{nr}G-nøkkel gjør det.
+          new_meta = "function getRoadMetaFromKey(key){let kat='F';let kvG=false;if(/^Ev/i.test(key))kat='E';else if(/^Rv/i.test(key))kat='R';else if(/^Kv/i.test(key)){kat='K';kvG=/^Kv\\d+G/i.test(String(key))}const m=String(key).match(/S\\d+D(\\d+)/i);const gsv=(kat==='K')?kvG:!!(m&&Number(m[1])>=100);return{kat,gsv}}"
+          if 'function getRoadMetaFromKey(' in html:
+              replace_function('getRoadMetaFromKey', new_meta, 'getRoadMetaFromKey: K bruker kun Kv{nr}G, ikke D>=100')
+          else:
+              print('[WARN] getRoadMetaFromKey finnes ikke')
+
+          # 2) Filterklassifisering + KV-GSV langs-filter.
+          # Når en av underkategoriene KGSV_F/KGSV_E/KGSV_R er aktiv og basis-KGSV ikke er aktiv,
+          # returnerer roadFilterKey underkategori basert på nærmeste ordinære F/E/R-veg.
+          # Når basis-KGSV er aktiv, oppfører den seg som før og viser alle KV-GSV.
+          new_filter = r"""/* === KV-GSV langs filter v5 === */
+          function kgsvAlongIsKvGsv(r){const txt=String(r?.veg||r?.key||'');const kort=String(r?.kortform||'');return !!(r&&r.kat==='K'&&(String(r.trafikantgruppe||'').toUpperCase()==='G'||String(r.fase||'').toUpperCase()==='G'||/^Kv\d+G/i.test(txt)||/\bKV\s*\d+\s+G\b/i.test(kort)||r.gsv===true))}
+          function kgsvAlongDomActive(value){try{return !!document.querySelector(`input[value="${value}"]:checked,option[value="${value}"]:checked,[data-value="${value}"].active,[data-cat="${value}"].active,[data-filter="${value}"].active,button[value="${value}"].active`)}catch(e){return false}}
+          function kgsvAlongSubfilterActive(){const sub=kgsvAlongDomActive('KGSV_F')||kgsvAlongDomActive('KGSV_E')||kgsvAlongDomActive('KGSV_R');const base=kgsvAlongDomActive('KGSV');return sub&&!base}
+          function kgsvAlongAllRoads(){try{if(typeof roads!=='undefined'&&Array.isArray(roads))return roads}catch(e){}try{if(typeof allRoads!=='undefined'&&Array.isArray(allRoads))return allRoads}catch(e){}try{if(typeof roadData!=='undefined'&&Array.isArray(roadData))return roadData}catch(e){}try{if(window&&Array.isArray(window.roads))return window.roads}catch(e){}try{if(window&&window.state&&Array.isArray(window.state.roads))return window.state.roads}catch(e){}return []}
+          function kgsvAlongPt(p){if(Array.isArray(p))return{lat:Number(p[0]),lon:Number(p[1])};if(p&&typeof p==='object')return{lat:Number(p.lat??p.latitude??p.y??p[0]),lon:Number(p.lng??p.lon??p.longitude??p.x??p[1])};return null}
+          function kgsvAlongXY(p,refLat){const R=6371000,lat=Number(p.lat)*Math.PI/180,lon=Number(p.lon)*Math.PI/180,rl=Number(refLat)*Math.PI/180;return{x:R*lon*Math.cos(rl),y:R*lat}}
+          function kgsvAlongDistPtSegM(p,a,b){p=kgsvAlongPt(p);a=kgsvAlongPt(a);b=kgsvAlongPt(b);if(!p||!a||!b||!Number.isFinite(p.lat)||!Number.isFinite(p.lon)||!Number.isFinite(a.lat)||!Number.isFinite(a.lon)||!Number.isFinite(b.lat)||!Number.isFinite(b.lon))return Infinity;const ref=(p.lat+a.lat+b.lat)/3,P=kgsvAlongXY(p,ref),A=kgsvAlongXY(a,ref),B=kgsvAlongXY(b,ref),dx=B.x-A.x,dy=B.y-A.y,len2=dx*dx+dy*dy;if(!len2)return Math.hypot(P.x-A.x,P.y-A.y);let t=((P.x-A.x)*dx+(P.y-A.y)*dy)/len2;t=Math.max(0,Math.min(1,t));return Math.hypot(P.x-(A.x+t*dx),P.y-(A.y+t*dy))}
+          function kgsvAlongParts(r){const p=r?.parts||r?.coords||r?.geometry||[];if(!Array.isArray(p))return[];if(p.length&&Array.isArray(p[0])&&typeof p[0][0]==='number')return[p];return p.filter(x=>Array.isArray(x)&&x.length)}
+          function kgsvAlongRoadDistM(a,b,stopAt){const pa=kgsvAlongParts(a),pb=kgsvAlongParts(b);let best=Infinity;for(const A of pa){const stepA=Math.max(1,Math.floor(A.length/24));for(let i=0;i<A.length;i+=stepA){for(const B of pb){for(let j=1;j<B.length;j++){const d=kgsvAlongDistPtSegM(A[i],B[j-1],B[j]);if(d<best){best=d;if(best<=stopAt)return best}}}}}return best}
+          function kgsvAlongCat(r){const MAX=80,all=kgsvAlongAllRoads();const sig=all.length+'|'+String(r?.key||r?.veg||'');if(r&&r._kgsvAlongSig===sig)return r._kgsvAlongCat||'';let best=Infinity,cat='';for(const o of all){if(!o||o===r)continue;const k=String(o.kat||'').toUpperCase();if(k!=='F'&&k!=='E'&&k!=='R')continue;if(o.gsv===true||String(o.veg||o.key||'').match(/GSV/i))continue;const d=kgsvAlongRoadDistM(r,o,Math.min(best,MAX));if(d<best){best=d;cat=k}}if(r){r._kgsvAlongSig=sig;r._kgsvAlongM=best;r._kgsvAlongCat=(best<=MAX)?cat:''}return(best<=MAX)?cat:''}
+          function roadFilterKey(r){const txt=String(r.veg||r.key||'');const kort=String(r.kortform||'');const isKvGsv=(r.kat==='K'&&(String(r.trafikantgruppe||'').toUpperCase()==='G'||String(r.fase||'').toUpperCase()==='G'||/^Kv\d+G/i.test(txt)||/\bKV\s*\d+\s+G\b/i.test(kort)||r.gsv===true));const isGsv=(r.kat==='K')?isKvGsv:!!r.gsv;if(r.kat==='K'&&isGsv&&kgsvAlongSubfilterActive()){const a=kgsvAlongCat(r);return a?('KGSV_'+a):'KGSV_OTHER'}return r.kat+(isGsv?'GSV':'')}
+          /* === /KV-GSV langs filter v5 === */"""
+          if 'function roadFilterKey(' in html:
+              replace_function('roadFilterKey', new_filter, 'roadFilterKey: KV-GSV + underfilter langs FV/EV/RV')
+          else:
+              print('[ERROR] roadFilterKey finnes ikke')
+              sys.exit(1)
+
+          # 3) loadRoadsAround: bygg road-objekt med riktig KV-GSV-regel.
+          new_load = ("const strek=vs.strekning,seg=`S${strek.strekning}D${strek.delstrekning}` ,"
+                      "_kvKort=String(vs.kortform||s?.vegsystemreferanse?.kortform||''),"
+                      "_kvTrafikantgruppe=String(strek.trafikantgruppe||vs.trafikantgruppe||'').toUpperCase(),"
+                      "_kvKortErG=/\\bKV\\s*\\d+\\s+G\\b/i.test(_kvKort),"
+                      "_isKvGsv=(kat==='K'&&(_kvTrafikantgruppe==='G'||_kvKortErG)),"
+                      "gsv=(kat==='K')?_isKvGsv:isGSV(seg),"
+                      "_kvGsvSuffix=_isKvGsv?'G':'',"
+                      "vegnavn=`${roadPrefixFromKat(kat)}${vegsys.nummer}${_kvGsvSuffix}${vs.klasse||vegsys.klasse||''}`,"
+                      "parts=parseWkt(s?.geometri?.wkt).map(p=>p.filter(isVLL)).filter(p=>p.length>=2);")
+          # Rydd eventuell ekstra blank før komma i new_load etter seg-interpolering.
+          new_load = new_load.replace("}` ,", "}`,")
+          load_pat = (r"const strek=vs\.strekning,seg=`S\$\{strek\.strekning\}D\$\{strek\.delstrekning\}`"
+                      r".*?parts=parseWkt\(s\?\.geometri\?\.wkt\)\.map\(p=>p\.filter\(isVLL\)\)\.filter\(p=>p\.length>=2\);")
+          html2, n = re.subn(load_pat, lambda m: new_load, html, count=1, flags=re.DOTALL)
+          if n:
+              html = html2
+              changes.append('loadRoadsAround: bruker strekning.trafikantgruppe=G for KV-GSV')
+              print('[PATCH] loadRoadsAround: bruker strekning.trafikantgruppe=G for KV-GSV')
+          elif "_isKvGsv=(kat==='K'" in html and '_kvTrafikantgruppe' in html:
+              print('[OK] loadRoadsAround har allerede trafikantgruppe-regel')
+          else:
+              print('[ERROR] loadRoadsAround-anchor ikke funnet')
+              sys.exit(1)
+
+          # 4) out.push: lagre trafikantgruppe og kortform på road-objektet.
+          new_push = ("out.push({key:`${vegnavn}_${seg}_${out.length}`,veg:vegnavn,kat,gsv,"
+                      "trafikantgruppe:_kvTrafikantgruppe,kortform:_kvKort,"
+                      "nr:Number(vegsys.nummer)||0,"
+                      "seg,str:Number(strek.strekning)||0,dstr:Number(strek.delstrekning)||0,"
+                      "fra:fraM,til:tilM,len:Number(s.lengde)||0,fylke:fylkeNr?String(fylkeNr):'',"
+                      "typeVeg:s.typeVeg||'',detaljnivaa:s.detaljnivå||s.detaljniva||'',"
+                      "partsWithMeter:parts.map(p=>({coords:p,fra:fraM,til:tilM})),parts,minDist:null})")
+          push_pat = (r"out\.push\(\{key:`\$\{vegnavn\}_\$\{seg\}_\$\{out\.length\}`"
+                      r".*?partsWithMeter:parts\.map\(p=>\(\{coords:p,fra:fraM,til:tilM\}\)\),parts,minDist:null\}\)")
+          html2, n = re.subn(push_pat, lambda m: new_push, html, count=1, flags=re.DOTALL)
+          if n:
+              html = html2
+              changes.append('loadRoadsAround: lagrer trafikantgruppe og kortform')
+              print('[PATCH] loadRoadsAround: lagrer trafikantgruppe og kortform')
+          elif 'trafikantgruppe:_kvTrafikantgruppe,kortform:_kvKort' in html:
+              print('[OK] road-objekt lagrer allerede trafikantgruppe/kortform')
+          else:
+              print('[ERROR] out.push-anchor ikke funnet')
+              sys.exit(1)
+
+          # 5) Legg inn KGSV og underfilter i eksplisitte kategori-/filterlister.
+          def add_kgsv_and_subfilters_to_array(m):
+              arr = m.group(0)
+              quote = "'" if "'KGSV'" in arr or "'K'" in arr else '"'
+              if 'KGSV' not in arr:
+                  if f'{quote}K{quote}' in arr:
+                      arr = arr.replace(f'{quote}K{quote}', f'{quote}K{quote},{quote}KGSV{quote}', 1)
+                  else:
+                      return arr
+              if 'KGSV_F' in arr:
+                  return arr
+              return re.sub(r"(['\"]KGSV['\"])", r"\1," + f"{quote}KGSV_F{quote},{quote}KGSV_E{quote},{quote}KGSV_R{quote}", arr, count=1)
+
+          html2, n = re.subn(r"\[[^\[\]]{0,240}(?:'KGSV'|\"KGSV\"|'FGSV'|\"FGSV\")[^\[\]]{0,240}\]",
+                             add_kgsv_and_subfilters_to_array, html)
+          if n:
+              html = html2
+              changes.append('UI/filter: legger til KGSV_F/KGSV_E/KGSV_R')
+              print(f'[PATCH] UI/filter: oppdaterte {n} kategori-liste(r)')
+
+          # 6) Label-map: legg inn tydelige navn på underfilter.
+          if not re.search(r"KGSV_F\s*:\s*['\"]KV-GSV langs FV['\"]", html):
+              # Først prøv å utvide eksisterende objekt som allerede har KGSV-label.
+              html2, n = re.subn(
+                  r"(KGSV\s*:\s*['\"]KV-GSV['\"])",
+                  r"\1,KGSV_F:'KV-GSV langs FV',KGSV_E:'KV-GSV langs EV',KGSV_R:'KV-GSV langs RV'",
+                  html,
+                  count=1,
+              )
+              if n:
+                  html = html2
+                  changes.append('UI/label: legger til labels for KGSV-langs')
+                  print('[PATCH] UI/label: legger til labels for KGSV-langs')
+              else:
+                  # Hvis bare FGSV finnes fra gammel kode, legg inn KGSV + underfilter.
+                  label_replacements = [
+                      ("FGSV:'FV-GSV'", "FGSV:'FV-GSV',KGSV:'KV-GSV',KGSV_F:'KV-GSV langs FV',KGSV_E:'KV-GSV langs EV',KGSV_R:'KV-GSV langs RV'"),
+                      ('FGSV:"FV-GSV"', 'FGSV:"FV-GSV",KGSV:"KV-GSV",KGSV_F:"KV-GSV langs FV",KGSV_E:"KV-GSV langs EV",KGSV_R:"KV-GSV langs RV"'),
+                      ("FGSV:'F-GSV'", "FGSV:'F-GSV',KGSV:'KV-GSV',KGSV_F:'KV-GSV langs FV',KGSV_E:'KV-GSV langs EV',KGSV_R:'KV-GSV langs RV'"),
+                      ('FGSV:"F-GSV"', 'FGSV:"F-GSV",KGSV:"KV-GSV",KGSV_F:"KV-GSV langs FV",KGSV_E:"KV-GSV langs EV",KGSV_R:"KV-GSV langs RV"'),
+                  ]
+                  for old, new in label_replacements:
+                      if old in html:
+                          html = html.replace(old, new, 1)
+                          changes.append('UI/label: legger til KGSV + KGSV-langs')
+                          print('[PATCH] UI/label: legger til KGSV + KGSV-langs')
+                          break
+
+          TARGET.write_text(html, encoding='utf-8')
+          print(f'[INFO] Skrev {TARGET.relative_to(REPO_ROOT)} ({len(html)} bytes)')
+          print(f'[INFO] Endringer: {len(changes)}')
+          for c in changes:
+              print(f'  - {c}')
+          print('=== Ferdig ===')
+          PY
+          python3 -c "import ast; ast.parse(open('docs/build_v5_kv_gsv_langs_filter.py', encoding='utf-8').read()); print('Syntax OK')"
+
+      - name: Run patch script
+        run: python docs/build_v5_kv_gsv_langs_filter.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index1.html docs/index.html docs/build_v5_kv_gsv_langs_filter.py || true
+          if git diff --cached --quiet; then
+            echo "Ingen endringer"
+          else
+            git commit -m "Fix: filter KV-GSV langs FV EV RV"
+            git push
+          fi
