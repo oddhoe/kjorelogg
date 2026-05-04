@@ -1,0 +1,310 @@
+name: Rydd meny v11 - fjern valg og flytt vegkategorier
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Patch menu cleanup v11
+        run: |
+          cat > patch_menu_v11.py <<'PY'
+          #!/usr/bin/env python3
+          # Meny-rydding v11:
+          # - Fjerner eldre injiserte meny-ryddeblokker.
+          # - Fjerner rødmarkerte menyvalg fra DOM når menyen bygges/åpnes.
+          # - Flytter VEGKATEGORIER-blokken rett under Oppdater området.
+          # - Beholder eksisterende knappelogikk for øvrige valg.
+          # - Endrer ikke KV-GSV/lags FV-filterlogikken.
+
+          import re
+          import sys
+          from pathlib import Path
+
+          SCRIPT_DIR = Path(__file__).resolve().parent
+          REPO_ROOT = None
+          for cand in [Path.cwd(), SCRIPT_DIR, SCRIPT_DIR.parent, SCRIPT_DIR.parent.parent]:
+              if (cand / 'docs').exists():
+                  REPO_ROOT = cand
+                  break
+          if REPO_ROOT is None:
+              REPO_ROOT = SCRIPT_DIR
+
+          DOCS_DIR = REPO_ROOT / 'docs'
+          TARGETS = [p for p in [DOCS_DIR / 'index1.html', DOCS_DIR / 'index.html'] if p.exists()]
+          if not TARGETS:
+              print(f'[ERROR] Fant verken docs/index1.html eller docs/index.html under {REPO_ROOT}')
+              sys.exit(1)
+
+          MENU_JS = r'''
+          /* === MENY-RYDDING v11 === */
+          (function(){
+            const STYLE_ID='menu-clean-v11-style';
+            const DONE_ATTR='data-menu-clean-v11';
+            const VEGKAT_CLASS='menu-clean-v11-vegkat';
+
+            function norm(s){return String(s||'').replace(/\s+/g,' ').trim()}
+            function text(el){return norm(el && el.textContent)}
+            function clean(s){return norm(String(s||'').replace(/[^\p{L}\p{N}\- ]+/gu,''))}
+            function low(s){return clean(s).toLowerCase()}
+            function startsLabel(t,label){
+              const a=low(t), b=low(label);
+              return a===b || a.startsWith(b+' ') || a.startsWith(b+' av') || a.startsWith(b+' på');
+            }
+            function exactLabel(t,label){return low(t)===low(label)}
+
+            const removeDefs=[
+              {label:'Datasparing', match:t=>startsLabel(t,'Datasparing')},
+              {label:'Sideanlegg', match:t=>startsLabel(t,'Sideanlegg')},
+              {label:'Rens sideanlegg fra historikk', match:t=>startsLabel(t,'Rens sideanlegg fra historikk')},
+              {label:'Reparer geometri', match:t=>startsLabel(t,'Reparer geometri')},
+              {label:'Planmodus', match:t=>startsLabel(t,'Planmodus')},
+              {label:'Nullstill dagsrute', match:t=>startsLabel(t,'Nullstill dagsrute')}
+            ];
+
+            const orderDefs=[
+              {id:'update', label:'Oppdater området', match:t=>startsLabel(t,'Oppdater området')},
+              {id:'import', label:'Importer', match:t=>exactLabel(t,'Importer')},
+              {id:'export', label:'Eksporter', match:t=>exactLabel(t,'Eksporter')},
+              {id:'snapshot', label:'Gjenopprett fra snapshot', match:t=>startsLabel(t,'Gjenopprett fra snapshot')},
+              {id:'gpx', label:'Eksporter GPX-spor', match:t=>startsLabel(t,'Eksporter GPX-spor')},
+              {id:'offlinecache', label:'Offline-cache', match:t=>startsLabel(t,'Offline-cache')},
+              {id:'offlinemode', label:'Offline-modus', match:t=>startsLabel(t,'Offline-modus')},
+              {id:'bggps', label:'Bakgrunns-GPS', match:t=>startsLabel(t,'Bakgrunns-GPS')},
+              {id:'direction', label:'Korriger retning', match:t=>startsLabel(t,'Korriger retning')},
+              {id:'marker-set', label:'Sett manuell kartmarkør', match:t=>startsLabel(t,'Sett manuell kartmarkør')},
+              {id:'marker-del', label:'Fjern manuell markør', match:t=>startsLabel(t,'Fjern manuell markør')},
+              {id:'exportlog', label:'Eksporter feillogg', match:t=>startsLabel(t,'Eksporter feillogg')},
+              {id:'clearlog', label:'Tøm feillogg', match:t=>startsLabel(t,'Tøm feillogg')},
+              {id:'reset', label:'Nullstill', match:t=>exactLabel(t,'Nullstill')}
+            ];
+
+            function ensureStyle(){
+              if(document.getElementById(STYLE_ID)) return;
+              const css=`
+                .${VEGKAT_CLASS}{margin:8px 0 10px 0;padding:9px 0 10px 0;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.10);}
+                .${VEGKAT_CLASS} + *{margin-top:6px;}
+                [data-menu-clean-v11-hidden="1"]{display:none!important;}
+              `;
+              const st=document.createElement('style');
+              st.id=STYLE_ID;
+              st.textContent=css;
+              document.head.appendChild(st);
+            }
+
+            function candidateRoot(){
+              const nodes=[...document.querySelectorAll('aside,nav,section,div')];
+              const roots=nodes.filter(el=>{
+                if(el.closest('table')) return false;
+                const t=text(el);
+                return t.includes('Oppdater området') && t.includes('Offline-cache') &&
+                       (t.includes('VEGKATEGORIER') || t.includes('KV-GSV'));
+              });
+              roots.sort((a,b)=>text(a).length-text(b).length);
+              return roots[0] || null;
+            }
+
+            function knownCount(t){
+              let n=0;
+              for(const d of orderDefs){try{if(d.match(t)) n++}catch(e){}}
+              for(const d of removeDefs){try{if(d.match(t)) n++}catch(e){}}
+              if(String(t).toUpperCase().includes('VEGKATEGORIER')) n++;
+              return n;
+            }
+
+            function promoteToDirectChild(root, el){
+              let row=el;
+              while(row && row.parentElement && row.parentElement!==root){
+                const p=row.parentElement;
+                if(p.hasAttribute(DONE_ATTR)) break;
+                const rt=text(row), pt=text(p);
+                // Ta med ikon/span-wrapper, men ikke hele menyseksjoner med flere kjente valg.
+                if(knownCount(pt)>1) break;
+                if(pt.length > Math.max(80, rt.length+45)) break;
+                row=p;
+              }
+              return row || el;
+            }
+
+            function findRow(root, def){
+              const els=[...root.querySelectorAll('button,[role="button"],a,label,div,span')]
+                .filter(el=>!el.hasAttribute(DONE_ATTR) && !el.classList.contains(VEGKAT_CLASS));
+              const matches=[];
+              for(const el of els){
+                const t=text(el);
+                if(!t || t.length>140) continue;
+                try{ if(def.match(t)) matches.push(el); }catch(e){}
+              }
+              matches.sort((a,b)=>text(a).length-text(b).length);
+              return matches[0] ? promoteToDirectChild(root, matches[0]) : null;
+            }
+
+            function findVegkatBlock(root){
+              const candidates=[...root.querySelectorAll('div,section,fieldset,nav,aside')]
+                .filter(el=>!el.hasAttribute(DONE_ATTR));
+              const hits=candidates.filter(el=>{
+                const t=text(el).toUpperCase();
+                return t.includes('VEGKATEGORIER') && t.includes('KV-GSV') &&
+                       (t.includes('INGEN') || t.includes('ALLE') || t.includes('LANGS FV'));
+              });
+              hits.sort((a,b)=>text(a).length-text(b).length);
+              if(hits[0]) return promoteToDirectChild(root, hits[0]);
+
+              // Fallback: finn overskriften VEGKATEGORIER og løft til riktig wrapper.
+              const headings=[...root.querySelectorAll('div,span,strong,b,p')]
+                .filter(el=>text(el).toUpperCase()==='VEGKATEGORIER');
+              if(!headings[0]) return null;
+              let row=headings[0];
+              while(row.parentElement && row.parentElement!==root){
+                const pt=text(row.parentElement).toUpperCase();
+                if(pt.includes('KV-GSV') && (pt.includes('INGEN') || pt.includes('ALLE') || pt.includes('LANGS FV'))){
+                  row=row.parentElement;
+                } else break;
+              }
+              return promoteToDirectChild(root,row);
+            }
+
+            function removeMarkedItems(root){
+              const removed=[];
+              for(const d of removeDefs){
+                let guard=0;
+                while(guard++<8){
+                  const row=findRow(root,d);
+                  if(!row || removed.includes(row)) break;
+                  row.remove();
+                  removed.push(row);
+                }
+              }
+              return removed.length;
+            }
+
+            function cleanupSeparators(root){
+              [...root.children].forEach(ch=>{
+                const t=text(ch), tag=(ch.tagName||'').toLowerCase();
+                if(tag==='hr' || (!t && ch.children.length===0)) ch.setAttribute('data-menu-clean-v11-hidden','1');
+              });
+            }
+
+            function applyMenuClean(){
+              ensureStyle();
+              const root=candidateRoot();
+              if(!root) return false;
+              if(root.__menuCleanV11Busy) return true;
+              root.__menuCleanV11Busy=true;
+              try{
+                removeMarkedItems(root);
+
+                const found={}, used=new Set();
+                for(const d of orderDefs){
+                  const row=findRow(root,d);
+                  if(row && !used.has(row)) { found[d.id]=row; used.add(row); }
+                }
+                const vegkat=findVegkatBlock(root);
+                if(vegkat && !used.has(vegkat)){
+                  vegkat.classList.add(VEGKAT_CLASS);
+                  found.__vegkat=vegkat;
+                  used.add(vegkat);
+                }
+
+                // Legg valgt rekkefølge øverst. Vegkategorier rett etter Oppdater området.
+                const ordered=[];
+                if(found.update) ordered.push(found.update);
+                if(found.__vegkat) ordered.push(found.__vegkat);
+                ['import','export','snapshot','gpx','offlinecache','offlinemode','bggps','direction','marker-set','marker-del','exportlog','clearlog','reset']
+                  .forEach(id=>{ if(found[id]) ordered.push(found[id]); });
+
+                if(ordered.length){
+                  const frag=document.createDocumentFragment();
+                  ordered.forEach(node=>frag.appendChild(node));
+                  root.insertBefore(frag, root.firstElementChild || null);
+                }
+                cleanupSeparators(root);
+                root.setAttribute(DONE_ATTR,'1');
+                return true;
+              } finally {
+                setTimeout(()=>{try{root.__menuCleanV11Busy=false}catch(e){}},80);
+              }
+            }
+
+            let tries=0;
+            function tick(){tries++; applyMenuClean(); if(tries<100) setTimeout(tick,250);}
+            if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tick); else tick();
+
+            const mo=new MutationObserver(()=>{
+              if(!window.__menuCleanV11Timer){
+                window.__menuCleanV11Timer=setTimeout(()=>{
+                  window.__menuCleanV11Timer=null;
+                  applyMenuClean();
+                },100);
+              }
+            });
+            try{mo.observe(document.body,{childList:true,subtree:true})}catch(e){}
+          })();
+          /* === /MENY-RYDDING v11 === */
+          '''
+
+          def patch_target(target: Path) -> int:
+              html = target.read_text(encoding='utf-8')
+              orig = html
+              print(f'[INFO] Leser {target.relative_to(REPO_ROOT)} ({len(html)} bytes)')
+
+              # Fjern eldre injiserte menyblokker, både v10 og ev. v11.
+              html, n = re.subn(
+                  r"\n?\s*/\* === MENY-RYDDING v\d+ === \*/.*?/\* === /MENY-RYDDING v\d+ === \*/\s*\n?",
+                  "\n",
+                  html,
+                  flags=re.DOTALL,
+              )
+              if n:
+                  print(f'[PATCH] Fjernet gammel MENY-RYDDING-blokk ({n})')
+
+              # Legg inn v11 før siste </script>. Dette bevarer appens eksisterende kode og event handlers.
+              if 'MENY-RYDDING v11' not in html:
+                  pos = html.rfind('</script>')
+                  if pos >= 0:
+                      html = html[:pos] + '\n' + MENU_JS + '\n' + html[pos:]
+                      print('[PATCH] La inn MENY-RYDDING v11 før siste </script>')
+                  else:
+                      pos = html.rfind('</body>')
+                      if pos >= 0:
+                          html = html[:pos] + '\n<script>\n' + MENU_JS + '\n</script>\n' + html[pos:]
+                          print('[PATCH] La inn MENY-RYDDING v11 før </body>')
+                      else:
+                          print('[ERROR] Fant verken </script> eller </body>')
+                          return 0
+
+              if html != orig:
+                  target.write_text(html, encoding='utf-8')
+                  print(f'[INFO] Skrev {target.relative_to(REPO_ROOT)} ({len(html)} bytes)')
+                  return 1
+              print('[OK] Ingen endring nødvendig')
+              return 0
+
+          total = 0
+          for t in TARGETS:
+              total += patch_target(t)
+          print(f'=== Ferdig. Totalt endringer: {total} ===')
+          PY
+          python patch_menu_v11.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/index1.html docs/index.html 2>/dev/null || true
+          git diff --cached --quiet && echo "Ingen endringer å committe" || git commit -m "Rydd meny og flytt vegkategorier"
+
+      - name: Push changes
+        run: |
+          git push || true
