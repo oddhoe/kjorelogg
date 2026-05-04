@@ -1,0 +1,138 @@
+name: Test KV-GSV fase-deteksjon (index1.html)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Write patch script from base64
+        env:
+          SCRIPT_B64: |
+            IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwojIEtWLUdTViBmYXNlLWRldGVrc2pvbjogbGVzIGZhc2U9
+            RyBmcmEgTlZEQiBvZyBrbGFzc2lmaXNlciBrb21tdW5hbGUgR1NWLWVyIGtvcnJla3QuCiMgCiMg
+            RW5kcmluZzoKIyAgIDEuIGxvYWRSb2Fkc0Fyb3VuZCBsZXNlciB2ZWdzeXMuZmFzZSBvZyBsYWdy
+            ZXIgZGV0IHBhIHJvYWQtb2JqZWt0ZXQKIyAgIDIuIEZvciBrYXQ9SyBvZyBmYXNlPUcgYnlnZ2Vz
+            IHZlZy1wcmVmaWtzZXQgc29tICJLdntucn1HIiBpIHN0ZWRldCBmb3IgIkt2e25yfSIKIyAgIDMu
+            IHJvYWRGaWx0ZXJLZXkgZmFhciBnc3Y9dHJ1ZSBodmlzIGthdD1LIG9nIGZhc2U9RyAob3ZlcnJp
+            ZGUgYXYgaXNHU1Ygc29tIHNlciBwYSBTL0QpCiMgICA0LiBnZXRSb2FkTWV0YUZyb21LZXkgZ2pl
+            bmtqZW5uZXIgL15LdlxkK0cvaSBzb20gS1YtR1NWCiMKIyBJS0tFIGVuZHJldDoKIyAgIC0gRlYv
+            RVYvUlYta2xhc3NpZmlzZXJpbmcgKHVlbmRyZXQsIGJydWtlciBmb3J0c2F0dCBpc0dTViB2aWEg
+            Uy9ELW51bW1lcikKIyAgIC0gRWtzaXN0ZXJlbmRlIGhpc3RvcmlrayAoS3YuLi4tbm9la2xlciB1
+            dGVuIEcgYmxpciB2YW5saWcgS1YgdGlsIG9tcmFhZGV0IGxhc3RlcyBwYWEgbnl0dCkKIyAgIC0g
+            R1BTLWRldGVrc2pvbiwgSURCLXNramVtYSwgYW5kcmUgZGF0YWZlbHQKIwojIElkZW1wb3RlbnQ6
+            IGthbiBram9yZXMgZmxlcmUgZ2FuZ2VyIHRyeWd0LgoKaW1wb3J0IHN5cwpmcm9tIHBhdGhsaWIg
+            aW1wb3J0IFBhdGgKClJFUE9fUk9PVCA9IFBhdGgoX19maWxlX18pLnJlc29sdmUoKS5wYXJlbnQu
+            cGFyZW50CkRPQ1NfRElSID0gUkVQT19ST09UIC8gJ2RvY3MnClRBUkdFVCA9IERPQ1NfRElSIC8g
+            J2luZGV4MS5odG1sJwoKaWYgbm90IFRBUkdFVC5leGlzdHMoKToKICAgIHByaW50KGYnW0VSUk9S
+            XSB7VEFSR0VUfSBmaW5uZXMgaWtrZScpCiAgICBzeXMuZXhpdCgxKQoKaHRtbCA9IFRBUkdFVC5y
+            ZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKcHJpbnQoZidbSU5GT10gTGVzdGUge1RBUkdFVC5u
+            YW1lfSAoe2xlbihodG1sKX0gYnl0ZXMpJykKCmlmICIvXkt2XFxkK0cvaS50ZXN0KGtleSkiIGlu
+            IGh0bWwgb3IgIl9rdkZhc2UiIGluIGh0bWw6CiAgICBwcmludCgnW0lORk9dIEtWLWZhc2UtZGV0
+            ZWtzam9uIGZpbm5lcyBhbGxlcmVkZSwgaG9wcGVyIG92ZXInKQogICAgc3lzLmV4aXQoMCkKCiMg
+            U2pla2sgZm9ydXRzZXRuaW5nZXIgZnJhIGZvcnJpZ2UgcGF0Y2ggKEtWLWthdGVnb3JpKQppZiAi
+            QUxMT1dFRF9LQVRTPW5ldyBTZXQoWydFJywnUicsJ0YnLCdLJ10pIiBub3QgaW4gaHRtbDoKICAg
+            IHByaW50KCdbRVJST1JdIEZvcnV0c2V0dGVyIGF0IEtWLWthdGVnb3JpLXBhdGNoIGVyIGtqb3J0
+            LiBBTExPV0VEX0tBVFMgdXRlbiBLIGZ1bm5ldC4nKQogICAgc3lzLmV4aXQoMSkKCmNoYW5nZXMg
+            PSBbXQoKIyAxLiBnZXRSb2FkTWV0YUZyb21LZXk6IGdqZW5ramVubiBLdi4uLkcgc29tIEtHU1Yu
+            CiMgTnl0IG3DuG5zdGVyOiBodmlzIG7DuGtrZWxlbiBzdGFydGVyIG1lZCBLdiB0YWxsZW5lIEcg
+            KGYuZWtzLiBLdjM5OUdfUzREMV8wKSwgCiMgc2V0dGVzIGthdD1LIG9nIGdzdj10cnVlIHVhdmhl
+            bmdpZyBhdiBTL0QtbnVtbWVyLgojIE9yaWdpbmFsIChldHRlciBmb3JyaWdlIHBhdGNoKToKb2xk
+            MSA9ICJmdW5jdGlvbiBnZXRSb2FkTWV0YUZyb21LZXkoa2V5KXtsZXQga2F0PSdGJztpZigvXkV2
+            L2kudGVzdChrZXkpKWthdD0nRSc7ZWxzZSBpZigvXlJ2L2kudGVzdChrZXkpKWthdD0nUic7ZWxz
+            ZSBpZigvXkt2L2kudGVzdChrZXkpKWthdD0nSyc7Y29uc3QgbT1TdHJpbmcoa2V5KS5tYXRjaCgv
+            U1xcZCtEKFxcZCspL2kpO3JldHVybntrYXQsZ3N2OiEhKG0mJk51bWJlcihtWzFdKT49MTAwKX19
+            IgpuZXcxID0gImZ1bmN0aW9uIGdldFJvYWRNZXRhRnJvbUtleShrZXkpe2xldCBrYXQ9J0YnO2xl
+            dCBrdkZhc2VHPWZhbHNlO2lmKC9eRXYvaS50ZXN0KGtleSkpa2F0PSdFJztlbHNlIGlmKC9eUnYv
+            aS50ZXN0KGtleSkpa2F0PSdSJztlbHNlIGlmKC9eS3YvaS50ZXN0KGtleSkpe2thdD0nSyc7aWYo
+            L15LdlxcZCtHL2kudGVzdChrZXkpKWt2RmFzZUc9dHJ1ZX1jb25zdCBtPVN0cmluZyhrZXkpLm1h
+            dGNoKC9TXFxkK0QoXFxkKykvaSk7Y29uc3QgZ3N2PWt2RmFzZUd8fCEhKG0mJk51bWJlcihtWzFd
+            KT49MTAwKTtyZXR1cm57a2F0LGdzdn19IgppZiBvbGQxIGluIGh0bWw6CiAgICBodG1sID0gaHRt
+            bC5yZXBsYWNlKG9sZDEsIG5ldzEpCiAgICBjaGFuZ2VzLmFwcGVuZCgnZ2V0Um9hZE1ldGFGcm9t
+            S2V5OiBnamVua2plbm5lciBLdntucn1HIHNvbSBLR1NWJykKZWxzZToKICAgIHByaW50KCdbRVJS
+            T1JdIGdldFJvYWRNZXRhRnJvbUtleS1hbmNob3IgaWtrZSBmdW5uZXQgKGZvcnZlbnRldCBmb3Jt
+            IGZyYSBLVi1rYXRlZ29yaS1wYXRjaCknKQogICAgc3lzLmV4aXQoMSkKCiMgMi4gcm9hZEZpbHRl
+            cktleTogaHZpcyBrYXQ9SyBvZyByLmZhc2U9RyBlbGxlciByLmdzdj10cnVlLCByZXR1cm5lciBL
+            R1NWLgojIE9yaWdpbmFsLWZ1bmtzam9uZW4gZXIgaWtrZSBkaXJla3RlIHRpbGdqZW5nZWxpZyBz
+            b20gZW5rZWx0LWFuY2hvciwgbWVuOgpvbGQyID0gImZ1bmN0aW9uIHJvYWRGaWx0ZXJLZXkocil7
+            cmV0dXJuIHIua2F0KyhyLmdzdj8nR1NWJzonJyl9IgpuZXcyID0gImZ1bmN0aW9uIHJvYWRGaWx0
+            ZXJLZXkocil7Y29uc3QgaXNLdkZhc2VHPShyLmthdD09PSdLJyYmci5mYXNlPT09J0cnKTtyZXR1
+            cm4gci5rYXQrKChyLmdzdnx8aXNLdkZhc2VHKT8nR1NWJzonJyl9IgppZiBvbGQyIGluIGh0bWw6
+            CiAgICBodG1sID0gaHRtbC5yZXBsYWNlKG9sZDIsIG5ldzIpCiAgICBjaGFuZ2VzLmFwcGVuZCgn
+            cm9hZEZpbHRlcktleTogS1YrZmFzZT1HIGtsYXNzaWZpc2VyZXMgc29tIEtHU1YnKQplbHNlOgog
+            ICAgcHJpbnQoJ1tXQVJOXSByb2FkRmlsdGVyS2V5LWFuY2hvciBpa2tlIGZ1bm5ldCcpCgojIDMu
+            IGxvYWRSb2Fkc0Fyb3VuZDogbGVzIHZlZ3N5cy5mYXNlIG9nIGJydWsgZGVuIGkgbsO4a2tlbCAr
+            IHNlZ21lbnQtZmVsdCBmb3IgS1YtR1NWLgojIFZpIGZpbm5lciBsaW5qZW4gc29tIGJ5Z2dlciBy
+            b2FkLW9iamVrdGV0IG9nIGxlZ2dlciBmYXNlICsganVzdGVydCBuw7hra2VscHJlZmlrcy4KIyBP
+            cmlnaW5hbGxpbmplOgpvbGQzID0gKCJjb25zdCBzdHJlaz12cy5zdHJla25pbmcsc2VnPWBTJHtz
+            dHJlay5zdHJla25pbmd9RCR7c3RyZWsuZGVsc3RyZWtuaW5nfWAsZ3N2PWlzR1NWKHNlZyksIgog
+            ICAgICAgICJ2ZWduYXZuPWAke3JvYWRQcmVmaXhGcm9tS2F0KGthdCl9JHt2ZWdzeXMubnVtbWVy
+            fSR7dnMua2xhc3NlfHx2ZWdzeXMua2xhc3NlfHwnJ31gLCIKICAgICAgICAicGFydHM9cGFyc2VX
+            a3Qocz8uZ2VvbWV0cmk/LndrdCkubWFwKHA9PnAuZmlsdGVyKGlzVkxMKSkuZmlsdGVyKHA9PnAu
+            bGVuZ3RoPj0yKTsiKQpuZXczID0gKCJjb25zdCBzdHJlaz12cy5zdHJla25pbmcsc2VnPWBTJHtz
+            dHJlay5zdHJla25pbmd9RCR7c3RyZWsuZGVsc3RyZWtuaW5nfWAsIgogICAgICAgICJfa3ZGYXNl
+            PVN0cmluZyh2ZWdzeXMuZmFzZXx8JycpLnRvVXBwZXJDYXNlKCksIgogICAgICAgICJfaXNLdkZh
+            c2VHPShrYXQ9PT0nSycmJl9rdkZhc2U9PT0nRycpLCIKICAgICAgICAiZ3N2PWlzR1NWKHNlZyl8
+            fF9pc0t2RmFzZUcsIgogICAgICAgICJfa3ZGYXNlU3VmZml4PV9pc0t2RmFzZUc/J0cnOicnLCIK
+            ICAgICAgICAidmVnbmF2bj1gJHtyb2FkUHJlZml4RnJvbUthdChrYXQpfSR7dmVnc3lzLm51bW1l
+            cn0ke19rdkZhc2VTdWZmaXh9JHt2cy5rbGFzc2V8fHZlZ3N5cy5rbGFzc2V8fCcnfWAsIgogICAg
+            ICAgICJwYXJ0cz1wYXJzZVdrdChzPy5nZW9tZXRyaT8ud2t0KS5tYXAocD0+cC5maWx0ZXIoaXNW
+            TEwpKS5maWx0ZXIocD0+cC5sZW5ndGg+PTIpOyIpCmlmIG9sZDMgaW4gaHRtbDoKICAgIGh0bWwg
+            PSBodG1sLnJlcGxhY2Uob2xkMywgbmV3MykKICAgIGNoYW5nZXMuYXBwZW5kKCdsb2FkUm9hZHNB
+            cm91bmQ6IGxlc2VyIGZhc2UsIGJ5Z2dlciBLdntucn1HLXByZWZpa3MgZm9yIEtWLUdTVicpCmVs
+            c2U6CiAgICBwcmludCgnW0VSUk9SXSBsb2FkUm9hZHNBcm91bmQgcm9hZC1ieWdnaW5nLWFuY2hv
+            ciBpa2tlIGZ1bm5ldCcpCiAgICBzeXMuZXhpdCgxKQoKIyA0LiBsb2FkUm9hZHNBcm91bmQ6IGJl
+            dmFyIGZhc2UgaSBvdXQucHVzaCguLi4pIHNsaWsgYXQgci5mYXNlIGVyIHRpbGdqZW5nZWxpZyBm
+            b3Igcm9hZEZpbHRlcktleS4Kb2xkNCA9ICgib3V0LnB1c2goe2tleTpgJHt2ZWduYXZufV8ke3Nl
+            Z31fJHtvdXQubGVuZ3RofWAsdmVnOnZlZ25hdm4sa2F0LGdzdixucjpOdW1iZXIodmVnc3lzLm51
+            bW1lcil8fDAsIgogICAgICAgICJzZWcsc3RyOk51bWJlcihzdHJlay5zdHJla25pbmcpfHwwLGRz
+            dHI6TnVtYmVyKHN0cmVrLmRlbHN0cmVrbmluZyl8fDAsIgogICAgICAgICJmcmE6ZnJhTSx0aWw6
+            dGlsTSxsZW46TnVtYmVyKHMubGVuZ2RlKXx8MCxmeWxrZTpmeWxrZU5yP1N0cmluZyhmeWxrZU5y
+            KTonJywiCiAgICAgICAgInR5cGVWZWc6cy50eXBlVmVnfHwnJyxkZXRhbGpuaXZhYTpzLmRldGFs
+            am5pdsOlfHxzLmRldGFsam5pdmF8fCcnLCIKICAgICAgICAicGFydHNXaXRoTWV0ZXI6cGFydHMu
+            bWFwKHA9Pih7Y29vcmRzOnAsZnJhOmZyYU0sdGlsOnRpbE19KSkscGFydHMsbWluRGlzdDpudWxs
+            fSkiKQpuZXc0ID0gKCJvdXQucHVzaCh7a2V5OmAke3ZlZ25hdm59XyR7c2VnfV8ke291dC5sZW5n
+            dGh9YCx2ZWc6dmVnbmF2bixrYXQsZ3N2LGZhc2U6X2t2RmFzZSwiCiAgICAgICAgIm5yOk51bWJl
+            cih2ZWdzeXMubnVtbWVyKXx8MCwiCiAgICAgICAgInNlZyxzdHI6TnVtYmVyKHN0cmVrLnN0cmVr
+            bmluZyl8fDAsZHN0cjpOdW1iZXIoc3RyZWsuZGVsc3RyZWtuaW5nKXx8MCwiCiAgICAgICAgImZy
+            YTpmcmFNLHRpbDp0aWxNLGxlbjpOdW1iZXIocy5sZW5nZGUpfHwwLGZ5bGtlOmZ5bGtlTnI/U3Ry
+            aW5nKGZ5bGtlTnIpOicnLCIKICAgICAgICAidHlwZVZlZzpzLnR5cGVWZWd8fCcnLGRldGFsam5p
+            dmFhOnMuZGV0YWxqbml2w6V8fHMuZGV0YWxqbml2YXx8JycsIgogICAgICAgICJwYXJ0c1dpdGhN
+            ZXRlcjpwYXJ0cy5tYXAocD0+KHtjb29yZHM6cCxmcmE6ZnJhTSx0aWw6dGlsTX0pKSxwYXJ0cyxt
+            aW5EaXN0Om51bGx9KSIpCmlmIG9sZDQgaW4gaHRtbDoKICAgIGh0bWwgPSBodG1sLnJlcGxhY2Uo
+            b2xkNCwgbmV3NCkKICAgIGNoYW5nZXMuYXBwZW5kKCdsb2FkUm9hZHNBcm91bmQ6IGxhZ3JlciBm
+            YXNlIHBhIHJvYWQtb2JqZWt0JykKZWxzZToKICAgIHByaW50KCdbRVJST1JdIG91dC5wdXNoLWFu
+            Y2hvciBpa2tlIGZ1bm5ldCcpCiAgICBzeXMuZXhpdCgxKQoKIyBTa3JpdiByZXN1bHRhdApUQVJH
+            RVQud3JpdGVfdGV4dChodG1sLCBlbmNvZGluZz0ndXRmLTgnKQpwcmludChmJ1tJTkZPXSBTa3Jl
+            diB7VEFSR0VULm5hbWV9ICh7bGVuKGh0bWwpfSBieXRlcyknKQpwcmludChmJ1tJTkZPXSBFbmRy
+            aW5nZXI6IHtsZW4oY2hhbmdlcyl9JykKZm9yIGMgaW4gY2hhbmdlczoKICAgIHByaW50KGYnICAt
+            IHtjfScpCnByaW50KCc9PT0gRmVyZGlnID09PScpCg==
+        run: |
+          echo "$SCRIPT_B64" | base64 -d > docs/build_v2_kv_gsv_fase.py
+          python3 -c "import ast; ast.parse(open('docs/build_v2_kv_gsv_fase.py').read()); print('Syntax OK')"
+
+      - name: Run patch script
+        run: python docs/build_v2_kv_gsv_fase.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index1.html docs/build_v2_kv_gsv_fase.py || true
+          if git diff --cached --quiet; then
+            echo "Ingen endringer"
+          else
+            git commit -m "Test: KV-GSV fase-deteksjon (kommunale gang/sykkelveger via fase=G)"
+            git push
+          fi
