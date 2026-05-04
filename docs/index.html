@@ -1,4 +1,171 @@
-<!DOCTYPE html><html lang="no"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Kjørelogg · NVDB + GPS</title><link rel="stylesheet" href="./vendor/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'"><script src="./vendor/leaflet.js"></script><script>// iOS/WKWebView: hvis lokal vendor/leaflet.js ikke er pakket med i appen, last Leaflet fra CDN.
+<!DOCTYPE html><html lang="no"><head>
+<script id="kgsv-v14-v9-kompat-shim">
+/* === KV-GSV v14: v9-kompatible helperfunksjoner ===
+   Årsak: noen eldre patchlinjer i loadRoadsAround bruker kgsvV9Text/
+   kgsvV9HasKvG/kgsvV9IsTrafG/kgsvV9IsGsvType, mens v12/v13 fjernet
+   selve v9-blokken. Disse window-helperne gjør at gamle kall ikke stopper
+   vegnettlasting. */
+(function(w){
+  function ownText(v){
+    if(v==null) return '';
+    if(typeof v==='string' || typeof v==='number' || typeof v==='boolean') return String(v);
+    if(Array.isArray(v)) return v.map(ownText).join(' ');
+    if(typeof v==='object'){
+      return [v.kode,v.verdi,v.navn,v.name,v.tekst,v.value,v.id,v.beskrivelse,v.kortform]
+        .map(ownText).filter(Boolean).join(' ');
+    }
+    return String(v);
+  }
+  function text(v){
+    try{
+      if(w.kgsvV12Text && w.kgsvV12Text!==text) return w.kgsvV12Text(v);
+      if(w.kgsvV13Text && w.kgsvV13Text!==text) return w.kgsvV13Text(v);
+    }catch(e){}
+    return ownText(v);
+  }
+  function upper(v){
+    return text(v).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+  function isTrafG(v){
+    const s = upper(v);
+    return /(^|[^A-Z])G([^A-Z]|$)/.test(s) ||
+           s.includes('GAENDE') || s.includes('GÅENDE') ||
+           s.includes('SYKLENDE') ||
+           (s.includes('GANG') && s.includes('SYKKEL'));
+  }
+  function isGsvType(v){
+    const s = upper(v);
+    return s.includes('GANG- OG SYKKEL') ||
+           s.includes('GANG OG SYKKEL') ||
+           s.includes('GANG/SYKKEL') ||
+           s.includes('SYKKELVEG') || s.includes('SYKKELVEI') ||
+           s.includes('GANGVEG') || s.includes('GANGVEI');
+  }
+  function hasKvG(v){
+    const s = text(v);
+    return /\bKV\s*\d+\s+G\b/i.test(s) ||
+           /\bK\s*V\s*\d+\s+G\b/i.test(s) ||
+           /^Kv\d+G/i.test(s) || /^KV\d+G/i.test(s);
+  }
+  function catOf(o){
+    try{
+      if(w.kgsvV12CatOf) return String(w.kgsvV12CatOf(o)||'').toUpperCase();
+      if(w.kgsvV13CatOf) return String(w.kgsvV13CatOf(o)||'').toUpperCase();
+    }catch(e){}
+    let k = String(o && (o.kat ?? o.vegkategori ?? o.kategori) || '').toUpperCase();
+    if(k==='EV') return 'E'; if(k==='RV') return 'R'; if(k==='FV') return 'F'; if(k==='KV') return 'K';
+    if(['E','R','F','K'].includes(k)) return k;
+    const s = upper(o && (o.veg || o.key || o.kortform || o.vegsystemreferanse));
+    if(/\bEV\s*\d+|^EV\d+/.test(s)) return 'E';
+    if(/\bRV\s*\d+|^RV\d+/.test(s)) return 'R';
+    if(/\bFV\s*\d+|^FV\d+/.test(s)) return 'F';
+    if(/\bKV\s*\d+|^KV\d+|^KV/.test(s)) return 'K';
+    return k;
+  }
+  function isKvGsv(r){
+    try{
+      if(w.kgsvV12IsKvGsv) return !!w.kgsvV12IsKvGsv(r);
+      if(w.kgsvV13IsKvGsv) return !!w.kgsvV13IsKvGsv(r);
+    }catch(e){}
+    return catOf(r)==='K' && (
+      isTrafG(r && r.trafikantgruppe) ||
+      isTrafG(r && r.vegsystemreferanse && r.vegsystemreferanse.strekning && r.vegsystemreferanse.strekning.trafikantgruppe) ||
+      isTrafG(r && r.vegsystem && r.vegsystem.strekning && r.vegsystem.strekning.trafikantgruppe) ||
+      hasKvG(r && (r.veg || r.key || '')) ||
+      hasKvG(r && r.kortform) ||
+      hasKvG(r && r.vegsystemreferanse && r.vegsystemreferanse.kortform) ||
+      isGsvType(r && (r.typeVegText || r.typeVeg || r.typeveg || r.objekttype || r.navn || r.detNavn))
+    );
+  }
+
+  // Opprett bare global-propertyer. Dette er trygt selv om senere script har egne funksjoner.
+  w.kgsvV9Text      = w.kgsvV9Text      || text;
+  w.kgsvV9Upper     = w.kgsvV9Upper     || upper;
+  w.kgsvV9IsTrafG   = w.kgsvV9IsTrafG   || isTrafG;
+  w.kgsvV9IsGsvType = w.kgsvV9IsGsvType || isGsvType;
+  w.kgsvV9HasKvG    = w.kgsvV9HasKvG    || hasKvG;
+  w.kgsvV9CatOf     = w.kgsvV9CatOf     || catOf;
+  w.kgsvV9IsKvGsv   = w.kgsvV9IsKvGsv   || isKvGsv;
+})(window);
+/* === /KV-GSV v14: v9-kompatible helperfunksjoner === */
+</script>
+
+
+<script id="kgsv-v13-roadfilterkey-shim">
+/* === KV-GSV v13 roadFilterKey global shim === */
+(function(){
+  function txt(v){
+    if(v==null) return '';
+    if(typeof v==='string'||typeof v==='number'||typeof v==='boolean') return String(v);
+    if(Array.isArray(v)) return v.map(txt).join(' ');
+    if(typeof v==='object') return [v.kode,v.verdi,v.navn,v.name,v.tekst,v.value,v.id,v.beskrivelse,v.kortform].map(txt).filter(Boolean).join(' ');
+    return String(v);
+  }
+  function up(v){return txt(v).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+  function catFallback(o){
+    let k=String(o&& (o.kat??o.vegkategori??o.kategori) || '').toUpperCase();
+    if(['E','R','F','K'].includes(k)) return k;
+    if(k==='EV') return 'E'; if(k==='RV') return 'R'; if(k==='FV') return 'F'; if(k==='KV') return 'K';
+    const s=up(o&&(o.veg||o.key||o.kortform||o.vegsystemreferanse));
+    if(/\bEV\s*\d+|^EV\d+/.test(s)) return 'E';
+    if(/\bRV\s*\d+|^RV\d+/.test(s)) return 'R';
+    if(/\bFV\s*\d+|^FV\d+/.test(s)) return 'F';
+    if(/\bKV\s*\d+|^KV\d+|^KV/.test(s)) return 'K';
+    return k;
+  }
+  function isTrafG(v){const s=up(v);return /(^|[^A-Z])G([^A-Z]|$)/.test(s)||s.includes('GAENDE')||s.includes('GÅENDE')||s.includes('SYKLENDE')||(s.includes('GANG')&&s.includes('SYKKEL'))}
+  function isGsvType(v){const s=up(v);return s.includes('GANG- OG SYKKEL')||s.includes('GANG OG SYKKEL')||s.includes('GANG/SYKKEL')||s.includes('SYKKELVEG')||s.includes('SYKKELVEI')||s.includes('GANGVEG')||s.includes('GANGVEI')}
+  function hasKvG(v){const s=txt(v);return /\bKV\s*\d+\s+G\b/i.test(s)||/\bK\s*V\s*\d+\s+G\b/i.test(s)||/^Kv\d+G/i.test(s)||/^KV\d+G/i.test(s)}
+  function isKvGsvFallback(r){
+    return catFallback(r)==='K' && (
+      isTrafG(r?.trafikantgruppe) ||
+      isTrafG(r?.vegsystemreferanse?.strekning?.trafikantgruppe) ||
+      isTrafG(r?.vegsystem?.strekning?.trafikantgruppe) ||
+      hasKvG(r?.veg||r?.key||'') ||
+      hasKvG(r?.kortform) ||
+      hasKvG(r?.vegsystemreferanse?.kortform) ||
+      isGsvType(r?.typeVegText||r?.typeVeg||r?.typeveg||r?.objekttype||r?.navn||r?.detNavn)
+    );
+  }
+  window.roadFilterKey = function roadFilterKey(r){
+    try{
+      const catFn = window.kgsvV12CatOf || window.kgsvV13CatOf;
+      const kvFn  = window.kgsvV12IsKvGsv || window.kgsvV13IsKvGsv;
+      const kat = String(catFn ? catFn(r) : catFallback(r)).toUpperCase();
+      const isKvGsv = kvFn ? !!kvFn(r) : isKvGsvFallback(r);
+      const isGsv = (kat==='K') ? isKvGsv : !!(r && r.gsv);
+      if(kat==='K' && isGsv){
+        const modeFn = window.kgsvV12Mode || window.kgsvV13Mode;
+        const m = modeFn ? String(modeFn()||'').toUpperCase() : String(window.__kgsvV12AlongMode||window.__kgsvV13AlongMode||'').toUpperCase();
+        if(m==='F'||m==='E'||m==='R'){
+          let cats = new Set();
+          try{
+            const alongFn = window.kgsvV12AlongCats || window.kgsvV13AlongCats;
+            if(alongFn) cats = alongFn(r) || new Set();
+          }catch(e){ cats = new Set(); }
+          try{
+            const cacheFn = window.kgsvV12BuildCache || window.kgsvV13BuildCache;
+            const c = cacheFn ? cacheFn() : null;
+            if(c && c.mainCounts && c.mainCounts[m]===0){
+              // Referansegrunnlag mangler: ikke skjul alt.
+              return 'KGSV';
+            }
+          }catch(e){}
+          return (cats && typeof cats.has==='function' && cats.has(m)) ? 'KGSV' : 'KGSV_OTHER';
+        }
+        return 'KGSV';
+      }
+      return kat + (isGsv ? 'GSV' : '');
+    }catch(e){
+      const kat = catFallback(r);
+      return kat + ((kat==='K' ? isKvGsvFallback(r) : !!(r&&r.gsv)) ? 'GSV' : '');
+    }
+  };
+})();
+/* === /KV-GSV v13 roadFilterKey global shim === */
+</script>
+
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Kjørelogg · NVDB + GPS</title><link rel="stylesheet" href="./vendor/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'"><script src="./vendor/leaflet.js"></script><script>// iOS/WKWebView: hvis lokal vendor/leaflet.js ikke er pakket med i appen, last Leaflet fra CDN.
 // Uten denne fallbacken blir kartfanene bare en grå flate.
 if(!window.L){
  document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
@@ -2966,38 +3133,6 @@ async function bootApp(){
 bootApp();
 
 
-/* === KV-GSV v9 === */
-function kgsvV9Text(v){if(v==null)return'';if(typeof v==='string'||typeof v==='number'||typeof v==='boolean')return String(v);if(Array.isArray(v))return v.map(kgsvV9Text).join(' ');if(typeof v==='object'){return [v.kode,v.verdi,v.navn,v.name,v.tekst,v.value,v.id,v.beskrivelse].map(kgsvV9Text).filter(Boolean).join(' ')}return String(v)}
-function kgsvV9Upper(v){return kgsvV9Text(v).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
-function kgsvV9IsTrafG(v){const s=kgsvV9Upper(v);return /(^|[^A-Z])G([^A-Z]|$)/.test(s)||s.includes('GAENDE')||s.includes('GÅENDE')||s.includes('SYKLENDE')||s.includes('GANG')&&s.includes('SYKKEL')}
-function kgsvV9IsGsvType(v){const s=kgsvV9Upper(v);return s.includes('GANG- OG SYKKEL')||s.includes('GANG OG SYKKEL')||s.includes('GANG/SYKKEL')||s.includes('SYKKELVEG')||s.includes('SYKKELVEI')||s.includes('GANGVEG')||s.includes('GANGVEI')}
-function kgsvV9HasKvG(v){const s=kgsvV9Text(v);return /\bKV\s*\d+\s+G\b/i.test(s)||/\bK\s*V\s*\d+\s+G\b/i.test(s)||/^Kv\d+G/i.test(s)}
-function kgsvV9IsKvGsv(r){if(!r||String(r.kat||'').toUpperCase()!=='K')return false;const txt=String(r.veg||r.key||'');return kgsvV9IsTrafG(r.trafikantgruppe)||kgsvV9HasKvG(txt)||kgsvV9HasKvG(r.kortform)||kgsvV9IsGsvType(r.typeVegText||r.typeVeg||r.typeveg||r.objekttype||r.navn||r.detNavn)}
-function kgsvV9AllRoads(){try{if(typeof roads!=='undefined'&&Array.isArray(roads))return roads}catch(e){}try{if(typeof allRoads!=='undefined'&&Array.isArray(allRoads))return allRoads}catch(e){}try{if(typeof roadData!=='undefined'&&Array.isArray(roadData))return roadData}catch(e){}try{if(typeof visibleRoads!=='undefined'&&Array.isArray(visibleRoads))return visibleRoads}catch(e){}try{if(window&&Array.isArray(window.roads))return window.roads}catch(e){}try{if(window&&Array.isArray(window.allRoads))return window.allRoads}catch(e){}try{if(window&&window.state&&Array.isArray(window.state.roads))return window.state.roads}catch(e){}return []}
-function kgsvV9Pt(p){if(Array.isArray(p))return{lat:Number(p[0]),lon:Number(p[1])};if(p&&typeof p==='object')return{lat:Number(p.lat??p.latitude??p.y??p[0]),lon:Number(p.lng??p.lon??p.longitude??p.x??p[1])};return null}
-function kgsvV9XY(p,refLat){const R=6371000,lat=Number(p.lat)*Math.PI/180,lon=Number(p.lon)*Math.PI/180,rl=Number(refLat)*Math.PI/180;return{x:R*lon*Math.cos(rl),y:R*lat}}
-function kgsvV9DistPtSegM(p,a,b){p=kgsvV9Pt(p);a=kgsvV9Pt(a);b=kgsvV9Pt(b);if(!p||!a||!b||!Number.isFinite(p.lat)||!Number.isFinite(p.lon)||!Number.isFinite(a.lat)||!Number.isFinite(a.lon)||!Number.isFinite(b.lat)||!Number.isFinite(b.lon))return Infinity;const ref=(p.lat+a.lat+b.lat)/3,P=kgsvV9XY(p,ref),A=kgsvV9XY(a,ref),B=kgsvV9XY(b,ref),dx=B.x-A.x,dy=B.y-A.y,len2=dx*dx+dy*dy;if(!len2)return Math.hypot(P.x-A.x,P.y-A.y);let t=((P.x-A.x)*dx+(P.y-A.y)*dy)/len2;t=Math.max(0,Math.min(1,t));return Math.hypot(P.x-(A.x+t*dx),P.y-(A.y+t*dy))}
-function kgsvV9Parts(r){const p=r?.parts||r?.coords||r?.geometry||[];if(!Array.isArray(p))return[];if(p.length&&Array.isArray(p[0])&&typeof p[0][0]==='number')return[p];return p.filter(x=>Array.isArray(x)&&x.length)}
-function kgsvV9BBox(r){if(r&&r._kgsvV9BBox)return r._kgsvV9BBox;let minLat=Infinity,minLon=Infinity,maxLat=-Infinity,maxLon=-Infinity;for(const part of kgsvV9Parts(r)){for(const q of part){const p=kgsvV9Pt(q);if(!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon))continue;minLat=Math.min(minLat,p.lat);maxLat=Math.max(maxLat,p.lat);minLon=Math.min(minLon,p.lon);maxLon=Math.max(maxLon,p.lon)}}const b=Number.isFinite(minLat)?{minLat,minLon,maxLat,maxLon}:{minLat:0,minLon:0,maxLat:0,maxLon:0};if(r)r._kgsvV9BBox=b;return b}
-function kgsvV9BBoxClose(a,b,m){a=kgsvV9BBox(a);b=kgsvV9BBox(b);const d=m/111320;return !(a.maxLat+d<b.minLat||b.maxLat+d<a.minLat||a.maxLon+d<b.minLon||b.maxLon+d<a.minLon)}
-function kgsvV9RoadDistM(a,b,stopAt){const pa=kgsvV9Parts(a),pb=kgsvV9Parts(b);let best=Infinity;for(const A of pa){const stepA=Math.max(1,Math.floor(A.length/35));for(let i=0;i<A.length;i+=stepA){for(const B of pb){for(let j=1;j<B.length;j++){const d=kgsvV9DistPtSegM(A[i],B[j-1],B[j]);if(d<best){best=d;if(best<=stopAt)return best}}}}}return best}
-function kgsvV9IsOrdinaryMain(o){const k=String(o?.kat||'').toUpperCase();if(k!=='F'&&k!=='E'&&k!=='R')return false;if(o?.gsv===true||kgsvV9IsKvGsv(o)||/GSV/i.test(String(o?.veg||o?.key||'')))return false;return true}
-function kgsvV9RoadLenM(r){let v=Number(r?.len);if(Number.isFinite(v)&&v>0)return v;let sum=0;for(const part of kgsvV9Parts(r)){for(let i=1;i<part.length;i++){const a=kgsvV9Pt(part[i-1]),b=kgsvV9Pt(part[i]);if(a&&b&&Number.isFinite(a.lat)&&Number.isFinite(a.lon)&&Number.isFinite(b.lat)&&Number.isFinite(b.lon)){const ref=(a.lat+b.lat)/2,A=kgsvV9XY(a,ref),B=kgsvV9XY(b,ref);sum+=Math.hypot(B.x-A.x,B.y-A.y)}}}return sum}
-function kgsvV9Sig(all){return all.length+'|'+all.map((r,i)=>String(r?.key||r?.veg||i)).join('¦')}
-function kgsvV9BuildCache(){const all=kgsvV9AllRoads(),sig=kgsvV9Sig(all);if(window.__kgsvV9Cache&&window.__kgsvV9Cache.sig===sig)return window.__kgsvV9Cache;const DIRECT=130,CONNECT=35,MAX_MAIN=230,MAX_CHAIN=420,MAIN_BBOX=270;const kgsv=all.filter(r=>String(r?.kat||'').toUpperCase()==='K'&&kgsvV9IsKvGsv(r));const main=all.filter(kgsvV9IsOrdinaryMain);const direct=kgsv.map(()=>new Set());const finalCats=kgsv.map(()=>new Set());const near=kgsv.map(()=>({F:Infinity,E:Infinity,R:Infinity}));for(let i=0;i<kgsv.length;i++){const r=kgsv[i];for(const o of main){if(!kgsvV9BBoxClose(r,o,MAIN_BBOX))continue;const cat=String(o.kat).toUpperCase();const d=kgsvV9RoadDistM(r,o,MAIN_BBOX);if(d<near[i][cat])near[i][cat]=d;if(d<=DIRECT){direct[i].add(cat);finalCats[i].add(cat)}}}const adj=kgsv.map(()=>[]);for(let i=0;i<kgsv.length;i++){for(let j=i+1;j<kgsv.length;j++){if(!kgsvV9BBoxClose(kgsv[i],kgsv[j],CONNECT))continue;const d=kgsvV9RoadDistM(kgsv[i],kgsv[j],CONNECT);if(d<=CONNECT){adj[i].push(j);adj[j].push(i)}}}for(const cat of ['F','E','R']){const best=kgsv.map(()=>Infinity);const q=[];for(let i=0;i<kgsv.length;i++){if(direct[i].has(cat)){best[i]=0;q.push(i)}}for(let qi=0;qi<q.length;qi++){const i=q[qi];for(const j of adj[i]){if(near[j][cat]>MAX_MAIN)continue;const step=Math.max(20,Math.min(kgsvV9RoadLenM(kgsv[j])||60,160));const nc=best[i]+step;if(nc>MAX_CHAIN)continue;if(nc+1<best[j]){best[j]=nc;finalCats[j].add(cat);q.push(j)}}}for(let i=0;i<kgsv.length;i++){try{kgsv[i]['_kgsvV9Chain'+cat]=Math.round(best[i])}catch(e){}}}const catsByKey={};for(let i=0;i<kgsv.length;i++){const key=String(kgsv[i].key||kgsv[i].veg||i);catsByKey[key]=Array.from(finalCats[i]);try{kgsv[i]._kgsvV9Cats=catsByKey[key].join(',');kgsv[i]._kgsvV9NearF=Math.round(near[i].F);kgsv[i]._kgsvV9Len=Math.round(kgsvV9RoadLenM(kgsv[i]))}catch(e){}}const cache={sig,catsByKey,count:kgsv.length,mainCount:main.length,rule:'balanced: direct<=130m, connected corridor<=420m, candidate<=230m from main, connect<=35m'};window.__kgsvV9Cache=cache;return cache}
-function kgsvV9AlongCats(r){const c=kgsvV9BuildCache();return new Set(c.catsByKey[String(r?.key||r?.veg||'')]||[])}
-function kgsvV9Mode(){const m=String(window.__kgsvV9AlongMode||'').toUpperCase();return (m==='F'||m==='E'||m==='R')?m:''}
-function roadFilterKey(r){const kat=String(r?.kat||'').toUpperCase();const isKvGsv=(kat==='K')?kgsvV9IsKvGsv(r):false;const isGsv=(kat==='K')?isKvGsv:!!r?.gsv;if(kat==='K'&&isGsv){const m=kgsvV9Mode();if(m){return kgsvV9AlongCats(r).has(m)?'KGSV':'KGSV_OTHER'}return 'KGSV'}return kat+(isGsv?'GSV':'')}
-function kgsvV9ElText(el){return String(el?.textContent||'').replace(/\s+/g,' ').trim()}
-function kgsvV9FindCatEl(label){const want=label.toUpperCase();const els=[...document.querySelectorAll('button,[role="button"],label,span,div,a')];return els.find(e=>kgsvV9ElText(e).toUpperCase()===want)||els.find(e=>kgsvV9ElText(e).toUpperCase().includes(want)&&kgsvV9ElText(e).length<=40)}
-function kgsvV9Active(el){if(!el)return false;return el.classList.contains('active')||el.classList.contains('selected')||el.getAttribute('aria-pressed')==='true'||el.getAttribute('aria-selected')==='true'||el.checked===true||/active|selected|on/i.test(String(el.className||''))}
-function kgsvV9CallRefresh(){window.__kgsvV9Cache=null;['renderAll','render','refresh','refreshViews','renderRoads','renderMap','renderTable','renderOverview','updateUI','updateStats','applyFilters','updateRoadVisibility','drawRoads'].forEach(n=>{try{if(typeof window[n]==='function')window[n]()}catch(e){}});try{window.dispatchEvent(new Event('resize'))}catch(e){}}
-function kgsvV9SyncBase(){const base=kgsvV9FindCatEl('KV-GSV');if(!base){kgsvV9CallRefresh();return}window.__kgsvV9Syncing=true;const was=kgsvV9Active(base);try{if(was){base.click();setTimeout(()=>{try{base.click()}catch(e){}window.__kgsvV9Syncing=false;kgsvV9CallRefresh();kgsvV9UpdateUI()},40)}else{base.click();setTimeout(()=>{window.__kgsvV9Syncing=false;kgsvV9CallRefresh();kgsvV9UpdateUI()},40)}}catch(e){window.__kgsvV9Syncing=false;kgsvV9CallRefresh()}}
-function kgsvV9SetMode(m){window.__kgsvV9AlongMode=(kgsvV9Mode()===m)?'':m;kgsvV9UpdateUI();kgsvV9SyncBase()}
-function kgsvV9UpdateUI(){const m=kgsvV9Mode();document.querySelectorAll('[data-kgsv-v9-mode]').forEach(b=>{const on=b.getAttribute('data-kgsv-v9-mode')===m;b.classList.toggle('active',on);b.style.background=on?'#d6a900':'rgba(255,255,255,.06)';b.style.color=on?'#111':'#fff';b.style.borderColor=on?'#ffe066':'rgba(255,255,255,.18)'})}
-function kgsvV9InstallUI(){if(document.getElementById('kgsv-v9-langs-ui')){kgsvV9UpdateUI();return true}const base=kgsvV9FindCatEl('KV-GSV');if(!base)return false;const host=base.parentElement||base;const wrap=document.createElement('div');wrap.id='kgsv-v9-langs-ui';wrap.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;margin-bottom:2px;width:100%';[['F','langs FV'],['E','langs EV'],['R','langs RV']].forEach(([m,t])=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.setAttribute('data-kgsv-v9-mode',m);b.style.cssText='border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 9px;font-weight:800;font-size:12px;background:rgba(255,255,255,.06);color:#fff;cursor:pointer';b.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();kgsvV9SetMode(m)});wrap.appendChild(b)});try{host.appendChild(wrap)}catch(e){base.insertAdjacentElement('afterend',wrap)}base.addEventListener('click',()=>{if(!window.__kgsvV9Syncing){window.__kgsvV9AlongMode='';setTimeout(()=>{kgsvV9UpdateUI();kgsvV9CallRefresh()},0)}},true);document.addEventListener('click',ev=>{const t=kgsvV9ElText(ev.target).toUpperCase();if(!window.__kgsvV9Syncing&&(t==='ALLE'||t==='INGEN'||t==='NULLSTILL')){window.__kgsvV9AlongMode='';setTimeout(()=>{kgsvV9UpdateUI();kgsvV9CallRefresh()},0)}},true);kgsvV9UpdateUI();return true}
-(function(){let tries=0;function tick(){tries++;kgsvV9InstallUI();if(tries<40&&!document.getElementById('kgsv-v9-langs-ui'))setTimeout(tick,400)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick()})();
-/* === /KV-GSV v9 === */
 
 
 /* === MENY-RYDDING v11 === */
@@ -3204,5 +3339,93 @@ function kgsvV9InstallUI(){if(document.getElementById('kgsv-v9-langs-ui')){kgsvV
   try{mo.observe(document.body,{childList:true,subtree:true})}catch(e){}
 })();
 /* === /MENY-RYDDING v11 === */
+
+
+
+/* === KV-GSV v12 === */
+(function(){
+  const VERSION='v12';
+  const DIRECT=150;        // direkte langs hovedveg
+  const CONNECT=45;        // kobling mellom GSV-segment
+  const MAX_MAIN=270;      // kandidat må fortsatt være nær hovedveg
+  const MAX_CHAIN=520;     // maks korridorutbredelse fra direkte treff
+  const MAIN_BBOX=330;
+  const FAIL_OPEN=true;    // ikke skjul alt hvis referansegrunnlag mangler
+
+  function txt(v){if(v==null)return'';if(typeof v==='string'||typeof v==='number'||typeof v==='boolean')return String(v);if(Array.isArray(v))return v.map(txt).join(' ');if(typeof v==='object')return [v.kode,v.verdi,v.navn,v.name,v.tekst,v.value,v.id,v.beskrivelse,v.kortform].map(txt).filter(Boolean).join(' ');return String(v)}
+  function up(v){return txt(v).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+  function catOf(o){let k=String(o?.kat??o?.vegkategori??o?.kategori??'').toUpperCase();if(['E','R','F','K'].includes(k))return k;if(k==='EV')return'E';if(k==='RV')return'R';if(k==='FV')return'F';if(k==='KV')return'K';const s=up(o?.veg||o?.key||o?.kortform||o?.vegsystemreferanse);if(/\bEV\s*\d+|^EV\d+/.test(s))return'E';if(/\bRV\s*\d+|^RV\d+/.test(s))return'R';if(/\bFV\s*\d+|^FV\d+/.test(s))return'F';if(/\bKV\s*\d+|^KV\d+|^KV/.test(s))return'K';return k}
+  window.kgsvV12CatOf=catOf;
+  function isTrafG(v){const s=up(v);return /(^|[^A-Z])G([^A-Z]|$)/.test(s)||s.includes('GAENDE')||s.includes('GÅENDE')||s.includes('SYKLENDE')||(s.includes('GANG')&&s.includes('SYKKEL'))}
+  function isGsvType(v){const s=up(v);return s.includes('GANG- OG SYKKEL')||s.includes('GANG OG SYKKEL')||s.includes('GANG/SYKKEL')||s.includes('SYKKELVEG')||s.includes('SYKKELVEI')||s.includes('GANGVEG')||s.includes('GANGVEI')}
+  function hasKvG(v){const s=txt(v);return /\bKV\s*\d+\s+G\b/i.test(s)||/\bK\s*V\s*\d+\s+G\b/i.test(s)||/^Kv\d+G/i.test(s)||/^KV\d+G/i.test(s)}
+  function isKvGsv(r){return catOf(r)==='K'&&(isTrafG(r?.trafikantgruppe)||isTrafG(r?.vegsystemreferanse?.strekning?.trafikantgruppe)||isTrafG(r?.vegsystem?.strekning?.trafikantgruppe)||hasKvG(r?.veg||r?.key||'')||hasKvG(r?.kortform)||hasKvG(r?.vegsystemreferanse?.kortform)||isGsvType(r?.typeVegText||r?.typeVeg||r?.typeveg||r?.objekttype||r?.navn||r?.detNavn))}
+  window.kgsvV12IsKvGsv=isKvGsv;
+
+  function keyOf(r,i){return String(r?.key??r?.id??r?.veglenkesekvensid??r?.veglenkesekvens?.id??r?.veg??r?.kortform??i??'')}
+  function addUnique(out,seen,a){if(!Array.isArray(a))return;for(let i=0;i<a.length;i++){const r=a[i];if(!r)continue;const k=keyOf(r,i)+'|'+catOf(r)+'|'+(r.parts?.length||r.coords?.length||r.geometry?.coordinates?.length||r.geometri?.wkt?.length||'');if(seen.has(k))continue;seen.add(k);out.push(r)}}
+  function allRoads(){const out=[],seen=new Set();const names=['allRoads','roadData','roadsRaw','rawRoads','allSegments','segments','roads','visibleRoads'];for(const n of names){try{if(typeof window[n]!=='undefined')addUnique(out,seen,window[n])}catch(e){}try{if(typeof eval(n)!=='undefined')addUnique(out,seen,eval(n))}catch(e){}}
+    try{if(window.state){['allRoads','roadData','roads','visibleRoads','segments'].forEach(n=>addUnique(out,seen,window.state[n]))}}catch(e){}
+    try{if(window.appState){['allRoads','roadData','roads','visibleRoads','segments'].forEach(n=>addUnique(out,seen,window.appState[n]))}}catch(e){}
+    try{addUnique(out,seen,window.__kgsvV12ExtraMain||[])}catch(e){}
+    return out;
+  }
+  window.kgsvV12AllRoads=allRoads;
+
+  function pt(p){if(Array.isArray(p))return{lat:Number(p[0]),lon:Number(p[1])};if(p&&typeof p==='object')return{lat:Number(p.lat??p.latitude??p.y??p[0]),lon:Number(p.lng??p.lon??p.longitude??p.x??p[1])};return null}
+  function parseWkt(wkt){const s=String(wkt||'');if(!s)return[];const groups=[];if(/^\s*MULTILINESTRING/i.test(s)){const body=s.replace(/^\s*MULTILINESTRING\s*/i,'').trim().replace(/^\(\(/,'').replace(/\)\)\s*$/,'');for(const g of body.split(/\)\s*,\s*\(/)){groups.push(g)}}else if(/^\s*LINESTRING/i.test(s)){groups.push(s.replace(/^\s*LINESTRING\s*/i,'').trim().replace(/^\(/,'').replace(/\)\s*$/,''))}else{return[]}
+    return groups.map(g=>g.split(',').map(x=>{const a=x.trim().split(/\s+/).map(Number);return{lat:a[1],lon:a[0]}}).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon))).filter(a=>a.length>1);
+  }
+  function geoParts(g){if(!g)return[];if(g.wkt)return parseWkt(g.wkt);if(g.type&&Array.isArray(g.coordinates)){if(g.type==='LineString')return [g.coordinates.map(c=>({lat:Number(c[1]),lon:Number(c[0])})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon))].filter(a=>a.length>1);if(g.type==='MultiLineString')return g.coordinates.map(line=>line.map(c=>({lat:Number(c[1]),lon:Number(c[0])})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon))).filter(a=>a.length>1)}return[]}
+  function parts(r){let p=r?.parts||r?.coords||r?.coordinates||r?.latlngs;if(Array.isArray(p)){if(p.length&&Array.isArray(p[0])&&p[0].length&&typeof p[0][0]!=='number')return p.map(a=>a.map(pt).filter(q=>q&&Number.isFinite(q.lat)&&Number.isFinite(q.lon))).filter(a=>a.length>1);const arr=p.map(pt).filter(q=>q&&Number.isFinite(q.lat)&&Number.isFinite(q.lon));if(arr.length>1)return[arr]}
+    return geoParts(r?.geometry)||geoParts(r?.geometri)||geoParts(r?.geom)||[];
+  }
+  function xy(p,refLat){const R=6371000,lat=Number(p.lat)*Math.PI/180,lon=Number(p.lon)*Math.PI/180,rl=Number(refLat)*Math.PI/180;return{x:R*lon*Math.cos(rl),y:R*lat}}
+  function distPtSegM(p,a,b){p=pt(p);a=pt(a);b=pt(b);if(!p||!a||!b||![p.lat,p.lon,a.lat,a.lon,b.lat,b.lon].every(Number.isFinite))return Infinity;const ref=(p.lat+a.lat+b.lat)/3,P=xy(p,ref),A=xy(a,ref),B=xy(b,ref),dx=B.x-A.x,dy=B.y-A.y,len2=dx*dx+dy*dy;if(!len2)return Math.hypot(P.x-A.x,P.y-A.y);let t=((P.x-A.x)*dx+(P.y-A.y)*dy)/len2;t=Math.max(0,Math.min(1,t));return Math.hypot(P.x-(A.x+t*dx),P.y-(A.y+t*dy))}
+  function bbox(r){const ps=parts(r).flat();let minLat=90,maxLat=-90,minLon=180,maxLon=-180;for(const p of ps){if(!Number.isFinite(p.lat)||!Number.isFinite(p.lon))continue;minLat=Math.min(minLat,p.lat);maxLat=Math.max(maxLat,p.lat);minLon=Math.min(minLon,p.lon);maxLon=Math.max(maxLon,p.lon)}return{minLat,maxLat,minLon,maxLon,ok:minLat<=maxLat}}
+  function bboxClose(a,b,m){const A=bbox(a),B=bbox(b);if(!A.ok||!B.ok)return true;const dlat=m/111320,dlon=m/(111320*Math.max(.25,Math.cos(((A.minLat+A.maxLat+B.minLat+B.maxLat)/4)*Math.PI/180)));return !(A.maxLat+dlat<B.minLat||B.maxLat+dlat<A.minLat||A.maxLon+dlon<B.minLon||B.maxLon+dlon<A.minLon)}
+  function roadDistM(a,b,stopAt){let best=Infinity,A=parts(a),B=parts(b);for(const pa of A){for(let i=1;i<pa.length;i++){for(const pb of B){for(let j=1;j<pb.length;j++){let d=Math.min(distPtSegM(pa[i-1],pb[j-1],pb[j]),distPtSegM(pa[i],pb[j-1],pb[j]),distPtSegM(pb[j-1],pa[i-1],pa[i]),distPtSegM(pb[j],pa[i-1],pa[i]));if(d<best){best=d;if(best<=stopAt)return best}}}}}return best}
+  function roadLenM(r){let sum=0;for(const part of parts(r)){for(let i=1;i<part.length;i++){const a=pt(part[i-1]),b=pt(part[i]);if(a&&b&&[a.lat,a.lon,b.lat,b.lon].every(Number.isFinite)){const ref=(a.lat+b.lat)/2,A=xy(a,ref),B=xy(b,ref);sum+=Math.hypot(B.x-A.x,B.y-A.y)}}}return sum}
+  function isOrdinaryMain(o){const k=catOf(o);if(k!=='F'&&k!=='E'&&k!=='R')return false;if(o?.gsv===true||isKvGsv(o)||/GSV/i.test(String(o?.veg||o?.key||''))||isTrafG(o?.trafikantgruppe)||isTrafG(o?.vegsystemreferanse?.strekning?.trafikantgruppe))return false;return parts(o).length>0}
+  function sig(all){return all.length+'|'+all.map((r,i)=>keyOf(r,i)).join('¦')+'|extra='+(window.__kgsvV12ExtraMain?.length||0)}
+
+  function buildCache(){const all=allRoads(),s=sig(all);if(window.__kgsvV12Cache&&window.__kgsvV12Cache.sig===s)return window.__kgsvV12Cache;const kgsv=all.filter(r=>catOf(r)==='K'&&isKvGsv(r)&&parts(r).length);const main=all.filter(isOrdinaryMain);const mainByCat={F:main.filter(r=>catOf(r)==='F'),E:main.filter(r=>catOf(r)==='E'),R:main.filter(r=>catOf(r)==='R')};const direct=kgsv.map(()=>new Set()),finalCats=kgsv.map(()=>new Set()),near=kgsv.map(()=>({F:Infinity,E:Infinity,R:Infinity}));
+    for(let i=0;i<kgsv.length;i++){const r=kgsv[i];for(const cat of ['F','E','R']){for(const o of mainByCat[cat]){if(!bboxClose(r,o,MAIN_BBOX))continue;const d=roadDistM(r,o,MAIN_BBOX);if(d<near[i][cat])near[i][cat]=d;if(d<=DIRECT){direct[i].add(cat);finalCats[i].add(cat)}}}}
+    const adj=kgsv.map(()=>[]);for(let i=0;i<kgsv.length;i++){for(let j=i+1;j<kgsv.length;j++){if(!bboxClose(kgsv[i],kgsv[j],CONNECT))continue;const d=roadDistM(kgsv[i],kgsv[j],CONNECT);if(d<=CONNECT){adj[i].push(j);adj[j].push(i)}}}
+    for(const cat of ['F','E','R']){const best=kgsv.map(()=>Infinity),q=[];for(let i=0;i<kgsv.length;i++){if(direct[i].has(cat)){best[i]=0;q.push(i)}}for(let qi=0;qi<q.length;qi++){const i=q[qi];for(const j of adj[i]){if(near[j][cat]>MAX_MAIN)continue;const step=Math.max(20,Math.min(roadLenM(kgsv[j])||60,170));const nc=best[i]+step;if(nc>MAX_CHAIN)continue;if(nc+1<best[j]){best[j]=nc;finalCats[j].add(cat);q.push(j)}}}for(let i=0;i<kgsv.length;i++){try{kgsv[i]['_kgsvV12Chain'+cat]=Math.round(best[i]);kgsv[i]['_kgsvV12Near'+cat]=Math.round(near[i][cat])}catch(e){}}}
+    const catsByKey={}, objCats=new WeakMap(),resultCounts={F:0,E:0,R:0};for(let i=0;i<kgsv.length;i++){const arr=Array.from(finalCats[i]);for(const c of arr)resultCounts[c]++;for(const k of [keyOf(kgsv[i],i),String(kgsv[i].veg||''),String(kgsv[i].kortform||'')].filter(Boolean)){catsByKey[k]=arr}try{objCats.set(kgsv[i],new Set(arr));kgsv[i]._kgsvV12Cats=arr.join(',');kgsv[i]._kgsvV12Len=Math.round(roadLenM(kgsv[i]))}catch(e){}}
+    const cache={sig:s,kgsv,main,mainByCat,mainCounts:{F:mainByCat.F.length,E:mainByCat.E.length,R:mainByCat.R.length},catsByKey,objCats,resultCounts,count:kgsv.length,rule:`${VERSION}: allRoads merge + on-demand + fetch refs. direct<=${DIRECT}m, chain<=${MAX_CHAIN}m, nearMain<=${MAX_MAIN}m`};window.__kgsvV12Cache=cache;return cache}
+  window.kgsvV12BuildCache=buildCache;
+
+  function directCatsFor(r,cache){const s=new Set();if(!r||parts(r).length===0)return s;for(const cat of ['F','E','R']){for(const o of cache.mainByCat[cat]||[]){if(!bboxClose(r,o,MAIN_BBOX))continue;const d=roadDistM(r,o,MAIN_BBOX);if(d<=DIRECT){s.add(cat);break}}}return s}
+  function alongCats(r){const c=buildCache();let set=null;try{set=c.objCats.get(r)}catch(e){}if(!set){const keys=[keyOf(r),String(r?.veg||''),String(r?.kortform||'')].filter(Boolean);for(const k of keys){if(c.catsByKey[k]){set=new Set(c.catsByKey[k]);break}}}
+    if(!set||set.size===0){set=directCatsFor(r,c)}
+    return set||new Set();
+  }
+  window.kgsvV12AlongCats=alongCats;
+
+  function mode(){const m=String(window.__kgsvV12AlongMode||'').toUpperCase();return (m==='F'||m==='E'||m==='R')?m:''}
+  function active(el){if(!el)return false;return el.classList.contains('active')||el.classList.contains('selected')||el.getAttribute('aria-pressed')==='true'||el.getAttribute('aria-selected')==='true'||el.checked===true||/active|selected|on/i.test(String(el.className||''))}
+  function elText(el){return String(el?.textContent||'').replace(/\s+/g,' ').trim()}
+  function findCatEl(label){const want=label.toUpperCase();const els=[...document.querySelectorAll('button,[role="button"],label,span,div,a')];return els.find(e=>elText(e).toUpperCase()===want)||els.find(e=>elText(e).toUpperCase().includes(want)&&elText(e).length<=40)}
+  function callRefresh(){window.__kgsvV12Cache=null;['renderAll','render','refresh','refreshViews','renderRoads','renderMap','renderTable','renderOverview','updateUI','updateStats','applyFilters','updateRoadVisibility','drawRoads'].forEach(n=>{try{if(typeof window[n]==='function')window[n]()}catch(e){}});try{window.dispatchEvent(new Event('resize'))}catch(e){}}
+  function ensureBase(){const base=findCatEl('KV-GSV');if(base&&!active(base)){try{base.click()}catch(e){}}setTimeout(callRefresh,30)}
+
+  function boundsString(){try{const m=window.map||window.leafletMap||window._map;if(m&&typeof m.getBounds==='function'){const b=m.getBounds();const padLat=Math.max(0.003,(b.getNorth()-b.getSouth())*.10),padLon=Math.max(0.003,(b.getEast()-b.getWest())*.10);return [b.getWest()-padLon,b.getSouth()-padLat,b.getEast()+padLon,b.getNorth()+padLat].map(x=>Number(x).toFixed(6)).join(',')}}catch(e){}return''}
+  function segToRoad(seg,cat,idx){const p=seg?.properties||seg;const geom=seg?.geometry||p?.geometry||p?.geometri||seg?.geometri;const vs=p?.vegsystemreferanse||p?.vegsystem||{};const kort=txt(vs.kortform||p?.kortform||p?.veg||p?.vegsystemreferanse)||(`${cat} ref ${idx}`);return{kat:cat,gsv:false,veg:kort,key:'kgsvV12ref:'+cat+':'+(p?.id||p?.veglenkesekvensid||p?.veglenkesekvens?.id||idx)+':'+kort,geometry:geom,geometri:p?.geometri||seg?.geometri,vegsystemreferanse:vs,__kgsvV12Ref:true}}
+  function extractSegs(data){if(!data)return[];if(Array.isArray(data))return data;if(Array.isArray(data.features))return data.features;if(Array.isArray(data.objekter))return data.objekter;if(Array.isArray(data.segmenter))return data.segmenter;if(Array.isArray(data.vegnettsegmenter))return data.vegnettsegmenter;if(Array.isArray(data.data))return data.data;return[]}
+  async function fetchRefs(cat){const bbox=boundsString();if(!bbox||!window.fetch)return;window.__kgsvV12Fetch=window.__kgsvV12Fetch||{};const key=cat+'|'+bbox.replace(/\.\d{3}\d+/g,'');if(window.__kgsvV12Fetch[key])return;window.__kgsvV12Fetch[key]='pending';const ref={F:'Fv',E:'Ev',R:'Rv'}[cat];const bases=['https://nvdbapiles-v4.atlas.vegvesen.no/vegnett/veglenkesekvenser/segmentert','https://nvdbapiles-v3.atlas.vegvesen.no/vegnett/veglenkesekvenser/segmentert'];for(const base of bases){try{const url=base+'?srid=4326&vegsystemreferanse='+encodeURIComponent(ref)+'&kartutsnitt='+encodeURIComponent(bbox);const res=await fetch(url,{headers:{Accept:'application/json'}});if(!res.ok)continue;const data=await res.json();const segs=extractSegs(data).map((s,i)=>segToRoad(s,cat,i)).filter(r=>parts(r).length>0);if(segs.length){window.__kgsvV12ExtraMain=window.__kgsvV12ExtraMain||[];window.__kgsvV12ExtraMain.push(...segs);window.__kgsvV12Fetch[key]='ok:'+segs.length;window.__kgsvV12Cache=null;callRefresh();return}}catch(e){}}
+    window.__kgsvV12Fetch[key]='failed';
+  }
+  function ensureRefsForMode(){const m=mode();if(!m)return;try{fetchRefs(m)}catch(e){}}
+
+  function setMode(m){window.__kgsvV12AlongMode=(mode()===m)?'':m;updateUI();ensureRefsForMode();ensureBase();callRefresh()}
+  function updateUI(){const m=mode();document.querySelectorAll('[data-kgsv-v12-mode]').forEach(b=>{const on=b.getAttribute('data-kgsv-v12-mode')===m;b.classList.toggle('active',on);b.style.background=on?'#d6a900':'rgba(255,255,255,.06)';b.style.color=on?'#111':'#fff';b.style.borderColor=on?'#ffe066':'rgba(255,255,255,.18)'})}
+  function installUI(){if(document.getElementById('kgsv-v12-langs-ui')){updateUI();return true}const base=findCatEl('KV-GSV');if(!base)return false;const host=base.parentElement||base;const wrap=document.createElement('div');wrap.id='kgsv-v12-langs-ui';wrap.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;margin-bottom:2px;width:100%';[['F','langs FV'],['E','langs EV'],['R','langs RV']].forEach(([m,t])=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.setAttribute('data-kgsv-v12-mode',m);b.style.cssText='border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 9px;font-weight:800;font-size:12px;background:rgba(255,255,255,.06);color:#fff;cursor:pointer';b.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();setMode(m)});wrap.appendChild(b)});try{host.appendChild(wrap)}catch(e){base.insertAdjacentElement('afterend',wrap)}base.addEventListener('click',()=>{if(!window.__kgsvV12Syncing){window.__kgsvV12AlongMode='';setTimeout(()=>{updateUI();callRefresh()},0)}},true);updateUI();return true}
+  let tries=0;function tick(){tries++;installUI();if(tries<100)setTimeout(tick,250)};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick();try{new MutationObserver(()=>installUI()).observe(document.body,{childList:true,subtree:true})}catch(e){}
+
+  window.kgsvV12Mode=mode;
+})();
+/* === /KV-GSV v12 === */
 
 </script></body></html>
