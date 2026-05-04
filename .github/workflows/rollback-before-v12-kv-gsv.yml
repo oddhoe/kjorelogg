@@ -1,0 +1,67 @@
+name: Nødfiks - rull tilbake før KV-GSV v12/v13/v14
+
+on:
+  workflow_dispatch:
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore index files from before first bad KV-GSV patch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Leter etter første dårlige commit i historikken ..."
+          BAD_COMMIT="$(git log --format='%H%x09%s' -- docs/index1.html docs/index.html \
+            | awk -F '\t' '
+                $2 == "Fix KV-GSV langsfilter reference basis" ||
+                $2 == "Fix global roadFilterKey for KV-GSV filter" ||
+                $2 == "Fix KV-GSV v9 compatibility helpers" {print $1}
+              ' \
+            | tail -n 1)"
+
+          if [ -z "${BAD_COMMIT}" ]; then
+            echo "Fant ikke v12/v13/v14-commitene med forventede commit-meldinger. Avbryter uten å endre filer."
+            exit 1
+          fi
+
+          RESTORE_COMMIT="${BAD_COMMIT}^"
+          echo "Første dårlige commit: ${BAD_COMMIT}"
+          echo "Gjenoppretter docs/index*.html fra: ${RESTORE_COMMIT}"
+
+          # Restore whichever app entry files exist in that commit.
+          if git cat-file -e "${RESTORE_COMMIT}:docs/index1.html" 2>/dev/null; then
+            git checkout "${RESTORE_COMMIT}" -- docs/index1.html
+            echo "Gjenopprettet docs/index1.html"
+          fi
+
+          if git cat-file -e "${RESTORE_COMMIT}:docs/index.html" 2>/dev/null; then
+            git checkout "${RESTORE_COMMIT}" -- docs/index.html
+            echo "Gjenopprettet docs/index.html"
+          fi
+
+          echo "Status etter gjenoppretting:"
+          git status --short
+
+      - name: Commit and push rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index1.html docs/index.html 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "Ingen endringer å committe."
+          else
+            git commit -m "Nødfiks: restore før KV-GSV v12-v14"
+            git push
+          fi
