@@ -88,8 +88,8 @@ function setMessage(t,type='notice'){document.getElementById('message-area').inn
 function headingToCompass(h){const dirs=['N','NØ','Ø','SØ','S','SV','V','NV'];return dirs[Math.round(h/45)%8]}
 function roadPrefixFromKat(k){return k==='E'?'Ev':k==='R'?'Rv':k==='K'?'Kv':'Fv'}
 function roadMainKatLabel(k){return k==='E'?'EV':k==='R'?'RV':k==='K'?'KV':'FV'}
-function roadFilterKey(r){return r.kat+(r.gsv?'GSV':'')}
-function getRoadMetaFromKey(key){let kat='F';if(/^Ev/i.test(key))kat='E';else if(/^Rv/i.test(key))kat='R';else if(/^Kv/i.test(key))kat='K';const m=String(key).match(/S\d+D(\d+)/i);return{kat,gsv:!!(m&&Number(m[1])>=100)}}
+function roadFilterKey(r){const isKvFaseG=(r.kat==='K'&&r.fase==='G');return r.kat+((r.gsv||isKvFaseG)?'GSV':'')}
+function getRoadMetaFromKey(key){let kat='F';let kvFaseG=false;if(/^Ev/i.test(key))kat='E';else if(/^Rv/i.test(key))kat='R';else if(/^Kv/i.test(key)){kat='K';if(/^Kv\d+G/i.test(key))kvFaseG=true}const m=String(key).match(/S\d+D(\d+)/i);const gsv=kvFaseG||!!(m&&Number(m[1])>=100);return{kat,gsv}}
 function roadPassesCategoryFilter(r){return !!settings.categoryFilter[roadFilterKey(r)]}
 function keyPassesCategoryFilter(key){const m=getRoadMetaFromKey(key);return !!settings.categoryFilter[m.kat+(m.gsv?'GSV':'')]}
 function getGeomParts(entry){if(Array.isArray(entry))return entry;if(entry&&Array.isArray(entry.parts))return entry.parts;return[]}
@@ -1750,12 +1750,12 @@ async function loadRoadsAround(lat,lon,radiusKm,fylkeNr){
    // Disse er egne sløyfer i NVDB-vegnettet og skal vanligvis ikke inn i tilstandsmålinger.
    // Brukere som likevel vil måle dem kan slå PÅ "Inkluder sideanlegg" i menyen.
    if(!settings.includeSideanlegg&&dn.includes('sideanlegg')){skippedSideanlegg++;continue}
-   const strek=vs.strekning,seg=`S${strek.strekning}D${strek.delstrekning}`,gsv=isGSV(seg),vegnavn=`${roadPrefixFromKat(kat)}${vegsys.nummer}${vs.klasse||vegsys.klasse||''}`,parts=parseWkt(s?.geometri?.wkt).map(p=>p.filter(isVLL)).filter(p=>p.length>=2);
+   const strek=vs.strekning,seg=`S${strek.strekning}D${strek.delstrekning}`,_kvFase=String(vegsys.fase||'').toUpperCase(),_isKvFaseG=(kat==='K'&&_kvFase==='G'),gsv=isGSV(seg)||_isKvFaseG,_kvFaseSuffix=_isKvFaseG?'G':'',vegnavn=`${roadPrefixFromKat(kat)}${vegsys.nummer}${_kvFaseSuffix}${vs.klasse||vegsys.klasse||''}`,parts=parseWkt(s?.geometri?.wkt).map(p=>p.filter(isVLL)).filter(p=>p.length>=2);
    if(!parts.length)continue;
    const fraM=Number(strek.fra_meter)||0,tilM=Number(strek.til_meter)||0;
    // v2.0.32: lagre typeVeg og detaljnivå på vegposten slik at "Rens sideanlegg fra historikk"
    // og fremtidige filterverktøy kan jobbe med konkrete metadata.
-   out.push({key:`${vegnavn}_${seg}_${out.length}`,veg:vegnavn,kat,gsv,nr:Number(vegsys.nummer)||0,seg,str:Number(strek.strekning)||0,dstr:Number(strek.delstrekning)||0,fra:fraM,til:tilM,len:Number(s.lengde)||0,fylke:fylkeNr?String(fylkeNr):'',typeVeg:s.typeVeg||'',detaljnivaa:s.detaljnivå||s.detaljniva||'',partsWithMeter:parts.map(p=>({coords:p,fra:fraM,til:tilM})),parts,minDist:null})
+   out.push({key:`${vegnavn}_${seg}_${out.length}`,veg:vegnavn,kat,gsv,fase:_kvFase,nr:Number(vegsys.nummer)||0,seg,str:Number(strek.strekning)||0,dstr:Number(strek.delstrekning)||0,fra:fraM,til:tilM,len:Number(s.lengde)||0,fylke:fylkeNr?String(fylkeNr):'',typeVeg:s.typeVeg||'',detaljnivaa:s.detaljnivå||s.detaljniva||'',partsWithMeter:parts.map(p=>({coords:p,fra:fraM,til:tilM})),parts,minDist:null})
   }
   url=data?.metadata?.neste?.href||null
  }
