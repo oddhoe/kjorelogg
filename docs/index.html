@@ -1,4 +1,95 @@
 <!DOCTYPE html><html lang="no"><head>
+<script id="kgsv-v14-v9-kompat-shim">
+/* === KV-GSV v14: v9-kompatible helperfunksjoner ===
+   Årsak: noen eldre patchlinjer i loadRoadsAround bruker kgsvV9Text/
+   kgsvV9HasKvG/kgsvV9IsTrafG/kgsvV9IsGsvType, mens v12/v13 fjernet
+   selve v9-blokken. Disse window-helperne gjør at gamle kall ikke stopper
+   vegnettlasting. */
+(function(w){
+  function ownText(v){
+    if(v==null) return '';
+    if(typeof v==='string' || typeof v==='number' || typeof v==='boolean') return String(v);
+    if(Array.isArray(v)) return v.map(ownText).join(' ');
+    if(typeof v==='object'){
+      return [v.kode,v.verdi,v.navn,v.name,v.tekst,v.value,v.id,v.beskrivelse,v.kortform]
+        .map(ownText).filter(Boolean).join(' ');
+    }
+    return String(v);
+  }
+  function text(v){
+    try{
+      if(w.kgsvV12Text && w.kgsvV12Text!==text) return w.kgsvV12Text(v);
+      if(w.kgsvV13Text && w.kgsvV13Text!==text) return w.kgsvV13Text(v);
+    }catch(e){}
+    return ownText(v);
+  }
+  function upper(v){
+    return text(v).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+  function isTrafG(v){
+    const s = upper(v);
+    return /(^|[^A-Z])G([^A-Z]|$)/.test(s) ||
+           s.includes('GAENDE') || s.includes('GÅENDE') ||
+           s.includes('SYKLENDE') ||
+           (s.includes('GANG') && s.includes('SYKKEL'));
+  }
+  function isGsvType(v){
+    const s = upper(v);
+    return s.includes('GANG- OG SYKKEL') ||
+           s.includes('GANG OG SYKKEL') ||
+           s.includes('GANG/SYKKEL') ||
+           s.includes('SYKKELVEG') || s.includes('SYKKELVEI') ||
+           s.includes('GANGVEG') || s.includes('GANGVEI');
+  }
+  function hasKvG(v){
+    const s = text(v);
+    return /\bKV\s*\d+\s+G\b/i.test(s) ||
+           /\bK\s*V\s*\d+\s+G\b/i.test(s) ||
+           /^Kv\d+G/i.test(s) || /^KV\d+G/i.test(s);
+  }
+  function catOf(o){
+    try{
+      if(w.kgsvV12CatOf) return String(w.kgsvV12CatOf(o)||'').toUpperCase();
+      if(w.kgsvV13CatOf) return String(w.kgsvV13CatOf(o)||'').toUpperCase();
+    }catch(e){}
+    let k = String(o && (o.kat ?? o.vegkategori ?? o.kategori) || '').toUpperCase();
+    if(k==='EV') return 'E'; if(k==='RV') return 'R'; if(k==='FV') return 'F'; if(k==='KV') return 'K';
+    if(['E','R','F','K'].includes(k)) return k;
+    const s = upper(o && (o.veg || o.key || o.kortform || o.vegsystemreferanse));
+    if(/\bEV\s*\d+|^EV\d+/.test(s)) return 'E';
+    if(/\bRV\s*\d+|^RV\d+/.test(s)) return 'R';
+    if(/\bFV\s*\d+|^FV\d+/.test(s)) return 'F';
+    if(/\bKV\s*\d+|^KV\d+|^KV/.test(s)) return 'K';
+    return k;
+  }
+  function isKvGsv(r){
+    try{
+      if(w.kgsvV12IsKvGsv) return !!w.kgsvV12IsKvGsv(r);
+      if(w.kgsvV13IsKvGsv) return !!w.kgsvV13IsKvGsv(r);
+    }catch(e){}
+    return catOf(r)==='K' && (
+      isTrafG(r && r.trafikantgruppe) ||
+      isTrafG(r && r.vegsystemreferanse && r.vegsystemreferanse.strekning && r.vegsystemreferanse.strekning.trafikantgruppe) ||
+      isTrafG(r && r.vegsystem && r.vegsystem.strekning && r.vegsystem.strekning.trafikantgruppe) ||
+      hasKvG(r && (r.veg || r.key || '')) ||
+      hasKvG(r && r.kortform) ||
+      hasKvG(r && r.vegsystemreferanse && r.vegsystemreferanse.kortform) ||
+      isGsvType(r && (r.typeVegText || r.typeVeg || r.typeveg || r.objekttype || r.navn || r.detNavn))
+    );
+  }
+
+  // Opprett bare global-propertyer. Dette er trygt selv om senere script har egne funksjoner.
+  w.kgsvV9Text      = w.kgsvV9Text      || text;
+  w.kgsvV9Upper     = w.kgsvV9Upper     || upper;
+  w.kgsvV9IsTrafG   = w.kgsvV9IsTrafG   || isTrafG;
+  w.kgsvV9IsGsvType = w.kgsvV9IsGsvType || isGsvType;
+  w.kgsvV9HasKvG    = w.kgsvV9HasKvG    || hasKvG;
+  w.kgsvV9CatOf     = w.kgsvV9CatOf     || catOf;
+  w.kgsvV9IsKvGsv   = w.kgsvV9IsKvGsv   || isKvGsv;
+})(window);
+/* === /KV-GSV v14: v9-kompatible helperfunksjoner === */
+</script>
+
 
 <script id="kgsv-v13-roadfilterkey-shim">
 /* === KV-GSV v13 roadFilterKey global shim === */
