@@ -3195,4 +3195,206 @@ function kgsvV9UpdateUI(){const m=kgsvV9Mode();document.querySelectorAll('[data-
 function kgsvV9InstallUI(){if(document.getElementById('kgsv-v9-langs-ui')){kgsvV9UpdateUI();return true}const base=kgsvV9FindCatEl('KV-GSV');if(!base)return false;const host=base.parentElement||base;const wrap=document.createElement('div');wrap.id='kgsv-v9-langs-ui';wrap.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;margin-bottom:2px;width:100%';[['F','langs FV'],['E','langs EV'],['R','langs RV']].forEach(([m,t])=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.setAttribute('data-kgsv-v9-mode',m);b.style.cssText='border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 9px;font-weight:800;font-size:12px;background:rgba(255,255,255,.06);color:#fff;cursor:pointer';b.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();kgsvV9SetMode(m)});wrap.appendChild(b)});try{host.appendChild(wrap)}catch(e){base.insertAdjacentElement('afterend',wrap)}base.addEventListener('click',()=>{if(!window.__kgsvV9Syncing){window.__kgsvV9AlongMode='';setTimeout(()=>{kgsvV9UpdateUI();kgsvV9CallRefresh()},0)}},true);document.addEventListener('click',ev=>{const t=kgsvV9ElText(ev.target).toUpperCase();if(!window.__kgsvV9Syncing&&(t==='ALLE'||t==='INGEN'||t==='NULLSTILL')){window.__kgsvV9AlongMode='';setTimeout(()=>{kgsvV9UpdateUI();kgsvV9CallRefresh()},0)}},true);kgsvV9UpdateUI();return true}
 (function(){let tries=0;function tick(){tries++;kgsvV9InstallUI();if(tries<40&&!document.getElementById('kgsv-v9-langs-ui'))setTimeout(tick,400)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick()})();
 /* === /KV-GSV v9 === */
+
+
+/* === MENY-RYDDING v10 === */
+(function(){
+  const STYLE_ID='menu-sort-v10-style';
+  const BLOCK_ATTR='data-menu-sort-v10';
+  const GROUP_ATTR='data-menu-sort-v10-group';
+
+  function norm(s){return String(s||'').replace(/\s+/g,' ').trim()}
+  function text(el){return norm(el && el.textContent)}
+  function cleanLabel(s){return norm(String(s||'').replace(/^[^\p{L}\p{N}]+/u,''))}
+  function startsWithLabel(t, label){
+    const a=cleanLabel(t).toLowerCase(), b=label.toLowerCase();
+    return a===b || a.startsWith(b+' ') || a.startsWith(b+' av') || a.startsWith(b+' på');
+  }
+  function exactLabel(t, label){return cleanLabel(t).toLowerCase()===label.toLowerCase()}
+
+  const defs=[
+    {id:'update',        group:'data',     label:'Oppdater området',          match:t=>startsWithLabel(t,'Oppdater området')},
+    {id:'import',        group:'data',     label:'Importer',                  match:t=>exactLabel(t,'Importer')},
+    {id:'export',        group:'data',     label:'Eksporter',                 match:t=>exactLabel(t,'Eksporter')},
+    {id:'snapshot',      group:'data',     label:'Gjenopprett fra snapshot',  match:t=>startsWithLabel(t,'Gjenopprett fra snapshot')},
+    {id:'gpx',           group:'data',     label:'Eksporter GPX-spor',        match:t=>startsWithLabel(t,'Eksporter GPX-spor')},
+
+    {id:'offlinecache',  group:'offline',  label:'Offline-cache',             match:t=>startsWithLabel(t,'Offline-cache')},
+    {id:'offlinemode',   group:'offline',  label:'Offline-modus',             match:t=>startsWithLabel(t,'Offline-modus')},
+    {id:'datasparing',   group:'offline',  label:'Datasparing',               match:t=>startsWithLabel(t,'Datasparing')},
+    {id:'bggps',         group:'offline',  label:'Bakgrunns-GPS',             match:t=>startsWithLabel(t,'Bakgrunns-GPS')},
+
+    {id:'sideanlegg',    group:'kart',     label:'Sideanlegg',                match:t=>startsWithLabel(t,'Sideanlegg')},
+    {id:'marker-set',    group:'kart',     label:'Sett manuell kartmarkør',   match:t=>startsWithLabel(t,'Sett manuell kartmarkør')},
+    {id:'marker-del',    group:'kart',     label:'Fjern manuell markør',      match:t=>startsWithLabel(t,'Fjern manuell markør')},
+
+    {id:'planmodus',     group:'rute',     label:'Planmodus',                 match:t=>startsWithLabel(t,'Planmodus')},
+    {id:'reset-route',   group:'rute',     label:'Nullstill dagsrute',        match:t=>startsWithLabel(t,'Nullstill dagsrute')},
+
+    {id:'direction',     group:'geo',      label:'Korriger retning',          match:t=>startsWithLabel(t,'Korriger retning')},
+    {id:'repairgeo',     group:'geo',      label:'Reparer geometri',          match:t=>startsWithLabel(t,'Reparer geometri')},
+    {id:'clean-side',    group:'geo',      label:'Rens sideanlegg fra historikk', match:t=>startsWithLabel(t,'Rens sideanlegg fra historikk')},
+
+    {id:'exportlog',     group:'debug',    label:'Eksporter feillogg',        match:t=>startsWithLabel(t,'Eksporter feillogg')},
+    {id:'clearlog',      group:'debug',    label:'Tøm feillogg',              match:t=>startsWithLabel(t,'Tøm feillogg')},
+    {id:'reset',         group:'debug',    label:'Nullstill',                 match:t=>exactLabel(t,'Nullstill')}
+  ];
+
+  const groups=[
+    {id:'data',    title:'Område og data'},
+    {id:'offline', title:'Offline og GPS'},
+    {id:'vegkat',  title:'Vegkategorier og filter'},
+    {id:'kart',    title:'Kart og markører'},
+    {id:'rute',    title:'Plan og dagsrute'},
+    {id:'geo',     title:'Geometri og vedlikehold'},
+    {id:'debug',   title:'Feillogg og nullstilling'}
+  ];
+
+  function ensureStyle(){
+    if(document.getElementById(STYLE_ID))return;
+    const css=`
+      [${GROUP_ATTR}]{border-top:1px solid rgba(255,255,255,.10);padding:10px 0 8px;margin:2px 0 0;display:flex;flex-direction:column;gap:6px;}
+      [${GROUP_ATTR}]:first-child{border-top:0;margin-top:0;padding-top:0;}
+      .menu-sort-v10-title{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#91a8d8;font-weight:900;margin:0 0 2px 0;opacity:.95;}
+      .menu-sort-v10-note{font-size:11px;color:#888;margin:3px 0 0 0;}
+      [${GROUP_ATTR}] > button,[${GROUP_ATTR}] > [role="button"],[${GROUP_ATTR}] > a,[${GROUP_ATTR}] > label,[${GROUP_ATTR}] > div:not(.menu-sort-v10-title):not(.menu-sort-v10-note){max-width:100%;}
+      [data-menu-sort-v10-hidden="1"]{display:none!important;}
+    `;
+    const st=document.createElement('style');st.id=STYLE_ID;st.textContent=css;document.head.appendChild(st);
+  }
+
+  function candidateRoot(){
+    const nodes=[...document.querySelectorAll('aside,nav,section,div')];
+    const must=['Importer','Offline-cache'];
+    const roots=nodes.filter(el=>{
+      if(el.closest('['+GROUP_ATTR+']'))return false;
+      const t=text(el);
+      return must.every(m=>t.includes(m)) && (t.includes('VEGKATEGORIER') || t.includes('Korriger retning') || t.includes('KV-GSV'));
+    });
+    roots.sort((a,b)=>text(a).length-text(b).length);
+    return roots[0]||null;
+  }
+
+  function countKnown(t){
+    let n=0;
+    for(const d of defs){try{if(d.match(t))n++}catch(e){}}
+    if(t.includes('VEGKATEGORIER'))n++;
+    return n;
+  }
+
+  function promoteToRow(root, el, label){
+    let row=el;
+    while(row.parentElement && row.parentElement!==root){
+      const p=row.parentElement, pt=text(p), rt=text(row);
+      if(p.hasAttribute(GROUP_ATTR))break;
+      if(countKnown(pt)>1)break;
+      if(pt.length>Math.max(60, rt.length+35))break;
+      row=p;
+    }
+    return row;
+  }
+
+  function findItem(root, def){
+    const els=[...root.querySelectorAll('button,[role="button"],a,label,div,span')]
+      .filter(el=>!el.hasAttribute(GROUP_ATTR) && !el.classList.contains('menu-sort-v10-title'));
+    const matches=[];
+    for(const el of els){
+      const t=text(el);
+      if(!t || t.length>90)continue;
+      try{if(def.match(t))matches.push(el)}catch(e){}
+    }
+    matches.sort((a,b)=>text(a).length-text(b).length);
+    const el=matches[0];
+    return el?promoteToRow(root,el,def.label):null;
+  }
+
+  function findVegkatBlock(root){
+    const direct=[...root.children].find(ch=>{
+      const t=text(ch);
+      return t.includes('VEGKATEGORIER') && (t.includes('KV-GSV')||t.includes('EV-GSV')||t.includes('FV-GSV')||t.includes('langs FV'));
+    });
+    if(direct)return direct;
+    const headings=[...root.querySelectorAll('div,span,strong,b,p')].filter(el=>text(el).toUpperCase()==='VEGKATEGORIER');
+    const h=headings[0];
+    if(!h)return null;
+    let row=h;
+    while(row.parentElement && row.parentElement!==root){
+      const pt=text(row.parentElement);
+      if(pt.includes('Importer')||pt.includes('Offline-cache')||pt.includes('Korriger retning'))break;
+      row=row.parentElement;
+      if(row.textContent && row.textContent.length>350)break;
+    }
+    return row;
+  }
+
+  function removeOldGenerated(root){
+    root.querySelectorAll('['+GROUP_ATTR+']').forEach(g=>{
+      while(g.firstChild){
+        const ch=g.firstChild;
+        if(ch.classList && (ch.classList.contains('menu-sort-v10-title')||ch.classList.contains('menu-sort-v10-note'))){g.removeChild(ch);}
+        else{g.parentNode.insertBefore(ch,g);}
+      }
+      g.remove();
+    });
+    root.querySelectorAll('[data-menu-sort-v10-hidden="1"]').forEach(el=>el.removeAttribute('data-menu-sort-v10-hidden'));
+  }
+
+  function cleanupSeparators(root){
+    [...root.children].forEach(ch=>{
+      const t=text(ch);
+      const tag=(ch.tagName||'').toLowerCase();
+      if(tag==='hr'||(!t && ch.children.length===0))ch.setAttribute('data-menu-sort-v10-hidden','1');
+    });
+  }
+
+  function applyMenuSort(){
+    ensureStyle();
+    const root=candidateRoot();
+    if(!root)return false;
+    if(root.__menuSortV10Busy)return true;
+    root.__menuSortV10Busy=true;
+    try{
+      removeOldGenerated(root);
+      const found={};
+      const used=new Set();
+      for(const def of defs){
+        const node=findItem(root,def);
+        if(node && !used.has(node)){
+          found[def.id]=node;
+          used.add(node);
+        }
+      }
+      const vegkat=findVegkatBlock(root);
+      if(vegkat && !used.has(vegkat)){found.__vegkat=vegkat;used.add(vegkat)}
+
+      const anchor=[...used][0] || root.firstElementChild;
+      const frag=document.createDocumentFragment();
+      for(const g of groups){
+        const grp=document.createElement('div');
+        grp.setAttribute(GROUP_ATTR,g.id);
+        const title=document.createElement('div');
+        title.className='menu-sort-v10-title';
+        title.textContent=g.title;
+        grp.appendChild(title);
+        if(g.id==='vegkat' && found.__vegkat)grp.appendChild(found.__vegkat);
+        defs.filter(d=>d.group===g.id).forEach(d=>{if(found[d.id])grp.appendChild(found[d.id])});
+        if(grp.children.length>1)frag.appendChild(grp);
+      }
+      if(anchor && anchor.parentNode===root)root.insertBefore(frag,anchor); else root.insertBefore(frag,root.firstChild);
+      cleanupSeparators(root);
+      root.setAttribute(BLOCK_ATTR,'1');
+      return true;
+    }finally{
+      setTimeout(()=>{try{root.__menuSortV10Busy=false}catch(e){}},50);
+    }
+  }
+
+  let tries=0;
+  function tick(){tries++;applyMenuSort();if(tries<80)setTimeout(tick,300)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick();
+  const mo=new MutationObserver(()=>{if(!window.__menuSortV10Timer){window.__menuSortV10Timer=setTimeout(()=>{window.__menuSortV10Timer=null;applyMenuSort()},120)}});
+  try{mo.observe(document.body,{childList:true,subtree:true})}catch(e){}
+})();
+/* === /MENY-RYDDING v10 === */
+
 </script></body></html>
