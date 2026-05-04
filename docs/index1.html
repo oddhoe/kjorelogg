@@ -50,7 +50,7 @@ const DEFAULT_CATEGORY_FILTER={E:false,EGSV:false,R:false,RGSV:false,F:true,FGSV
 // v2.0.32: settings.includeSideanlegg default = false. NVDB-segmenter med detaljnivå=Sideanlegg
 // (rasteplasser, P-plasser, bensinstasjoner, snuplasser) filtreres ut fra vegnettet, slik at de
 // ikke dukker opp som målbare strekninger. Kan slås PÅ via meny hvis behov.
-let settings={dataSaver:true,backgroundGps:true,includeSideanlegg:false,categoryFilter:{...DEFAULT_CATEGORY_FILTER}};
+let settings={dataSaver:false,backgroundGps:true,includeSideanlegg:false,categoryFilter:{...DEFAULT_CATEGORY_FILTER}};
 let roads=[],skipKeys=new Set(),drivenKeys=new Set(),oneWayKeys=new Set(),directionState={},selectedTableKeys=new Set(),planKeys=new Set(),visitLog={},geomCache={},routeLog={},manualMarker=null,planLayer=null;
 let gps={watching:false,watchId:null,lastPos:null,acc:null,speed:null,heading:null,activeKey:null,detectedFylke:null,activeDir:null,exitCount:0,_lastActiveKey:null,_activeKeyLeftAt:null,_candidateKey:null,_candidateCount:0,_candidateDist:null,_sessionId:null,_sessionStartedAt:null,_dirFlipCandidate:null,_dirFlipCount:0};
 let map=null,carMarker=null,carTailLayer=null,roadLayers=[],progressMap=null;
@@ -2232,7 +2232,13 @@ function updateHeaderTitle(){
  if(title)title.textContent=fylkeName?`Kjørelogg · ${fylkeName}`:'Kjørelogg';
 }
 function getFilteredTableRows(){const sort=document.getElementById('table-sort').value;let arr=activeFilteredRoads().slice();arr.sort((a,b)=>{if(sort==='veg-asc')return a.veg.localeCompare(b.veg,'no');if(sort==='veg-desc')return b.veg.localeCompare(a.veg,'no');if(sort==='len-asc')return roadRenderLen(a)-roadRenderLen(b);if(sort==='len-desc')return roadRenderLen(b)-roadRenderLen(a);if(sort==='dist-asc')return(a.minDist??1e9)-(b.minDist??1e9);if(sort==='dist-desc')return(b.minDist??-1)-(a.minDist??-1);return 0});return arr}
-function renderStats(){const vis=activeFilteredRoads(),n=vis.length,km=(vis.reduce((s,r)=>s+roadRenderLen(r),0)/1000).toFixed(1),cat=activeCategoryText(),fylkeName=getActiveFylkeName();document.getElementById('stat-text').textContent=`${n} strekninger · ${km} km · ${cat}`;document.getElementById('prog-fill').style.width='100%';updateHeaderTitle();document.getElementById('hdr-sub').textContent=`${n} stk · ${km} km · ${cat}${fylkeName?` · ${fylkeName}`:''}${settings.dataSaver?' · datasparing':''}`}
+
+/* DATASPARING DISABLED - menyvalget er fjernet */
+try {
+  settings.dataSaver = false;
+  try { saveSettings(); } catch(e) {}
+} catch(e) {}
+function renderStats(){const vis=activeFilteredRoads(),n=vis.length,km=(vis.reduce((s,r)=>s+roadRenderLen(r),0)/1000).toFixed(1),cat=activeCategoryText(),fylkeName=getActiveFylkeName();document.getElementById('stat-text').textContent=`${n} strekninger · ${km} km · ${cat}`;document.getElementById('prog-fill').style.width='100%';updateHeaderTitle();document.getElementById('hdr-sub').textContent=`${n} stk · ${km} km · ${cat}${fylkeName?` · ${fylkeName}`:''}`}
 function catBadgeHtml(r){const k=roadFilterKey(r),color=k==='E'?'#6a1b9a':k==='EGSV'?'#8e24aa':k==='R'?'#1565c0':k==='RGSV'?'#1976d2':k==='F'?'#2e7d32':'#43a047';return`<span style="display:inline-block;background:${color};color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:900;margin-right:6px">${roadMainKatLabel(r.kat)}${r.gsv?'-GSV':''}</span>`}
 function renderRoads(){
  const el=document.getElementById('road-list'),vis=activeFilteredRoads().sort((a,b)=>(a.minDist??1e9)-(b.minDist??1e9));if(!vis.length){el.innerHTML='<div class="loading">Ingen veger funnet innen søkeradiusen.</div>';return}
@@ -2792,7 +2798,7 @@ document.getElementById('dl-clear').addEventListener('click',async()=>{const f=d
 document.getElementById('dl-start').addEventListener('click',startOfflineDownload);
 document.getElementById('dl-fylke').addEventListener('change',updateOfflineCacheInfo);
 document.getElementById('btn-offlinemode').addEventListener('click',function(){offlineMode=!offlineMode;this.textContent=offlineMode?'✈️ Offline-modus PÅ':'✈️ Offline-modus AV';closeMenu();setMessage(offlineMode?'Offline-modus aktiv – bruker kun lokal cache':'Online-modus – laster fra NVDB ved behov','notice')});
-document.getElementById('btn-datasaver').addEventListener('click',()=>{settings.dataSaver=!settings.dataSaver;saveSettings();applySettingsToUI();document.getElementById('radius').value=String(currentProfile().radiusDefault);lastCenter=null;lastCenterRadius=null;lastCenterFylke=null;rebuildMapIfNeeded();closeMenu();setMessage(settings.dataSaver?'Datasparing er slått PÅ.':'Datasparing er slått AV.','success');renderStats();const fc=currentFetchCenter();if(fc)updateFromCenter(true,fc.lat,fc.lon)});
+(()=>{const b=document.getElementById('btn-datasaver'); if(b){b.addEventListener('click',()=>{settings.dataSaver=!settings.dataSaver;saveSettings();}})();applySettingsToUI();document.getElementById('radius').value=String(currentProfile().radiusDefault);lastCenter=null;lastCenterRadius=null;lastCenterFylke=null;rebuildMapIfNeeded();closeMenu();setMessage(settings.dataSaver?'Datasparing er slått PÅ.':'Datasparing er slått AV.','success');renderStats();const fc=currentFetchCenter();if(fc)updateFromCenter(true,fc.lat,fc.lon)});
 document.getElementById('btn-backgroundgps').addEventListener('click',async()=>{settings.backgroundGps=!settings.backgroundGps;saveSettings();applySettingsToUI();closeMenu();setMessage(settings.backgroundGps?'Bakgrunns-GPS er slått PÅ. Krever bakgrunns-plugin/innstilling i native build for full effekt på iOS/Android.':'Bakgrunns-GPS er slått AV.','success');if(gps.watching){stopGPS();await startGPS();}});
 
 // v2.0.32: toggle for sideanlegg-filter. AV (default) = filtrer bort rasteplasser, P-plasser
