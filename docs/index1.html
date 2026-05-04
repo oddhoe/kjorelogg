@@ -86,26 +86,34 @@ function headingToCompass(h){const dirs=['N','NØ','Ø','SØ','S','SV','V','NV']
 function roadPrefixFromKat(k){return k==='E'?'Ev':k==='R'?'Rv':k==='K'?'Kv':'Fv'}
 function roadMainKatLabel(k){return k==='E'?'EV':k==='R'?'RV':k==='K'?'KV':'FV'}
 function getRoadMetaFromKey(key){let kat='F';let kvG=false;if(/^Ev/i.test(key))kat='E';else if(/^Rv/i.test(key))kat='R';else if(/^Kv/i.test(key)){kat='K';kvG=/^Kv\d+G/i.test(String(key))||/\bKV\s*\d+\s+G\b/i.test(String(key))}const m=String(key).match(/S\d+D(\d+)/i);const gsv=(kat==='K')?kvG:!!(m&&Number(m[1])>=100);return{kat,gsv}}
-function isKvgsvNearKat(r,kat){
+let _kvgsvLangsCache=null;
+function buildKvgsvLangsCache(kat){
  const mainKat=kat.toUpperCase();
- for(const m of roads){
-  if(String(m.kat||'').toUpperCase()!==mainKat)continue;
-  if(!m.parts?.length)continue;
+ const nearKeys=new Set();
+ const mainRoads=roads.filter(m=>String(m.kat||'').toUpperCase()===mainKat&&m.parts?.length);
+ for(const r of roads){
+  if(roadFilterKey(r)!=='KGSV')continue;
   for(const part of(r.parts||[])){
    for(const pt of part){
     if(!pt||pt.length<2)continue;
-    if(roadDist(pt[1],pt[0],m)<130)return true;
+    for(const m of mainRoads){
+     if(roadDist(pt[1],pt[0],m)<130){nearKeys.add(r.key);break}
+    }
+    if(nearKeys.has(r.key))break;
    }
+   if(nearKeys.has(r.key))break;
   }
  }
- return false;
+ return nearKeys;
 }
+function invalidateKvgsvLangsCache(){_kvgsvLangsCache=null;}
 function roadPassesCategoryFilter(r){
  const k=roadFilterKey(r);
  const fk=k==='KGSV_OTHER'?'KGSV':k;
  if(!settings.categoryFilter[fk])return false;
  if(fk==='KGSV'&&settings.kvgsvLangsKat){
-  return isKvgsvNearKat(r,settings.kvgsvLangsKat);
+  if(!_kvgsvLangsCache)_kvgsvLangsCache=buildKvgsvLangsCache(settings.kvgsvLangsKat);
+  return _kvgsvLangsCache.has(r.key);
  }
  return true;
 }
@@ -2757,7 +2765,7 @@ async function updateFromCenter(force=false,centerLat=null,centerLon=null){
    }
    await saveTile(lat,lon,radius,fylkeNr,newRoads)
   }
-  roads=applySearchRadiusView(newRoads,lat,lon,radius);
+  roads=applySearchRadiusView(newRoads,lat,lon,radius);invalidateKvgsvLangsCache();
   try{
    const slKey=`${lat.toFixed(4)},${lon.toFixed(4)},${radius},${fylkeNr||''}`;
    if(!offlineMode&&slKey!==lastSpeedLimitFetchKey){speedLimits=await loadSpeedLimitsAround(lat,lon,radius,fylkeNr);lastSpeedLimitFetchKey=slKey;lastSpeedLimitRefreshPos=[lat,lon]}
@@ -2812,7 +2820,7 @@ document.getElementById('fit-progress-btn').addEventListener('click',async()=>{a
 document.querySelectorAll('.cat-chip').forEach(btn=>btn.addEventListener('click',()=>{const cat=btn.dataset.cat;settings.categoryFilter[cat]=!settings.categoryFilter[cat];btn.classList.toggle('active',settings.categoryFilter[cat]);saveSettings();renderAllViews()}));
 document.getElementById('cat-all').addEventListener('click',()=>{settings.categoryFilter={E:true,EGSV:true,R:true,RGSV:true,F:true,FGSV:true,K:true,KGSV:true};saveSettings();applySettingsToUI();renderAllViews()});
 document.getElementById('cat-none').addEventListener('click',()=>{settings.categoryFilter={E:false,EGSV:false,R:false,RGSV:false,F:false,FGSV:false,K:false,KGSV:false};saveSettings();applySettingsToUI();renderAllViews()});
-document.querySelectorAll('.kgsv-langs-btn').forEach(btn=>btn.addEventListener('click',()=>{const kat=btn.dataset.langs;settings.kvgsvLangsKat=(settings.kvgsvLangsKat===kat)?'':kat;saveSettings();applySettingsToUI();renderAllViews();}));
+document.querySelectorAll('.kgsv-langs-btn').forEach(btn=>btn.addEventListener('click',()=>{const kat=btn.dataset.langs;settings.kvgsvLangsKat=(settings.kvgsvLangsKat===kat)?'':kat;invalidateKvgsvLangsCache();saveSettings();applySettingsToUI();renderAllViews();}));
 document.getElementById('table-filter').addEventListener('input',()=>{renderRoads();renderStats();renderTable();updateMapOverlay(false)});
 document.getElementById('table-sort').addEventListener('change',renderTable);
 document.getElementById('table-select-all').addEventListener('click',()=>{const rows=getFilteredTableRows();rows.forEach(r=>selectedTableKeys.add(r.key));saveSelectedTableKeys();renderTable();setMessage(`${rows.length} rader valgt.`,'success')});
