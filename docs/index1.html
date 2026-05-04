@@ -1,4 +1,80 @@
-<!DOCTYPE html><html lang="no"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Kjørelogg · NVDB + GPS</title><link rel="stylesheet" href="./vendor/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'"><script src="./vendor/leaflet.js"></script><script>// iOS/WKWebView: hvis lokal vendor/leaflet.js ikke er pakket med i appen, last Leaflet fra CDN.
+<!DOCTYPE html><html lang="no"><head>
+
+<script id="kgsv-v13-roadfilterkey-shim">
+/* === KV-GSV v13 roadFilterKey global shim === */
+(function(){
+  function txt(v){
+    if(v==null) return '';
+    if(typeof v==='string'||typeof v==='number'||typeof v==='boolean') return String(v);
+    if(Array.isArray(v)) return v.map(txt).join(' ');
+    if(typeof v==='object') return [v.kode,v.verdi,v.navn,v.name,v.tekst,v.value,v.id,v.beskrivelse,v.kortform].map(txt).filter(Boolean).join(' ');
+    return String(v);
+  }
+  function up(v){return txt(v).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+  function catFallback(o){
+    let k=String(o&& (o.kat??o.vegkategori??o.kategori) || '').toUpperCase();
+    if(['E','R','F','K'].includes(k)) return k;
+    if(k==='EV') return 'E'; if(k==='RV') return 'R'; if(k==='FV') return 'F'; if(k==='KV') return 'K';
+    const s=up(o&&(o.veg||o.key||o.kortform||o.vegsystemreferanse));
+    if(/\bEV\s*\d+|^EV\d+/.test(s)) return 'E';
+    if(/\bRV\s*\d+|^RV\d+/.test(s)) return 'R';
+    if(/\bFV\s*\d+|^FV\d+/.test(s)) return 'F';
+    if(/\bKV\s*\d+|^KV\d+|^KV/.test(s)) return 'K';
+    return k;
+  }
+  function isTrafG(v){const s=up(v);return /(^|[^A-Z])G([^A-Z]|$)/.test(s)||s.includes('GAENDE')||s.includes('GÅENDE')||s.includes('SYKLENDE')||(s.includes('GANG')&&s.includes('SYKKEL'))}
+  function isGsvType(v){const s=up(v);return s.includes('GANG- OG SYKKEL')||s.includes('GANG OG SYKKEL')||s.includes('GANG/SYKKEL')||s.includes('SYKKELVEG')||s.includes('SYKKELVEI')||s.includes('GANGVEG')||s.includes('GANGVEI')}
+  function hasKvG(v){const s=txt(v);return /\bKV\s*\d+\s+G\b/i.test(s)||/\bK\s*V\s*\d+\s+G\b/i.test(s)||/^Kv\d+G/i.test(s)||/^KV\d+G/i.test(s)}
+  function isKvGsvFallback(r){
+    return catFallback(r)==='K' && (
+      isTrafG(r?.trafikantgruppe) ||
+      isTrafG(r?.vegsystemreferanse?.strekning?.trafikantgruppe) ||
+      isTrafG(r?.vegsystem?.strekning?.trafikantgruppe) ||
+      hasKvG(r?.veg||r?.key||'') ||
+      hasKvG(r?.kortform) ||
+      hasKvG(r?.vegsystemreferanse?.kortform) ||
+      isGsvType(r?.typeVegText||r?.typeVeg||r?.typeveg||r?.objekttype||r?.navn||r?.detNavn)
+    );
+  }
+  window.roadFilterKey = function roadFilterKey(r){
+    try{
+      const catFn = window.kgsvV12CatOf || window.kgsvV13CatOf;
+      const kvFn  = window.kgsvV12IsKvGsv || window.kgsvV13IsKvGsv;
+      const kat = String(catFn ? catFn(r) : catFallback(r)).toUpperCase();
+      const isKvGsv = kvFn ? !!kvFn(r) : isKvGsvFallback(r);
+      const isGsv = (kat==='K') ? isKvGsv : !!(r && r.gsv);
+      if(kat==='K' && isGsv){
+        const modeFn = window.kgsvV12Mode || window.kgsvV13Mode;
+        const m = modeFn ? String(modeFn()||'').toUpperCase() : String(window.__kgsvV12AlongMode||window.__kgsvV13AlongMode||'').toUpperCase();
+        if(m==='F'||m==='E'||m==='R'){
+          let cats = new Set();
+          try{
+            const alongFn = window.kgsvV12AlongCats || window.kgsvV13AlongCats;
+            if(alongFn) cats = alongFn(r) || new Set();
+          }catch(e){ cats = new Set(); }
+          try{
+            const cacheFn = window.kgsvV12BuildCache || window.kgsvV13BuildCache;
+            const c = cacheFn ? cacheFn() : null;
+            if(c && c.mainCounts && c.mainCounts[m]===0){
+              // Referansegrunnlag mangler: ikke skjul alt.
+              return 'KGSV';
+            }
+          }catch(e){}
+          return (cats && typeof cats.has==='function' && cats.has(m)) ? 'KGSV' : 'KGSV_OTHER';
+        }
+        return 'KGSV';
+      }
+      return kat + (isGsv ? 'GSV' : '');
+    }catch(e){
+      const kat = catFallback(r);
+      return kat + ((kat==='K' ? isKvGsvFallback(r) : !!(r&&r.gsv)) ? 'GSV' : '');
+    }
+  };
+})();
+/* === /KV-GSV v13 roadFilterKey global shim === */
+</script>
+
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Kjørelogg · NVDB + GPS</title><link rel="stylesheet" href="./vendor/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'"><script src="./vendor/leaflet.js"></script><script>// iOS/WKWebView: hvis lokal vendor/leaflet.js ikke er pakket med i appen, last Leaflet fra CDN.
 // Uten denne fallbacken blir kartfanene bare en grå flate.
 if(!window.L){
  document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
