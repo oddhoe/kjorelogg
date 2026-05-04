@@ -42,6 +42,7 @@ const ROAD_FETCH_REFS='E,R,F,K', ROAD_FETCH_MAX_PER_PAGE=1000, ROAD_FETCH_MAX_PA
 const SPEED_LIMIT_TYPE_ID=105, SPEED_LIMIT_PROP_ID=2021, SPEED_LIMIT_MAX_DIST_M=45;
 const SPEED_LIMIT_REFRESH_DISTANCE_M=500, SPEED_LIMIT_REFRESH_RADIUS_KM=2.5;
 const DEFAULT_CATEGORY_FILTER={E:false,EGSV:false,R:false,RGSV:false,F:true,FGSV:false,K:false,KGSV:false};
+const KV_RADIUS_CAP_KM=3;
 
 // v2.0.31: settings.backgroundGps default = true. Målebilsjåfører kjører min. 6 timer og
 // trenger at GPS fortsetter å logge når en telefonsamtale eller varsel midlertidig overtar
@@ -79,6 +80,8 @@ const FYLKE_BBOX={
 
 /* ───────────────────── HJELPERE ───────────────────── */
 function currentProfile(){return settings.dataSaver?DATA_SAVER_ON:DATA_SAVER_OFF}
+function kvFilterActive(){return !!(settings.categoryFilter&&(settings.categoryFilter.K||settings.categoryFilter.KGSV))}
+function getEffectiveRadiusKm(requestedKm){const r=Number(requestedKm);if(!Number.isFinite(r)||r<=0)return r;if(kvFilterActive()&&r>KV_RADIUS_CAP_KM)return KV_RADIUS_CAP_KM;return r;}
 function getReloadDistKm(){return currentProfile().reloadDistKm}
 function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;")}
 function setMessage(t,type='notice'){document.getElementById('message-area').innerHTML=t?`<div class="${type}">${esc(t)}</div>`:''}
@@ -2703,13 +2706,14 @@ async function updateFromCenter(force=false,centerLat=null,centerLon=null){
  if(!c){if(force)setMessage('Ingen GPS-posisjon eller manuell kartmarkør. Start GPS eller sett manuell markør i ⋯-menyen.','notice');renderAllViews();return}
  const fylkeSel=document.getElementById('fylke'),fylkeNr=// v2.0.49.2-fix4: gps.detectedFylke brukes ved auto-modus slik at NVDB-reload trigges ved fylkeskifte
  fylkeSel?.dataset.manual==='1'?(fylkeSel.value||null):(gps.detectedFylke||null);
- const lat=c.lat,lon=c.lon,requestedRadius=parseFloat(document.getElementById('radius').value)||currentProfile().radiusDefault,denseCityRule=getDenseCityRadiusRule(lat,lon,requestedRadius),radius=denseCityRule?DENSE_CITY_RADIUS_LIMIT_KM:requestedRadius;
+ const lat=c.lat,lon=c.lon,_userRadius=parseFloat(document.getElementById('radius').value)||currentProfile().radiusDefault,_kvCappedRadius=getEffectiveRadiusKm(_userRadius),_kvCapApplied=_kvCappedRadius<_userRadius,requestedRadius=_kvCappedRadius,denseCityRule=getDenseCityRadiusRule(lat,lon,requestedRadius),radius=denseCityRule?DENSE_CITY_RADIUS_LIMIT_KM:requestedRadius;
   if(denseCityRule){const radiusEl=document.getElementById('radius');if(radiusEl)radiusEl.value=String(radius)}
   const changed=radius!==lastCenterRadius||fylkeNr!==lastCenterFylke;
  // v2.0.30: avstandssjekk FØR loadTile. Tidligere åpnet vi IDB-transaksjon på hver onPos selv om
  // vi var langt under reload-grensen — unødvendig disk-I/O under kjøring.
  if(!force&&!changed&&lastCenter){const dist=dM(lastCenter[0],lastCenter[1],lat,lon)/1000;if(dist<getReloadDistKm()){updateDistancesAndActiveRoad();renderAllViews();return}}
  if(nvdbLoading)return;nvdbLoading=true;document.getElementById('road-list').innerHTML='<div class="loading">Laster vegnett…</div>';setMessage(c.manual?'Laster vegnett rundt manuell markør…':(denseCityRule?`${denseCityRule.name}: tett vegnett, radius satt til ${DENSE_CITY_RADIUS_LIMIT_KM} km for komplett lasting.`:''));
+  if(_kvCapApplied&&!denseCityRule){setMessage(`Kommunale veger aktiv - radius begrenset fra ${_userRadius} til ${KV_RADIUS_CAP_KM} km. Sla av KV i kategorier for full radius.`,'notice');}
  try{
   let newRoads=(!force||offlineMode)?await loadTile(lat,lon,radius,fylkeNr):null;
   const cachedRoads=force&&!offlineMode?await loadTile(lat,lon,radius,fylkeNr):null;
