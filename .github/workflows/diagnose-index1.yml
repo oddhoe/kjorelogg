@@ -1,4 +1,4 @@
-name: Diagnostikk index1.html
+name: Diagnostikk index1.html v2
 
 on:
   workflow_dispatch:
@@ -20,32 +20,38 @@ jobs:
       - name: Write diagnose script from base64
         env:
           SCRIPT_B64: |
-            IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwojIERpYWdub3N0aWtrIGZvciBpbmRleDEuaHRtbC4gRW5k
-            cmVyIGlra2UgZmlsZW4uCgppbXBvcnQgcmUKaW1wb3J0IHN5cwpmcm9tIHBhdGhsaWIgaW1wb3J0
-            IFBhdGgKClJFUE9fUk9PVCA9IFBhdGgoX19maWxlX18pLnJlc29sdmUoKS5wYXJlbnQucGFyZW50
-            CkRPQ1NfRElSID0gUkVQT19ST09UIC8gJ2RvY3MnClRBUkdFVCA9IERPQ1NfRElSIC8gJ2luZGV4
-            MS5odG1sJwoKaHRtbCA9IFRBUkdFVC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKcHJpbnQo
-            J0ZpbHN0b3JyZWxzZTonLCBsZW4oaHRtbCksICdieXRlcycpCgojIEZpbm4gZ2V0Um9hZE1ldGFG
-            cm9tS2V5LWZ1bmtzam9uZW4KbSA9IHJlLnNlYXJjaChyJ2Z1bmN0aW9uIGdldFJvYWRNZXRhRnJv
-            bUtleVwoa2V5XClcey4qP3JldHVyblx7W159XSpcfVx9JywgaHRtbCkKaWYgbToKICAgIGZ1bmMg
-            PSBtLmdyb3VwKDApCiAgICBwcmludCgnLS0tIGdldFJvYWRNZXRhRnJvbUtleSAtLS0nKQogICAg
-            cHJpbnQoZnVuYykKICAgIHByaW50KCctLS0gc2x1dHQgLS0tJykKICAgIHByaW50KCdGdW5rc2pv
-            bnNsZW5nZGU6JywgbGVuKGZ1bmMpKQplbHNlOgogICAgcHJpbnQoJ0FEVkFSU0VMOiBnZXRSb2Fk
-            TWV0YUZyb21LZXkgaWtrZSBmdW5uZXQgbWVkIHJlZ2V4JykKCiMgU2pla2sgcGF0Y2gtbWFya29y
-            ZXIKbWFya2VycyA9IHsKICAgICdLVi1rYXQgQUxMT1dFRF9LQVRTJzogIkFMTE9XRURfS0FUUz1u
-            ZXcgU2V0KFsnRScsJ1InLCdGJywnSyddKSIsCiAgICAnZXJybG9nIEVSUkxPR19EQl9OQU1FJzog
-            J0VSUkxPR19EQl9OQU1FJywKICAgICdLVi1yYWRpdXMtY2FwJzogJ0tWX1JBRElVU19DQVBfS00n
-            LAogICAgJ0tWLWZhc2UgdjEgKGdhbW1lbCknOiAnX2lzS3ZGYXNlRycsCiAgICAnS1YtZmFzZSBj
-            b21iaW5lZCc6ICdfa3ZHc3ZGaXgnLAogICAgJ0tWLXByZWZpa3MgZGV0ZWtzam9uJzogJy9eS3Yv
-            aS50ZXN0KGtleSknLAogICAgJ0sta2F0ZWdvcmkgaSBtZXRha2V5JzogImthdD0nSyciLAp9CnBy
-            aW50KCctLS0gTWFya29yZXIgLS0tJykKZm9yIG5hbWUsIG1hcmtlciBpbiBtYXJrZXJzLml0ZW1z
-            KCk6CiAgICBwcmludChmJyAge25hbWV9OiB7bWFya2VyIGluIGh0bWx9JykKCiMgUHJpbnQgcm9h
-            ZEZpbHRlcktleQptMiA9IHJlLnNlYXJjaChyJ2Z1bmN0aW9uIHJvYWRGaWx0ZXJLZXlcKHJcKVx7
-            W159XSpcfScsIGh0bWwpCmlmIG0yOgogICAgcHJpbnQoJy0tLSByb2FkRmlsdGVyS2V5IC0tLScp
-            CiAgICBwcmludChtMi5ncm91cCgwKSkKCiMgUHJpbnQgbG9hZFJvYWRzQXJvdW5kIHNpZ25hdHVy
-            IChmb3JzdGUgMjAwIHRlZ24pCmlkeCA9IGh0bWwuZmluZCgnYXN5bmMgZnVuY3Rpb24gbG9hZFJv
-            YWRzQXJvdW5kJykKaWYgaWR4ID49IDA6CiAgICBwcmludCgnLS0tIGxvYWRSb2Fkc0Fyb3VuZCBz
-            dGFydCAtLS0nKQogICAgcHJpbnQoaHRtbFtpZHg6aWR4KzI1MF0pCg==
+            IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwppbXBvcnQgb3MKaW1wb3J0IHJlCmltcG9ydCBzeXMKZnJv
+            bSBwYXRobGliIGltcG9ydCBQYXRoCgojIEJydWsgR0lUSFVCX1dPUktTUEFDRSBlbGxlciBmYWxs
+            YmFjayB0aWwgY3dkCndvcmtzcGFjZSA9IG9zLmVudmlyb24uZ2V0KCdHSVRIVUJfV09SS1NQQUNF
+            Jykgb3Igb3MuZ2V0Y3dkKCkKVEFSR0VUID0gUGF0aCh3b3Jrc3BhY2UpIC8gJ2RvY3MnIC8gJ2lu
+            ZGV4MS5odG1sJwoKaWYgbm90IFRBUkdFVC5leGlzdHMoKToKICAgIHByaW50KGYnW0VSUk9SXSB7
+            VEFSR0VUfSBmaW5uZXMgaWtrZScpCiAgICBwcmludChmJ1tJTkZPXSBjd2QgPSB7b3MuZ2V0Y3dk
+            KCl9JykKICAgIHByaW50KGYnW0lORk9dIEdJVEhVQl9XT1JLU1BBQ0UgPSB7d29ya3NwYWNlfScp
+            CiAgICBzeXMuZXhpdCgxKQoKaHRtbCA9IFRBUkdFVC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04
+            JykKcHJpbnQoJ0ZpbHN0b3JyZWxzZTonLCBsZW4oaHRtbCksICdieXRlcycpCgojIEZpbm4gZ2V0
+            Um9hZE1ldGFGcm9tS2V5Cm0gPSByZS5zZWFyY2gocidmdW5jdGlvbiBnZXRSb2FkTWV0YUZyb21L
+            ZXlcKGtleVwpXHsuKj9yZXR1cm5ce1tefV0qXH1cfScsIGh0bWwpCmlmIG06CiAgICBmdW5jID0g
+            bS5ncm91cCgwKQogICAgcHJpbnQoJy0tLSBnZXRSb2FkTWV0YUZyb21LZXkgLS0tJykKICAgIHBy
+            aW50KGZ1bmMpCiAgICBwcmludCgnLS0tIHNsdXR0IC0tLScpCiAgICBwcmludCgnRnVua3Nqb25z
+            bGVuZ2RlOicsIGxlbihmdW5jKSkKZWxzZToKICAgIHByaW50KCdBRFZBUlNFTDogZ2V0Um9hZE1l
+            dGFGcm9tS2V5IGlra2UgZnVubmV0IG1lZCByZWdleCcpCgojIFByaW50IHJvYWRGaWx0ZXJLZXkK
+            bTIgPSByZS5zZWFyY2gocidmdW5jdGlvbiByb2FkRmlsdGVyS2V5XChyXClce1tefV0qXH0nLCBo
+            dG1sKQppZiBtMjoKICAgIHByaW50KCctLS0gcm9hZEZpbHRlcktleSAtLS0nKQogICAgcHJpbnQo
+            bTIuZ3JvdXAoMCkpCgojIFByaW50IGxvYWRSb2Fkc0Fyb3VuZCBmb3JzdGUgNDAwIHRlZ24KaWR4
+            ID0gaHRtbC5maW5kKCdhc3luYyBmdW5jdGlvbiBsb2FkUm9hZHNBcm91bmQnKQppZiBpZHggPj0g
+            MDoKICAgIHByaW50KCctLS0gbG9hZFJvYWRzQXJvdW5kIHN0YXJ0IChmb3JzdGUgNDAwIHRlZ24p
+            IC0tLScpCiAgICBwcmludChodG1sW2lkeDppZHgrNDAwXSkKICAgIHByaW50KCctLS0gc2x1dHQg
+            LS0tJykKCiMgU2pla2sgbWFya29yZXIKbWFya2VycyA9IHsKICAgICdLVi1rYXQgQUxMT1dFRF9L
+            QVRTJzogIkFMTE9XRURfS0FUUz1uZXcgU2V0KFsnRScsJ1InLCdGJywnSyddKSIsCiAgICAnZXJy
+            bG9nIEVSUkxPR19EQl9OQU1FJzogJ0VSUkxPR19EQl9OQU1FJywKICAgICdLVi1yYWRpdXMtY2Fw
+            JzogJ0tWX1JBRElVU19DQVBfS00nLAogICAgJ0tWLWZhc2UgdjEgKGdhbW1lbCknOiAnX2lzS3ZG
+            YXNlRycsCiAgICAnS1YtZmFzZSBjb21iaW5lZCc6ICdfa3ZHc3ZGaXgnLAogICAgJ0tWLXByZWZp
+            a3MgZGV0ZWtzam9uIGkgbWV0YWtleSc6ICcvXkt2L2kudGVzdChrZXkpJywKICAgICdmYXNlLWZl
+            bHQgaSByb2FkLW9iamVrdCc6ICdmYXNlOl9rdkZhc2UnLAp9CnByaW50KCctLS0gTWFya29yZXIg
+            LS0tJykKZm9yIG5hbWUsIG1hcmtlciBpbiBtYXJrZXJzLml0ZW1zKCk6CiAgICBwcmludChmJyAg
+            e25hbWV9OiB7bWFya2VyIGluIGh0bWx9JykKCiMgUHJpbnQgQVBQX1ZFUlNJT04KbTMgPSByZS5z
+            ZWFyY2gociJBUFBfVkVSU0lPTj0nKFteJ10rKSciLCBodG1sKQppZiBtMzoKICAgIHByaW50KCdB
+            UFBfVkVSU0lPTjonLCBtMy5ncm91cCgxKSkK
         run: |
           echo "$SCRIPT_B64" | base64 -d > /tmp/diag.py
           python3 -c "import ast; ast.parse(open('/tmp/diag.py').read()); print('Syntax OK')"
