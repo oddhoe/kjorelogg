@@ -383,7 +383,9 @@ function markDirectionDriven(key,dir){
  saveDirectionState();
  rebuildStatusSetsFromDirections();
  saveState();
- if(wasNew)triggerDirectionAutoBackup();
+ // Lagre geometri første gang retning merkes, slik at fremdriftskart fungerer
+ // også for vegar kjørt i eit anna NVDB-vindauge enn det aktive.
+ if(wasNew){const r=roadByKeyAny(key);if(r)persistRoadGeometry(normalizeRoadRecordForList(r,key));triggerDirectionAutoBackup();}
  return true;
 }
 function clearRoadProgressForKey(key,opts={}){
