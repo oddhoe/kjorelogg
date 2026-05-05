@@ -1791,6 +1791,10 @@ async function loadRoadsAround(lat,lon,radiusKm,fylkeNr){
    const dn=String(s.detaljnivå||s.detaljniva||'').toLowerCase();
    if(tv.includes('konnektering'))continue;
    if(tv.includes('rampe')&&!settings.includeRamper)continue;
+   // Rundkøyringar på rampearm har R\d i kortforma (t.d. 'EV 18 R1 S1D1').
+   // Berre desse vert filtrert med rampar — vanlege rundkøyringar på hovudveg
+   // (utan R\d i kortforma) vert alltid henta.
+   if(tv.includes('rundkj')&&!settings.includeRamper&&/\bR\d/i.test(_kortform))continue;
    // v2.0.32: filtrer ut sideanlegg (rasteplasser, P-plasser, bensinstasjoner, snuplasser).
    // Disse er egne sløyfer i NVDB-vegnettet og skal vanligvis ikke inn i tilstandsmålinger.
    // Brukere som likevel vil måle dem kan slå PÅ "Inkluder sideanlegg" i menyen.
