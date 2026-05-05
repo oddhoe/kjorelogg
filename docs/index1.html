@@ -2449,7 +2449,7 @@ function updateMapOverlay(fit=false){
  if(!map)return;
  roadLayers.forEach(l=>map.removeLayer(l));roadLayers=[];
  const bounds=[],toRender=mapRoadsToRender();
- const draw=(part,color,weight,opacity,key)=>{const v=part.filter(isVLL);if(v.length<2)return;const lls=v.map(c=>[c[1],c[0]]),opts={color,weight,opacity,interactive:!!key,bubblingMouseEvents:false};if(key&&_svgRenderer)opts.renderer=_svgRenderer;const pl=L.polyline(lls,opts).addTo(map);if(key)pl.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});roadLayers.push(pl);bounds.push(...lls)};
+ const draw=(part,color,weight,opacity,key)=>{const v=part.filter(isVLL);if(v.length<2)return;const lls=v.map(c=>[c[1],c[0]]),opts={color,weight,opacity,interactive:!!key,bubblingMouseEvents:false};if(key&&_svgRenderer)opts.renderer=_svgRenderer;const pl=L.polyline(lls,opts).addTo(map);if(key){pl.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});const hit=L.polyline(lls,{color:'transparent',weight:20,opacity:0,interactive:true,bubblingMouseEvents:false,renderer:_svgRenderer||L.svg()}).addTo(map);hit.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});roadLayers.push(hit);}roadLayers.push(pl);bounds.push(...lls)};
  for(const pass of[false,true])for(const r of toRender){
   const act=gps.activeKey===r.key;if(pass!==act)continue;
   const st=getRoadStatus(r.key),done=st==='done',one=st==='oneway',skip=skipKeys.has(r.key),plans=getCoverageDrawPlans(r.key);
