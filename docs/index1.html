@@ -1770,7 +1770,7 @@ async function updateFylkeFromPosition(lat,lon){
 }
 async function loadRoadsAround(lat,lon,radiusKm,fylkeNr){
  const profile=currentProfile(),perPage=Math.max(profile.maxPerPage,ROAD_FETCH_MAX_PER_PAGE),maxPages=Math.max(profile.maxPages,ROAD_FETCH_MAX_PAGES),[minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm),base=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
- base.searchParams.set('srid','4326');base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);base.searchParams.set('vegsystemreferanse',ROAD_FETCH_REFS);if(fylkeNr)base.searchParams.set('fylke',String(fylkeNr));base.searchParams.set('inkluderAntall','false');base.searchParams.set('antall',String(perPage));
+ base.searchParams.set('srid','4326');base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);base.searchParams.set('vegsystemreferanse',ROAD_FETCH_REFS);base.searchParams.set('inkluderAntall','false');base.searchParams.set('antall',String(perPage));
  const out=[];let url=base.toString(),pages=0;let skippedSideanlegg=0;
  while(url&&pages<maxPages){pages++;const resp=await fetch(url,{headers:{'X-Client':'kjorelogg-nvdb-gps/v2.0.49.2'}});if(!resp.ok)throw new Error(`NVDB ${resp.status}`);const data=await resp.json();
   for(const s of(data.objekter||[])){
