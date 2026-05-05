@@ -53,7 +53,7 @@ const DEFAULT_CATEGORY_FILTER={E:false,EGSV:false,R:false,RGSV:false,F:true,FGSV
 let settings={dataSaver:false,backgroundGps:true,includeSideanlegg:false,categoryFilter:{...DEFAULT_CATEGORY_FILTER},kvgsvLangsKat:''};
 let roads=[],skipKeys=new Set(),drivenKeys=new Set(),oneWayKeys=new Set(),directionState={},selectedTableKeys=new Set(),planKeys=new Set(),visitLog={},geomCache={},routeLog={},manualMarker=null,planLayer=null;
 let gps={watching:false,watchId:null,lastPos:null,acc:null,speed:null,heading:null,activeKey:null,detectedFylke:null,activeDir:null,exitCount:0,_lastActiveKey:null,_activeKeyLeftAt:null,_candidateKey:null,_candidateCount:0,_candidateDist:null,_sessionId:null,_sessionStartedAt:null,_dirFlipCandidate:null,_dirFlipCount:0};
-let map=null,carMarker=null,carTailLayer=null,roadLayers=[],progressMap=null;
+let map=null,carMarker=null,carTailLayer=null,roadLayers=[],progressMap=null,_svgRenderer=null;
 let speedLimits=[],currentSpeedLimit=null,lastSpeedLimitFetchKey='',lastSpeedLimitRefreshPos=null,speedLimitRefreshInFlight=false,speedLimitStartRefreshPending=false;
 let lastCenter=null,lastCenterRadius=null,lastCenterFylke=null,nvdbLoading=false,offlineMode=false,nativeGpsTimer=null,nativeWatchId=null,lastNativeFixTs=0;
 let lastRenderTime=0,lastRenderPos=null;
@@ -2417,12 +2417,12 @@ function initMap(){
   const p=currentProfile(),baseLayers=createBaseLayers(p.mapMaxZoom),base=baseLayers['OpenStreetMap'];
   map=L.map('map-container',{center:gps.lastPos||[62.7,7.2],zoom:gps.lastPos?13:10,layers:[base],zoomControl:true,preferCanvas:true});
   addBaseLayerControl(map,baseLayers);
-  map.whenReady(()=>{safeInvalidate(map);updateManualMarker();updatePlanLayer();updateMapOverlay(false)});
+  _svgRenderer=L.svg();map.whenReady(()=>{safeInvalidate(map);updateManualMarker();updatePlanLayer();updateMapOverlay(false)});
   return map;
  }catch(e){console.error('Kart init feilet',e);setMapError('map-container','Kart kunne ikke startes: '+(e?.message||e));return null}
 }
 function rebuildMapIfNeeded(){
- if(map){map.remove();map=null;carMarker=null;carTailLayer=null;roadLayers=[]}
+ if(map){map.remove();map=null;carMarker=null;carTailLayer=null;roadLayers=[];_svgRenderer=null}
  if(document.getElementById('tab-map').classList.contains('active')){
   initMap();updateManualMarker();updatePlanLayer();
   setTimeout(()=>{safeInvalidate(map);updateMapOverlay(false);if(gps.lastPos)updateMap(gps.lastPos[0],gps.lastPos[1])},100);
@@ -2449,7 +2449,7 @@ function updateMapOverlay(fit=false){
  if(!map)return;
  roadLayers.forEach(l=>map.removeLayer(l));roadLayers=[];
  const bounds=[],toRender=mapRoadsToRender();
- const draw=(part,color,weight,opacity,key)=>{const v=part.filter(isVLL);if(v.length<2)return;const lls=v.map(c=>[c[1],c[0]]),pl=L.polyline(lls,{color,weight,opacity}).addTo(map);if(key)pl.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});roadLayers.push(pl);bounds.push(...lls)};
+ const draw=(part,color,weight,opacity,key)=>{const v=part.filter(isVLL);if(v.length<2)return;const lls=v.map(c=>[c[1],c[0]]),opts={color,weight,opacity,interactive:!!key,bubblingMouseEvents:false};if(key&&_svgRenderer)opts.renderer=_svgRenderer;const pl=L.polyline(lls,opts).addTo(map);if(key)pl.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});roadLayers.push(pl);bounds.push(...lls)};
  for(const pass of[false,true])for(const r of toRender){
   const act=gps.activeKey===r.key;if(pass!==act)continue;
   const st=getRoadStatus(r.key),done=st==='done',one=st==='oneway',skip=skipKeys.has(r.key),plans=getCoverageDrawPlans(r.key);
