@@ -1781,11 +1781,12 @@ async function loadRoadsAround(lat,lon,radiusKm,fylkeNr){
    // NVDB-feltet skrives både med "detaljnivå" (med å) og "detaljniva" (uten) av ulike klienter,
    // så vi sjekker begge varianter for å være robust.
    const dn=String(s.detaljnivå||s.detaljniva||'').toLowerCase();
-   if(tv.includes('konnektering')||tv.includes('rampe'))continue;
+   if(tv.includes('konnektering'))continue;
+   if(tv.includes('rampe')&&!settings.includeRamper)continue;
    // v2.0.32: filtrer ut sideanlegg (rasteplasser, P-plasser, bensinstasjoner, snuplasser).
    // Disse er egne sløyfer i NVDB-vegnettet og skal vanligvis ikke inn i tilstandsmålinger.
    // Brukere som likevel vil måle dem kan slå PÅ "Inkluder sideanlegg" i menyen.
-   if(!settings.includeSideanlegg&&dn.includes('sideanlegg')){skippedSideanlegg++;continue}
+   if(!settings.includeSideanlegg&&(dn.includes('sideanlegg')||tv.includes('snuplass')||tv.includes('parkeringsomr')||tv.includes('rasteplass'))){skippedSideanlegg++;continue}
    const strek=vs.strekning||{},seg=`S${strek.strekning}D${strek.delstrekning}`,_kvKort=String(vs.kortform||s?.vegsystemreferanse?.kortform||''),_kvTrafikantgruppeRaw=(strek.trafikantgruppe??vs.trafikantgruppe??s?.trafikantgruppe??''),_kvTrafikantgruppe=kgsvV9Text(_kvTrafikantgruppeRaw).toUpperCase(),_kvTypeRaw=(s?.typeVeg??s?.typeveg??s?.type??s?.objekttype??s?.navn??s?.detaljnivå??s?.detaljniva??''),_kvTypeText=kgsvV9Text(_kvTypeRaw),_kvKortErG=kgsvV9HasKvG(_kvKort),_isKvGsv=(kat==='K'&&(kgsvV9IsTrafG(_kvTrafikantgruppeRaw)||_kvKortErG||kgsvV9IsGsvType(_kvTypeText))),gsv=(kat==='K')?_isKvGsv:isGSV(seg),_kvGsvSuffix=_isKvGsv?'G':'',vegnavn=`${roadPrefixFromKat(kat)}${vegsys.nummer}${_kvGsvSuffix}${vs.klasse||vegsys.klasse||''}`,parts=parseWkt(s?.geometri?.wkt).map(p=>p.filter(isVLL)).filter(p=>p.length>=2);
    if(!parts.length)continue;
    const fraM=Number(strek.fra_meter)||0,tilM=Number(strek.til_meter)||0;
