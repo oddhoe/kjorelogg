@@ -408,63 +408,7 @@ function clearRoadProgressForKey(key,opts={}){
 }
 function clearDirectionStateForKey(key){clearRoadProgressForKey(key)}
 function setBothDirectionsDone(key){return setRoadDoneFull(key)}
-function _getRoadPrefix(key){
- // Ekstraher vegprefiks frå nøkkel, t.d. "Ev18" frå "Ev18 S5D1" eller "Ev18 R1S1D1"
- const m=String(key).match(/^([A-Za-zæøåÆØÅ]+\d+)/);
- return m?m[1].toLowerCase():'';
-}
-function _getConnectedAuxRoads(key){
- // Finn alle lasta rampar/rundkøyringar/sideanlegg som deler vegprefiks med key
- // og er geometrisk nær (< 500 m) minst eitt punkt på hovudvegen.
- const prefix=_getRoadPrefix(key);
- if(!prefix)return[];
- const mainParts=getRoadPartsForKey(key);
- if(!mainParts.length)return[];
- // Samle representasjonspunkt frå hovudvegen (kvart ~10. punkt, maks 30)
- const mainPts=[];
- for(const part of mainParts){
-  const v=(part||[]).filter(isVLL);
-  const step=Math.max(1,Math.floor(v.length/10));
-  for(let i=0;i<v.length;i+=step){if(mainPts.length<30)mainPts.push(v[i]);}
- }
- if(!mainPts.length)return[];
- const PROX_M=500;
- const candidates=new Map();
- // Sjekk lasta roads-array
- for(const r of roads){
-  if(!r.key||r.key===key)continue;
-  if(!_getRoadPrefix(r.key).startsWith(prefix.substring(0,prefix.length)))continue;
-  if(_getRoadPrefix(r.key)!==prefix)continue;
-  if(!_isAuxRoad(r))continue;
-  candidates.set(r.key,r);
- }
- // Sjekk geomCache for køyrde/ekvegiste aux-vegar som ikkje lenger er i roads-arrayet
- for(const [k,entry] of Object.entries(geomCache)){
-  if(k===key||candidates.has(k))continue;
-  if(_getRoadPrefix(k)!==prefix)continue;
-  const rec=getRoadObjectForDisplay(k)||getRoadObjectForKey(k);
-  if(!rec||!_isAuxRoad(rec))continue;
-  candidates.set(k,rec);
- }
- // Filter på geometrisk nærleik
- const result=[];
- for(const [k,r] of candidates){
-  const auxParts=getRoadPartsForKey(k);
-  if(!auxParts.length)continue;
-  let near=false;
-  outer:for(const pt of mainPts){
-   for(const part of auxParts){
-    const v=(part||[]).filter(isVLL);
-    for(const c of v){
-     if(dM(pt[1],pt[0],c[1],c[0])<=PROX_M){near=true;break outer;}
-    }
-   }
-  }
-  if(near)result.push(k);
- }
- return result;
-}
-function setRoadDoneFull(key,{propagateToAux=true}={}){
+function setRoadDoneFull(key){
  if(!key)return false;
  const now=Date.now(),prev=directionState[key]||{};
  directionState[key]={...prev,fwd:true,rev:true,manualFull:true,manualTs:now,fwdFirstTs:prev.fwdFirstTs||now,fwdLastTs:now,revFirstTs:prev.revFirstTs||now,revLastTs:now};
@@ -474,19 +418,6 @@ function setRoadDoneFull(key,{propagateToAux=true}={}){
  skipKeys.delete(key);
  const r=roadByKeyAny(key);
  if(r)persistRoadGeometry(normalizeRoadRecordForList(r,key));
- // v2.0.61: propagér manualFull til tilknytte rampar/rundkøyringar/sideanlegg
- // som deler same vegprefiks og ligg geometrisk nær hovudvegen.
- if(propagateToAux&&settings.includeRamper){
-  const auxKeys=_getConnectedAuxRoads(key);
-  for(const ak of auxKeys){
-   const aprev=directionState[ak]||{};
-   directionState[ak]={...aprev,fwd:true,rev:true,manualFull:true,manualTs:now,
-    fwdFirstTs:aprev.fwdFirstTs||now,fwdLastTs:now,revFirstTs:aprev.revFirstTs||now,revLastTs:now};
-   skipKeys.delete(ak);
-   const ar=roadByKeyAny(ak);
-   if(ar)persistRoadGeometry(normalizeRoadRecordForList(ar,ak));
-  }
- }
  saveDirectionState();
  saveRouteLog();
  rebuildStatusSetsFromDirections();
@@ -1675,16 +1606,7 @@ function roadAlignmentInfo(lat,lon,r,heading){
 function isRundkjoring(r){const tv=String(r?.typeVegText||r?.typeVeg||'').toLowerCase();return tv.includes('rundkj')||tv.includes('rundkø');}
 function isRampe(r){const tv=String(r?.typeVegText||r?.typeVeg||'').toLowerCase();return tv.includes('rampe');}
 function _isRampConnectedRoundabout(r){const kf=String(r?.kortform||r?.key||'');return /\bR\d/i.test(kf)||isGSV(String(r?.key||''));}
-function _isSideanleggRec(r){
- if(!r)return false;
- const dn=String(r.detaljnivaa||r.detaljnivå||r.detaljniva||'').toLowerCase();
- if(dn.includes('sideanlegg'))return true;
- const kf=String(r.kortform||r.key||'');
- if(/\bSD\d/i.test(kf))return true;
- const tv=String(r.typeVegText||r.typeVeg||'').toLowerCase();
- return tv.includes('snuplass')||tv.includes('parkeringsomr')||tv.includes('rasteplass');
-}
-function _isAuxRoad(r){return r&&(_isSideanleggRec(r)||isRampe(r)||(isRundkjoring(r)&&_isRampConnectedRoundabout(r)));}
+function _isAuxRoad(r){return r&&(isSideanlegg(r)||isRampe(r)||(isRundkjoring(r)&&_isRampConnectedRoundabout(r)));}
 function sortedRoadCandidates(lat,lon){
  const all=roads.filter(r=>roadPassesCategoryFilter(r)).map(r=>({r,d:roadDist(lat,lon,r)})).filter(x=>Number.isFinite(x.d)).sort((a,b)=>a.d-b.d);
  // Deprioritiser rundkøyringar: fjern dei frå kandidatlista viss det finst ein vanleg veg
@@ -2800,16 +2722,7 @@ function buildCoveragePlanForChain(key,chain,manualFull=false,strictSnap=false){
 function getCoverageDrawPlans(key){
  const parts=getRoadPartsForKey(key),chains=makeChainsFromParts(parts,35);
  if(!chains.length)return [];
- const ds=directionState[key]||{};
- const explicitManual=!!ds.manualFull;
- // Fallback: fwd+rev=true utan manualFull og utan GPS-spor i routeLog.
- // Dette skjer med eldre data der begge retningar vart sett programmatisk (t.d. via import
- // eller gammal setBothDirectionsDone) utan å setje manualFull-flagget eksplisitt.
- // Vi behandlar desse som manualFull slik at dei vert teikna grøne i kart-fanen.
- const log=routeLog[key]||{};
- const hasGps=(log.fwd?.length>0)||(log.rev?.length>0);
- const implicitManual=!explicitManual&&!hasGps&&!!ds.fwd&&!!ds.rev;
- const manual=explicitManual||implicitManual;
+ const manual=!!directionState[key]?.manualFull;
  // Sideanlegg/rampar/ramp-rundkøyringar skal IKKJE arve GPS-dekning frå hovudvegen geometrisk.
  // Vert berre grøne viss: a) eksplisitt manualFull, eller b) GPS faktisk snappa til DENNE vegen
  // innanfor ENTER_THRESH_M (strictSnap=true, halvert toleranse samanlikna med hovudvegar).
