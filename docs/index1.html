@@ -27,7 +27,7 @@ const TILE_SIZE_KM=10;
 const HAS_INDEXED_DB=typeof indexedDB!==‘undefined’;
 
 const ENTER_THRESH_M=12, EXIT_THRESH_M=24, EXIT_CONSEC=4, HEADING_MAX_DEG=25, RETNING_PAUSE_MS=20000;
-// v2.0.71 (gps_bridge): strengere krav for retningsflip enn for veg-inngang.
+// v2.0.72 (gps_bridge): strengere krav for retningsflip enn for veg-inngang.
 // Telefon-GPS gir ofte upålitelig heading ved 5-15 km/t (kort beregningsvindu),
 // noe som lager “lappeteppe” av grønt og oransje på samme strekning.
 // Krav for retningsflip: minst 20 km/t fart OG accuracy bedre enn 12m.
@@ -387,7 +387,7 @@ const legacyDriven=[…drivenKeys],legacyOneWay=[…oneWayKeys];
 drivenKeys.clear();oneWayKeys.clear();
 for(const[k,st]of Object.entries(directionState||{})){
 const f=!!st?.fwd,r=!!st?.rev;
-// v2.0.71: GSV, sideanlegg, ramper og rampe-rundkjøringar er enveiskjørt
+// v2.0.72: GSV, sideanlegg, ramper og rampe-rundkjøringar er enveiskjørt
 // i målesammenheng — du kjører gjennom dem ÉN gang og er ferdig.
 // De skal bli grønne (drivenKeys) etter én retning, ikke oransje (oneWayKeys).
 // Manuell overstyring (manualFull) respekteres som før.
@@ -685,7 +685,7 @@ return {key:`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'
 }
 function getDirectionLabel(key){
 const ds=getDirectionState(key);
-// v2.0.71: For one-way-strekninger (GSV, sideanlegg, ramper) er det missvisande å vise
+// v2.0.72: For one-way-strekninger (GSV, sideanlegg, ramper) er det missvisande å vise
 // “R1” eller “R2” — vis i staden “Kjørt” når noko er køyrt, sidan retning ikkje er meiningsfull.
 if((ds.fwd||ds.rev)&&!(ds.fwd&&ds.rev)&&*isOneWayKey(key))return ‘Kjørt’;
 return [ds.fwd?‘R1’:’’,ds.rev?‘R2’:’’].filter(Boolean).join(’ + ‘)||’–’;
@@ -2488,7 +2488,7 @@ gps._dirLastPos=[lat,lon];
 //     → forhindrar at eit kort GPS-glitch set vegen til “Ferdig” med ein gong.
 //   Brukaren kan alltid bruke “Avbrutt”-knappen manuelt for å registrere kjørt retning.
 if(proposed!==gps.activeDir&&(proposed===‘fwd’||proposed===‘rev’)){
-// v2.0.71: Strengere krav for retningsflip enn for å forbli aktiv på vegen.
+// v2.0.72: Strengere krav for retningsflip enn for å forbli aktiv på vegen.
 // Telefon-GPS heading er upålitelig ved låg fart eller dårleg accuracy,
 // og det er hovedårsaken til “lappeteppe”-snapping. Krev minimum 20 km/t
 // og accuracy < 12m før vi i det heile teke vurderer retningsflip.
@@ -2960,7 +2960,7 @@ const drawnSet=new Set([…drivenKeys,…oneWayKeys]);
 const candidateKeys=new Set();
 for(const r of roads||[])if(r&&r.key)candidateKeys.add(r.key);
 for(const k of Object.keys(geomCache||{}))candidateKeys.add(k);
-// v2.0.71-fix2: For ikke-kjørte veger må fylke-filtrering vere streng — bruk
+// v2.0.72-fix2: For ikke-kjørte veger må fylke-filtrering vere streng — bruk
 // BBOX direkte mot koordinatane i staden for å stole på lagra fylke-felt.
 // Dette hindrar at veger frå tidlegare økter i andre fylke (f.eks. Trondheim,
 // Nordland) blir tegna som “ikke kjørt” i Møre og Romsdal.
@@ -3094,7 +3094,7 @@ delay=Math.min(delay*2,4000);
 return null;
 };
 for(const[lat,lon]of tiles){if(dlAbort)break;const cached=await loadTile(lat,lon,tileRad,fylkeNr);let roadsForTile=null;if(cached){roadsForTile=cached;done++}else{const data=await tryLoadWithRetry(lat,lon,tileRad,fylkeNr,3);if(data!==null){await saveTile(lat,lon,tileRad,fylkeNr,data);roadsForTile=data;done++}else{errors++;done++}}
-// v2.0.71: Pump tile-veger inn i geomCache slik at fremdriftsfanen ser dem som “ikke kjørt”
+// v2.0.72: Pump tile-veger inn i geomCache slik at fremdriftsfanen ser dem som “ikke kjørt”
 if(Array.isArray(roadsForTile)&&roadsForTile.length){
 const before=Object.keys(geomCache||{}).length;
 cacheGeomForTrackedRoads(roadsForTile);
@@ -3212,7 +3212,7 @@ document.getElementById(‘progress-report-btn’)?.addEventListener(‘click’
 document.getElementById(‘progress-report-btn-mobile’)?.addEventListener(‘click’,exportProgressPdfReport);
 document.getElementById(‘progress-show-all-btn’)?.addEventListener(‘click’,setProgressFilterAll);
 document.getElementById(‘progress-show-all-btn-mobile’)?.addEventListener(‘click’,setProgressFilterAll);
-// v2.0.71: Toggle for å vise ikke-kjørte veger som røde linjer på fremdriftskart.
+// v2.0.72: Toggle for å vise ikke-kjørte veger som røde linjer på fremdriftskart.
 // Hjelper bilfører å se hva som gjenstår, ikke bare hva som er gjort.
 document.getElementById(‘progress-toggle-missing-btn’)?.addEventListener(‘click’,()=>{
 settings.progressShowMissing=!settings.progressShowMissing;
@@ -3224,7 +3224,7 @@ btn.classList.toggle(‘pf-quick’,settings.progressShowMissing);
 }
 updateProgressMap();
 });
-// v2.0.71: Snarvei til offline-nedlasting forhåndsfylt med valgt fylke fra fremdriftsfanen.
+// v2.0.72: Snarvei til offline-nedlasting forhåndsfylt med valgt fylke fra fremdriftsfanen.
 // Når nedlastingen er ferdig populeres geomCache automatisk slik at fremdriftsfanen
 // viser hele fylkets vegnett som “ikke kjørt” (rødt) eller kjørt (grønt/oransje).
 document.getElementById(‘progress-load-fylke-btn’)?.addEventListener(‘click’,()=>{
