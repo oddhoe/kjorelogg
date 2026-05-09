@@ -3075,7 +3075,18 @@ closeMenu();
 /* ───────────────────── OFFLINE DOWNLOAD ───────────────────── */
 function generateTileGrid(fylkeNr,tileRadiusKm){const bbox=FYLKE_BBOX[fylkeNr];if(!bbox)return[];const[minLon,minLat,maxLon,maxLat]=bbox,stepLat=(tileRadiusKm*1.5)/111.32,midLat=(minLat+maxLat)/2,stepLon=(tileRadiusKm*1.5)/(111.32*Math.cos(midLat*Math.PI/180)),tiles=[];for(let lat=minLat;lat<=maxLat+stepLat;lat+=stepLat)for(let lon=minLon;lon<=maxLon+stepLon;lon+=stepLon)tiles.push([Math.min(lat,maxLat),Math.min(lon,maxLon)]);return tiles}
 let dlAbort=false;
-async function startOfflineDownload(){if(!HAS_INDEXED_DB){setMessage(‘Offline-cache er ikke tilgjengelig her.’,‘notice’);return}const fylkeNr=document.getElementById(‘dl-fylke’).value,tileRad=parseInt(document.getElementById(‘dl-radius’).value)||10,tiles=generateTileGrid(fylkeNr,tileRad);if(!tiles.length){document.getElementById(‘dl-status’).textContent=‘Ukjent fylke’;return}dlAbort=false;const btn=document.getElementById(‘dl-start’);btn.textContent=‘⛔ Avbryt’;btn.onclick=()=>{dlAbort=true;btn.textContent=‘Last ned’;btn.onclick=startOfflineDownload};let done=0,errors=0,totalRoadsAdded=0;document.getElementById(‘dl-status’).textContent=`Laster ${tiles.length} tiles…`;
+async function startOfflineDownload(){
+if(!HAS_INDEXED_DB){setMessage(‘Offline-cache er ikke tilgjengelig her.’,‘notice’);return}
+const fylkeNr=document.getElementById(‘dl-fylke’).value;
+const tileRad=parseInt(document.getElementById(‘dl-radius’).value)||10;
+const tiles=generateTileGrid(fylkeNr,tileRad);
+if(!tiles.length){document.getElementById(‘dl-status’).textContent=‘Ukjent fylke’;return}
+dlAbort=false;
+const btn=document.getElementById(‘dl-start’);
+btn.textContent=‘⛔ Avbryt’;
+btn.onclick=()=>{dlAbort=true;btn.textContent=‘Last ned’;btn.onclick=startOfflineDownload};
+let done=0,errors=0,totalRoadsAdded=0;
+document.getElementById(‘dl-status’).textContent=`Laster ${tiles.length} tiles…`;
 // v2.0.71: Hjelpar for retry med eksponensiell backoff. Returnerer null ved feil, data ved suksess.
 const tryLoadWithRetry=async(lat,lon,r,f,maxAttempts)=>{
 let delay=500;
@@ -3086,14 +3097,31 @@ const data=await loadRoadsAround(lat,lon,r,f);
 return data||[];
 }catch(e){
 if(i<maxAttempts-1){
-await new Promise(r=>setTimeout(r,delay));
+await new Promise(rs=>setTimeout(rs,delay));
 delay=Math.min(delay*2,4000);
 }
 }
 }
 return null;
 };
-for(const[lat,lon]of tiles){if(dlAbort)break;const cached=await loadTile(lat,lon,tileRad,fylkeNr);let roadsForTile=null;if(cached){roadsForTile=cached;done++}else{const data=await tryLoadWithRetry(lat,lon,tileRad,fylkeNr,3);if(data!==null){await saveTile(lat,lon,tileRad,fylkeNr,data);roadsForTile=data;done++}else{errors++;done++}}
+for(const[lat,lon]of tiles){
+if(dlAbort)break;
+const cached=await loadTile(lat,lon,tileRad,fylkeNr);
+let roadsForTile=null;
+if(cached){
+roadsForTile=cached;
+done++;
+}else{
+const data=await tryLoadWithRetry(lat,lon,tileRad,fylkeNr,3);
+if(data!==null){
+await saveTile(lat,lon,tileRad,fylkeNr,data);
+roadsForTile=data;
+done++;
+}else{
+errors++;
+done++;
+}
+}
 // v2.0.71: Pump tile-veger inn i geomCache slik at fremdriftsfanen ser dem som “ikke kjørt”
 if(Array.isArray(roadsForTile)&&roadsForTile.length){
 const before=Object.keys(geomCache||{}).length;
@@ -3101,9 +3129,20 @@ cacheGeomForTrackedRoads(roadsForTile);
 const after=Object.keys(geomCache||{}).length;
 totalRoadsAdded+=Math.max(0,after-before);
 }
-document.getElementById(‘dl-prog’).style.width=`${Math.round(done/tiles.length*100)}%`;document.getElementById(‘dl-status’).textContent=`${done}/${tiles.length} tiles · ${totalRoadsAdded} nye veger · ${errors} feil`}document.getElementById(‘dl-status’).textContent=dlAbort?`Avbrutt etter ${done}/${tiles.length} tiles · ${totalRoadsAdded} nye veger`:`✅ Ferdig! ${done} tiles, ${totalRoadsAdded} nye veger lagt til (${errors} feil)`;btn.textContent=‘Last ned igjen’;btn.onclick=startOfflineDownload;updateOfflineCacheInfo();
+document.getElementById(‘dl-prog’).style.width=`${Math.round(done/tiles.length*100)}%`;
+document.getElementById(‘dl-status’).textContent=`${done}/${tiles.length} tiles · ${totalRoadsAdded} nye veger · ${errors} feil`;
+}
+document.getElementById(‘dl-status’).textContent=dlAbort
+?`Avbrutt etter ${done}/${tiles.length} tiles · ${totalRoadsAdded} nye veger`
+:`✅ Ferdig! ${done} tiles, ${totalRoadsAdded} nye veger lagt til (${errors} feil)`;
+btn.textContent=‘Last ned igjen’;
+btn.onclick=startOfflineDownload;
+updateOfflineCacheInfo();
 // v2.0.71: Oppdater fremdriftskart etter at nye veger er lagt til geomCache
-if(totalRoadsAdded>0&&typeof updateProgressMap===‘function’)try{updateProgressMap()}catch(e){}}
+if(totalRoadsAdded>0&&typeof updateProgressMap===‘function’){
+try{updateProgressMap()}catch(e){}
+}
+}
 async function updateOfflineCacheInfo(){const info=document.getElementById(‘dl-cache-info’),btn=document.getElementById(‘btn-offline’);if(!HAS_INDEXED_DB){if(info)info.textContent=‘IndexedDB er ikke tilgjengelig’;btn.textContent=‘💾 Offline utilgj.’;return}const f=document.getElementById(‘dl-fylke’)?.value||document.getElementById(‘fylke’)?.value||‘15’,count=await countTilesByFylke(f);if(info)info.textContent=count>0?`💾 ${count} tiles cached for fylke ${f}`:‘Ingen offline-cache for dette fylket’;btn.textContent=count>0?`💾 Offline (${count})`:‘💾 Offline-cache’}
 
 /* ───────────────────── EVENTS ───────────────────── */
