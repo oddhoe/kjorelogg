@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0b0f17">
-<title>Speedometer stabil GPS vegnummer fix</title>
+<title>Speedometer GPS</title>
 <style>
 :root{--bg:#0b0f17;--text:#f7fafc;--muted:#9aa7b8;--ok:#2ee59d;--warn:#ffcc00;--danger:#ff3030;--border:rgba(255,255,255,.14);--shadow:0 24px 70px rgba(0,0,0,.45);--safeTop:env(safe-area-inset-top);--safeBottom:env(safe-area-inset-bottom)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -15,6 +15,10 @@ body{position:fixed;inset:0;padding:calc(10px + var(--safeTop)) 12px calc(10px +
 .app{width:min(760px,100%);height:100%;margin:0 auto;display:grid;grid-template-rows:auto 1fr;gap:10px}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--muted);font-size:12px;letter-spacing:.02em;min-height:36px}
 .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.06);backdrop-filter:blur(12px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unit-switch{display:inline-flex;align-items:center;gap:3px;padding:4px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.06);backdrop-filter:blur(12px);white-space:nowrap}
+.unit-option{min-height:30px;min-width:50px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:inherit;font-weight:900;letter-spacing:.01em}
+.unit-option.active{background:#fff;color:#07101c;box-shadow:0 8px 22px rgba(0,0,0,.22)}
+.unit-option:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
 .pill.status{flex:1}.dot{width:9px;height:9px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 4px rgba(154,167,184,.12)}.dot.ok{background:var(--ok);box-shadow:0 0 0 4px rgba(46,229,157,.13);animation:gpsdot 1.2s infinite}.dot.bad{background:var(--danger);box-shadow:0 0 0 4px rgba(255,48,48,.13)}@keyframes gpsdot{0%,100%{opacity:1}50%{opacity:.45}}
 .card{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);backdrop-filter:blur(16px);min-height:0;overflow:hidden}
 .main{padding:16px 12px 14px;display:grid;grid-template-rows:1fr auto;gap:12px;min-height:0}
@@ -31,26 +35,32 @@ body{position:fixed;inset:0;padding:calc(10px + var(--safeTop)) 12px calc(10px +
 .sign-row{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:nowrap;min-height:154px}
 .speed-sign{width:142px;height:142px;border-radius:50%;background:#fff;color:#111;border:14px solid #df1818;display:grid;place-items:center;font-size:56px;font-weight:900;box-shadow:0 12px 30px rgba(0,0,0,.35),inset 0 0 0 2px rgba(0,0,0,.05);font-variant-numeric:tabular-nums;transition:transform .15s ease,filter .15s ease}
 .speed-sign.unknown{color:#666;border-color:#777;font-size:48px}.speed-sign.blink{animation:blinkSign .55s steps(2,start) infinite}@keyframes blinkSign{0%,100%{transform:scale(1);filter:brightness(1);box-shadow:0 12px 30px rgba(0,0,0,.35)}50%{transform:scale(1.08);filter:brightness(1.2);box-shadow:0 12px 30px rgba(0,0,0,.35),0 0 28px 8px rgba(255,48,48,.65)}}
+.speed-sign.marine{background:#eaf7ff;color:#082033;border-color:#2aaeea;font-size:42px;letter-spacing:.08em}
 .info-panel{display:grid;gap:10px;min-width:225px;max-width:320px;color:var(--muted);font-size:16px}
 .info-line{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:13px 15px;border-radius:17px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
 .gps-line span{font-size:14px;font-weight:600}.gps-line strong{color:var(--text);font-size:16px;font-weight:800;white-space:nowrap}
 .altitude-line{padding-top:14px;padding-bottom:14px}.altitude-line span{font-size:16px;font-weight:700}.altitude-line strong{color:var(--text);font-size:22px;font-weight:900;letter-spacing:-.01em;white-space:nowrap}
-#tapToStart{position:fixed;inset:0;z-index:10;display:none;place-items:center;padding:22px;background:rgba(0,0,0,.78);backdrop-filter:blur(8px)}#tapToStart.show{display:grid}.startBox{display:grid;gap:12px;justify-items:center;text-align:center;max-width:430px;padding:24px;border:1px solid rgba(255,255,255,.22);border-radius:28px;background:rgba(255,255,255,.08);box-shadow:0 30px 80px rgba(0,0,0,.55)}.startTitle{font-size:28px;font-weight:950}.startText{color:var(--muted);line-height:1.35;font-size:16px}.startBtn{width:100%;min-height:58px;border:0;border-radius:18px;background:#fff;color:#000;font-size:19px;font-weight:950}
+#tapToStart{position:fixed;inset:0;z-index:10;display:none;place-items:center;padding:22px;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);pointer-events:none}#tapToStart.show{display:grid}.startBox{display:grid;gap:12px;justify-items:center;text-align:center;max-width:430px;padding:24px;border:1px solid rgba(255,255,255,.22);border-radius:28px;background:rgba(255,255,255,.08);box-shadow:0 30px 80px rgba(0,0,0,.55);pointer-events:auto}.startBox .unit-switch{justify-content:center;background:rgba(255,255,255,.1)}.startTitle{font-size:28px;font-weight:950}.startText{color:var(--muted);line-height:1.35;font-size:16px}.startBtn{width:100%;min-height:58px;border:0;border-radius:18px;background:#fff;color:#000;font-size:19px;font-weight:950}
 @media(max-width:430px){body{padding-left:8px;padding-right:8px}.main{padding-left:8px;padding-right:8px}.sign-row{gap:12px}.speed-sign{width:128px;height:128px;border-width:13px;font-size:50px}.info-panel{min-width:205px}.gps-line span{font-size:13px}.gps-line strong{font-size:15px}.altitude-line span{font-size:15px}.altitude-line strong{font-size:20px}}
+@media(max-width:520px){.topbar{align-items:stretch}.unit-switch{flex-shrink:0}.unit-option{min-width:44px;padding:0 8px}}
 </style>
 </head>
 <body>
 <main class="app">
   <div class="topbar">
     <div class="pill status"><span id="gpsDot" class="dot"></span><span id="gpsStatus">Starter GPS…</span></div>
-    <div class="pill"><span>GPS fra Kjørelogg · vegfix</span></div>
+    <div class="unit-switch" aria-label="Velg fartsenhet">
+      <button class="unit-option active" type="button" data-unit="kmh" aria-pressed="true">km/t</button>
+      <button class="unit-option" type="button" data-unit="mph" aria-pressed="false">mph</button>
+      <button class="unit-option" type="button" data-unit="knots" aria-pressed="false">knop</button>
+    </div>
   </div>
   <section class="card main">
     <div class="speed-wrap">
       <div id="speedometer" class="speedometer">
         <div class="speed-content">
           <div id="speed" class="speed">--</div>
-          <div class="unit">km/t</div>
+          <div id="unitText" class="unit">km/t</div>
           <div id="roadText" class="roadline unknown">Veg ukjent</div>
           <div id="messageMain" class="subline">Starter GPS…</div>
         </div>
@@ -65,29 +75,42 @@ body{position:fixed;inset:0;padding:calc(10px + var(--safeTop)) 12px calc(10px +
     </div>
   </section>
 </main>
-<div id="tapToStart"><div class="startBox"><div class="startTitle">Start GPS</div><div class="startText">iOS krever ofte ett trykk første gang. Etter tillatelse starter den automatisk.</div><button id="manualStart" class="startBtn">Start</button></div></div>
+<div id="tapToStart"><div class="startBox"><div class="startTitle">Start GPS</div><div class="startText">iOS krever ofte ett trykk første gang. Etter tillatelse starter den automatisk.</div><div class="unit-switch" aria-label="Velg fartsenhet før start"><button class="unit-option active" type="button" data-unit="kmh" aria-pressed="true">km/t</button><button class="unit-option" type="button" data-unit="mph" aria-pressed="false">mph</button><button class="unit-option" type="button" data-unit="knots" aria-pressed="false">knop</button></div><button id="manualStart" class="startBtn">Start</button></div></div>
 <script>
 'use strict';
 
 const NVDB='https://nvdbapiles.atlas.vegvesen.no';
+const STEDSNAVN='https://ws.geonorge.no/stedsnavn/v1';
 const SPEED_LIMIT_TYPE_ID=105, SPEED_LIMIT_PROP_ID=2021, SPEED_LIMIT_MAX_DIST_M=45;
 const SPEED_LIMIT_REFRESH_DISTANCE_M=500, SPEED_LIMIT_REFRESH_RADIUS_KM=2.5;
 const GPS_STALE_WARN_MS=30000, GPS_FORCE_RESTART_MS=60000, GPS_LONG_GAP_MS=15000;
 const OVERPASS_URLS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+const SPEED_UNIT_STORAGE_KEY='oddis-speed-unit';
+const SPEED_UNITS={
+ kmh:{label:'km/t',speedFromMps:3.6,limitFromKmh:1,gaugeMax:140},
+ mph:{label:'mph',speedFromMps:2.2369362920544,limitFromKmh:.62137119223733,gaugeMax:90},
+ knots:{label:'knop',speedFromMps:1.9438444924406,limitFromKmh:.53995680345572,gaugeMax:50}
+};
+const MARINE_AREA_REFRESH_DISTANCE_M=750, MARINE_AREA_RADIUS_M=5000;
+const MARINE_AREA_PRIMARY_TYPES=new Set(['Fjord','Sjøstykke','Havområde','Sund i sjø','Vik i sjø','Våg i sjø','Fjordmunning','Farled/skipslei']);
+const MARINE_AREA_SECONDARY_TYPES=new Set(['Havn','Småbåthavn','Ankringsplass','Soneinndeling til havs','Fiskeplass i sjø']);
 
 const el={
  gpsDot:document.getElementById('gpsDot'), gpsStatus:document.getElementById('gpsStatus'),
- speedometer:document.getElementById('speedometer'), speed:document.getElementById('speed'),
+ speedometer:document.getElementById('speedometer'), speed:document.getElementById('speed'), unit:document.getElementById('unitText'),
  speedSign:document.getElementById('speedSign'), roadText:document.getElementById('roadText'),
  message:document.getElementById('messageMain'), accuracy:document.getElementById('accuracyText'),
  altitude:document.getElementById('altitudeText'), tap:document.getElementById('tapToStart'),
- manualStart:document.getElementById('manualStart')
+ manualStart:document.getElementById('manualStart'), unitButtons:Array.from(document.querySelectorAll('[data-unit]'))
 };
 
+let displayUnit=loadDisplayUnit();
 let gps={watching:false,watchId:null,lastPos:null,acc:null,speed:null,heading:null,altitude:null,altitudeAccuracy:null,detectedFylke:null,_lastFixTs:null,_lastTransientErrTs:0};
 let speedLimits=[],roadRefs=[],currentSpeedLimit=null,currentSpeedLimitRoadLabel='',currentRoadLabel='',lastSpeedLimitRefreshPos=null,speedLimitRefreshInFlight=false,speedLimitStartRefreshPending=false,osmEndpointIndex=0;
+let currentMarineAreaLabel='',currentMarineAreaType='',lastMarineAreaRefreshPos=null,marineAreaRefreshInFlight=false;
 let _wakeLockRef=null,_wakeLockOn=false,_gpsHealthTimer=null,_gpsStaleNotified=false;
 
+function loadDisplayUnit(){try{const saved=localStorage.getItem(SPEED_UNIT_STORAGE_KEY);if(SPEED_UNITS[saved])return saved}catch(e){}return'kmh'}
 function isNativeApp(){try{return !!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform())}catch(e){return false}}
 const capPluginCache={};
 function getCapPlugin(name,altName=''){try{const cap=window.Capacitor;if(!cap)return null;if(cap.Plugins?.[name])return cap.Plugins[name];if(altName&&cap.Plugins?.[altName])return cap.Plugins[altName];if(typeof cap.registerPlugin==='function'){if(!capPluginCache[name])capPluginCache[name]=cap.registerPlugin(name);return capPluginCache[name]}return null}catch(e){return null}}
@@ -95,6 +118,26 @@ function getCapGeolocation(){return getCapPlugin('Geolocation')}
 function getCapKeepAwake(){return getCapPlugin('KeepAwake')}
 function setGpsState(state,text){el.gpsDot.classList.remove('ok','bad');if(state==='ok')el.gpsDot.classList.add('ok');if(state==='bad')el.gpsDot.classList.add('bad');el.gpsStatus.textContent=text}
 function setMessage(t){el.message.textContent=String(t||'')}
+function currentSpeedUnit(){return SPEED_UNITS[displayUnit]||SPEED_UNITS.kmh}
+function isMarineMode(){return displayUnit==='knots'}
+function displaySpeedFromMps(speedMps){return Number.isFinite(speedMps)?Math.round(Math.max(0,speedMps*currentSpeedUnit().speedFromMps)):0}
+function displayLimitFromKmh(limitKmh){return Number.isFinite(limitKmh)?Math.round(limitKmh*currentSpeedUnit().limitFromKmh):null}
+function deltaTextFromKmh(deltaKmh){const unit=currentSpeedUnit();return`${Math.round(Math.max(0,deltaKmh)*unit.limitFromKmh)} ${unit.label}`}
+function syncUnitButtons(){const unit=currentSpeedUnit();el.unit.textContent=unit.label;for(const btn of el.unitButtons){const active=btn.dataset.unit===displayUnit;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',active?'true':'false')}}
+function setDisplayUnit(nextUnit){
+ if(!SPEED_UNITS[nextUnit]||nextUnit===displayUnit)return;
+ displayUnit=nextUnit;
+ try{localStorage.setItem(SPEED_UNIT_STORAGE_KEY,displayUnit)}catch(e){}
+ syncUnitButtons();
+ if(isMarineMode()){
+  currentSpeedLimit=null;currentSpeedLimitRoadLabel='';currentRoadLabel='';speedLimits=[];roadRefs=[];
+  if(gps.lastPos)maybeRefreshMarineAreaLight(gps.lastPos[0],gps.lastPos[1],true);
+ }else{
+  currentMarineAreaLabel='';currentMarineAreaType='';
+  if(gps.lastPos){maybeRefreshSpeedLimitsLight(gps.lastPos[0],gps.lastPos[1],true);updateCurrentSpeedLimit(gps.lastPos[0],gps.lastPos[1]);updateCurrentRoadLabel(gps.lastPos[0],gps.lastPos[1])}
+ }
+ renderDashboard();
+}
 function rad(d){return d*Math.PI/180}
 function dM(la1,lo1,la2,lo2){const R=6371000,dlat=rad(la2-la1),dlon=rad(lo2-lo1),a=Math.sin(dlat/2)**2+Math.cos(rad(la1))*Math.cos(rad(la2))*Math.sin(dlon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))}
 function bearingBetween(la1,lo1,la2,lo2){const p1=rad(la1),p2=rad(la2),dl=rad(lo2-lo1),y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);return(Math.atan2(y,x)*180/Math.PI+360)%360}
@@ -197,6 +240,59 @@ function updateCurrentRoadLabel(lat,lon){
  return currentRoadLabel;
 }
 
+function placeNameFromStedsnavn(item){
+ const names=Array.isArray(item?.stedsnavn)?item.stedsnavn:[];
+ const preferred=names.find(n=>String(n?.navnestatus||'').toLowerCase()==='hovednavn'&&n?.['skrivemåte'])
+  ||names.find(n=>String(n?.språk||'').toLowerCase()==='norsk'&&n?.['skrivemåte'])
+  ||names.find(n=>n?.['skrivemåte']);
+ return String(preferred?.['skrivemåte']||'').trim();
+}
+function marineTypePriority(type){
+ if(MARINE_AREA_PRIMARY_TYPES.has(type))return 5;
+ if(MARINE_AREA_SECONDARY_TYPES.has(type))return 4;
+ if(/sjø|fjord|hav|sund|vik|våg|farled|havn|ankring|brygge|kai|fyr|lykt|skjær|grunne|båe|holme|øy/i.test(type))return 3;
+ return 0;
+}
+function normalizeMarineAreaCandidate(item){
+ const type=String(item?.navneobjekttype||'').trim(),name=placeNameFromStedsnavn(item),priority=marineTypePriority(type);
+ if(!name||!priority)return null;
+ const distance=Number(item?.meterFraPunkt);
+ const statusPenalty=String(item?.stedstatus||'').toLowerCase()==='relikt'?30000:0;
+ return{name,type,distance:Number.isFinite(distance)?distance:MARINE_AREA_RADIUS_M,score:priority*100000-(Number.isFinite(distance)?distance:MARINE_AREA_RADIUS_M)-statusPenalty};
+}
+async function fetchMarineAreaName(lat,lon){
+ const url=new URL(`${STEDSNAVN}/punkt`);
+ url.searchParams.set('nord',lat.toFixed(6));
+ url.searchParams.set('ost',lon.toFixed(6));
+ url.searchParams.set('radius',String(MARINE_AREA_RADIUS_M));
+ url.searchParams.set('koordsys','4326');
+ url.searchParams.set('treffPerSide','500');
+ url.searchParams.set('side','1');
+ const resp=await fetch(url,{headers:{Accept:'application/json'}});
+ if(!resp.ok)throw new Error(`Stedsnavn ${resp.status}`);
+ const data=await resp.json();
+ const candidates=(Array.isArray(data?.navn)?data.navn:[]).map(normalizeMarineAreaCandidate).filter(Boolean).sort((a,b)=>b.score-a.score);
+ return candidates[0]||null;
+}
+async function refreshMarineAreaLight(lat,lon,force=false){
+ if(!isMarineMode()||!Number.isFinite(lat)||!Number.isFinite(lon)||marineAreaRefreshInFlight)return false;
+ if(!force&&lastMarineAreaRefreshPos&&dM(lastMarineAreaRefreshPos[0],lastMarineAreaRefreshPos[1],lat,lon)<MARINE_AREA_REFRESH_DISTANCE_M)return false;
+ marineAreaRefreshInFlight=true;
+ try{
+  const area=await fetchMarineAreaName(lat,lon);
+  if(!isMarineMode())return false;
+  currentMarineAreaLabel=area?.name||'';
+  currentMarineAreaType=area?.type||'';
+  lastMarineAreaRefreshPos=[lat,lon];
+  renderDashboard();
+ return true;
+}catch(e){
+  console.warn('Stedsnavn-oppslag feilet',e);
+  return false;
+ }finally{marineAreaRefreshInFlight=false;renderDashboard()}
+}
+function maybeRefreshMarineAreaLight(lat,lon,force=false){refreshMarineAreaLight(lat,lon,force).catch(e=>console.warn(e))}
+
 function parseOsmMaxspeed(value){if(!value)return null;const raw=String(value).trim().toLowerCase();if(['none','signals','variable','walk','implicit'].includes(raw))return null;const m=raw.match(/(\d+(?:[.,]\d+)?)/);if(!m)return null;let num=Number(m[1].replace(',','.'));if(!Number.isFinite(num))return null;if(raw.includes('mph'))num*=1.609344;num=Math.round(num);return num>=5&&num<=140?num:null}
 function roadLabelFromOsmTags(tags){return String(tags.ref||tags.official_ref||tags['destination:ref']||tags.name||tags['name:sv']||tags['name:no']||'').trim().replace(/\s+/g,' ')}
 async function fetchOverpass(lat,lon,radiusKm){const [west,south,east,north]=bboxFromPoint(lat,lon,radiusKm);const q=`[out:json][timeout:8];(way["highway"]["maxspeed"](${south},${west},${north},${east}););out geom tags center;`;for(let attempt=0;attempt<OVERPASS_URLS.length;attempt++){const idx=(osmEndpointIndex+attempt)%OVERPASS_URLS.length,url=OVERPASS_URLS[idx];try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(q)});if(!res.ok)throw new Error('HTTP '+res.status);osmEndpointIndex=idx;return await res.json()}catch(err){if(attempt===OVERPASS_URLS.length-1)throw err}}}
@@ -219,7 +315,7 @@ function updateCurrentSpeedLimit(lat,lon){
  return currentSpeedLimit;
 }
 async function refreshSpeedLimitsLight(lat,lon,reason='auto',force=false){
- if(!Number.isFinite(lat)||!Number.isFinite(lon)||speedLimitRefreshInFlight)return false;
+ if(isMarineMode()||!Number.isFinite(lat)||!Number.isFinite(lon)||speedLimitRefreshInFlight)return false;
  if(!force&&lastSpeedLimitRefreshPos&&dM(lastSpeedLimitRefreshPos[0],lastSpeedLimitRefreshPos[1],lat,lon)<SPEED_LIMIT_REFRESH_DISTANCE_M)return false;
  speedLimitRefreshInFlight=true;
  try{
@@ -245,6 +341,7 @@ async function refreshSpeedLimitsLight(lat,lon,reason='auto',force=false){
    }
   }
 
+  if(isMarineMode())return false;
   speedLimits=Array.isArray(fresh)?fresh:[];
   roadRefs=Array.isArray(refs)?refs:[];
   lastSpeedLimitRefreshPos=[lat,lon];
@@ -252,16 +349,61 @@ async function refreshSpeedLimitsLight(lat,lon,reason='auto',force=false){
   updateCurrentSpeedLimit(lat,lon);
   updateCurrentRoadLabel(lat,lon);
   renderDashboard();
-  return true;
+ return true;
  }catch(e){
   console.warn('Fartsgrense-refresh feilet',e);
   return false;
- }finally{speedLimitRefreshInFlight=false}
+ }finally{speedLimitRefreshInFlight=false;renderDashboard()}
 }
 function maybeRefreshSpeedLimitsLight(lat,lon,force=false){refreshSpeedLimitsLight(lat,lon,force?'start':'500m',force).catch(e=>console.warn(e))}
 
-function updateGauge(speed,limit,over){const s=Number.isFinite(speed)?Math.max(0,Math.min(140,speed)):0,arc=(s/140)*260;let col='var(--ok)';if(limit&&speed>limit)col='var(--warn)';if(over)col='var(--danger)';el.speedometer.style.setProperty('--arc',`${arc}deg`);el.speedometer.style.setProperty('--arcColor',col)}
-function renderDashboard(){const speedKmh=Number.isFinite(gps.speed)?gps.speed*3.6:0,kmh=Math.round(speedKmh),limit=currentSpeedLimit;el.speed.textContent=gps.watching&&gps.lastPos?String(kmh):'--';if(limit==null){el.speedSign.textContent='--';el.speedSign.classList.add('unknown')}else{el.speedSign.textContent=String(Math.round(limit));el.speedSign.classList.remove('unknown')}if(currentRoadLabel){el.roadText.textContent=currentRoadLabel;el.roadText.classList.remove('unknown')}else{el.roadText.textContent='Veg ukjent';el.roadText.classList.add('unknown')}const over=limit!=null&&speedKmh>limit+5;el.speed.classList.toggle('danger',!!over);el.speedSign.classList.toggle('blink',!!over);updateGauge(speedKmh,limit,over);el.accuracy.textContent=Number.isFinite(gps.acc)?`±${Math.round(gps.acc)} m`:'--';if(Number.isFinite(gps.altitude)){const aa=Number.isFinite(gps.altitudeAccuracy)?` ±${Math.round(gps.altitudeAccuracy)} m`:'';el.altitude.textContent=`${Math.round(gps.altitude)} moh${aa}`}else el.altitude.textContent='--';if(!gps.watching)setMessage('GPS stoppet');else if(!gps.lastPos)setMessage('Venter på GPS');else if(limit==null)setMessage(speedLimitRefreshInFlight?'Henter fartsgrense':'Fartsgrense ukjent');else if(over)setMessage(`Over grense med ${Math.round(speedKmh-limit)} km/t`);else if(speedKmh>limit)setMessage('Over fartsgrense');else setMessage('Innenfor fartsgrense')}
+function updateGauge(speed,limit,over){
+ const unit=currentSpeedUnit(),s=Number.isFinite(speed)?Math.max(0,Math.min(unit.gaugeMax,speed)):0,arc=(s/unit.gaugeMax)*260;
+ let col='var(--ok)';
+ if(limit!=null&&speed>limit)col='var(--warn)';
+ if(over)col='var(--danger)';
+ el.speedometer.style.setProperty('--arc',`${arc}deg`);
+ el.speedometer.style.setProperty('--arcColor',col);
+}
+function renderDashboard(){
+ const unit=currentSpeedUnit(),speedKmh=Number.isFinite(gps.speed)?gps.speed*3.6:0,speedValue=displaySpeedFromMps(gps.speed),limit=currentSpeedLimit,limitValue=displayLimitFromKmh(limit),marine=isMarineMode();
+ el.unit.textContent=unit.label;
+ el.speed.textContent=gps.watching&&gps.lastPos?String(speedValue):'--';
+
+ if(marine){
+  el.speedSign.textContent='KN';
+  el.speedSign.classList.add('unknown','marine');
+  el.speedSign.classList.remove('blink');
+  if(currentMarineAreaLabel){el.roadText.textContent=currentMarineAreaLabel;el.roadText.classList.remove('unknown')}else{el.roadText.textContent='Område ukjent';el.roadText.classList.add('unknown')}
+  el.speed.classList.remove('danger');
+  updateGauge(speedValue,null,false);
+ }else{
+  el.speedSign.classList.remove('marine');
+  if(limitValue==null){el.speedSign.textContent='--';el.speedSign.classList.add('unknown')}else{el.speedSign.textContent=String(limitValue);el.speedSign.classList.remove('unknown')}
+  if(currentRoadLabel){el.roadText.textContent=currentRoadLabel;el.roadText.classList.remove('unknown')}else{el.roadText.textContent='Veg ukjent';el.roadText.classList.add('unknown')}
+  const over=limit!=null&&speedKmh>limit+5;
+  el.speed.classList.toggle('danger',!!over);
+  el.speedSign.classList.toggle('blink',!!over);
+  updateGauge(speedValue,limitValue,over);
+ }
+
+ el.accuracy.textContent=Number.isFinite(gps.acc)?`±${Math.round(gps.acc)} m`:'--';
+ if(Number.isFinite(gps.altitude)){
+  const aa=Number.isFinite(gps.altitudeAccuracy)?` ±${Math.round(gps.altitudeAccuracy)} m`:'';
+  el.altitude.textContent=`${Math.round(gps.altitude)} moh${aa}`;
+ }else el.altitude.textContent='--';
+
+ if(!gps.watching)setMessage('GPS stoppet');
+ else if(!gps.lastPos)setMessage('Venter på GPS');
+ else if(marine){
+  if(marineAreaRefreshInFlight)setMessage('Henter område');
+  else if(currentMarineAreaType)setMessage(currentMarineAreaType);
+  else setMessage('Båtmodus');
+ }else if(limit==null)setMessage(speedLimitRefreshInFlight?'Henter fartsgrense':'Fartsgrense ukjent');
+ else if(limit!=null&&speedKmh>limit+5)setMessage(`Over grense med ${deltaTextFromKmh(speedKmh-limit)}`);
+ else if(speedKmh>limit)setMessage('Over fartsgrense');
+ else setMessage('Innenfor fartsgrense');
+}
 
 async function ensureLocationPermission(){try{const geo=getCapGeolocation();if(isNativeApp()&&geo){const p=await geo.checkPermissions?.().catch(()=>({location:'prompt'}));if(p.location==='granted'||p.coarseLocation==='granted')return true;const r=await geo.requestPermissions?.({permissions:['location']}).catch(()=>null);return r?.location==='granted'||r?.coarseLocation==='granted'}return true}catch(e){console.error(e);return false}}
 async function ensureWakeLock(){if(_wakeLockOn)return;const ka=getCapKeepAwake();if(ka?.keepAwake){try{await ka.keepAwake();_wakeLockOn=true;return}catch(e){}}if(navigator.wakeLock?.request){try{_wakeLockRef=await navigator.wakeLock.request('screen');_wakeLockOn=true;_wakeLockRef.addEventListener?.('release',()=>{_wakeLockOn=false;_wakeLockRef=null})}catch(e){}}}
@@ -276,12 +418,39 @@ function stopGpsHealthWatchdog(){if(_gpsHealthTimer){clearInterval(_gpsHealthTim
 async function startGPS(){if(!('geolocation'in navigator)&&!isNativeApp()){gps.watching=false;setGpsState('bad','GPS mangler');setMessage('Denne nettleseren støtter ikke GPS');el.tap.classList.add('show');renderDashboard();return}if(!await ensureLocationPermission()){gps.watching=false;setGpsState('bad','GPS nektet');setMessage('Posisjonstillatelse ble ikke gitt');el.tap.classList.add('show');renderDashboard();return}gps.watching=true;gps._lastFixTs=null;speedLimitStartRefreshPending=true;setGpsState('','Starter GPS…');setMessage('Henter GPS-signal');renderDashboard();ensureWakeLock();startGpsHealthWatchdog();try{if(await startNativeForegroundGPS()){setGpsState('ok','GPS aktiv');el.tap.classList.remove('show');renderDashboard();return}gps.watchId=navigator.geolocation.watchPosition(onPos,onPosErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000})}catch(e){gps.watching=false;gps.watchId=null;stopGpsHealthWatchdog();releaseWakeLock();setGpsState('bad','GPS-feil');setMessage('GPS-feil: '+(e?.message||e));el.tap.classList.add('show');renderDashboard()}}
 function stopGPS(){if(gps.watchId!==null&&navigator.geolocation&&typeof gps.watchId==='number')navigator.geolocation.clearWatch(gps.watchId);gps.watching=false;gps.watchId=null;gps.acc=null;gps._lastFixTs=null;stopGpsHealthWatchdog();releaseWakeLock();setGpsState('','GPS stoppet');renderDashboard()}
 function onPosErr(err){const m={1:'Tillatelse avslått',2:'Posisjon utilgjengelig',3:'Timeout'};if(gps.watching&&err?.code!==1){const now=Date.now();if(now-(gps._lastTransientErrTs||0)>15000){gps._lastTransientErrTs=now;setMessage((m[err?.code]||'GPS-feil')+' – GPS-watch beholdes')}return}gps.watching=false;gps.watchId=null;stopGpsHealthWatchdog();releaseWakeLock();setGpsState('bad',m[err?.code]||'GPS-feil');setMessage(m[err?.code]||'GPS-feil');el.tap.classList.add('show');renderDashboard()}
-function onPos(pos){const lat=Number(pos?.coords?.latitude),lon=Number(pos?.coords?.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180)return;const prev=gps.lastPos?[gps.lastPos[0],gps.lastPos[1]]:null,acc=Number(pos.coords.accuracy),spd=Number(pos.coords.speed),rawHeading=Number(pos.coords.heading);let heading=Number.isFinite(rawHeading)&&rawHeading>0?rawHeading:null;if(heading==null&&prev&&Number.isFinite(spd)&&spd>1&&dM(prev[0],prev[1],lat,lon)>3)heading=bearingBetween(prev[0],prev[1],lat,lon);gps._lastFixTs=Date.now();gps.lastPos=[lat,lon];gps.acc=Number.isFinite(acc)?acc:null;gps.speed=(Number.isFinite(spd)&&spd>=0)?spd:null;gps.heading=heading;gps.altitude=Number.isFinite(pos.coords.altitude)?pos.coords.altitude:null;gps.altitudeAccuracy=Number.isFinite(pos.coords.altitudeAccuracy)?pos.coords.altitudeAccuracy:null;el.tap.classList.remove('show');setGpsState('ok','GPS aktiv');const force=!!speedLimitStartRefreshPending;if(force)speedLimitStartRefreshPending=false;maybeRefreshSpeedLimitsLight(lat,lon,force);updateCurrentSpeedLimit(lat,lon);updateCurrentRoadLabel(lat,lon);renderDashboard()}
+function onPos(pos){
+ const lat=Number(pos?.coords?.latitude),lon=Number(pos?.coords?.longitude);
+ if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180)return;
+ const prev=gps.lastPos?[gps.lastPos[0],gps.lastPos[1]]:null,acc=Number(pos.coords.accuracy),spd=Number(pos.coords.speed),rawHeading=Number(pos.coords.heading);
+ let heading=Number.isFinite(rawHeading)&&rawHeading>0?rawHeading:null;
+ if(heading==null&&prev&&Number.isFinite(spd)&&spd>1&&dM(prev[0],prev[1],lat,lon)>3)heading=bearingBetween(prev[0],prev[1],lat,lon);
+ gps._lastFixTs=Date.now();
+ gps.lastPos=[lat,lon];
+ gps.acc=Number.isFinite(acc)?acc:null;
+ gps.speed=(Number.isFinite(spd)&&spd>=0)?spd:null;
+ gps.heading=heading;
+ gps.altitude=Number.isFinite(pos.coords.altitude)?pos.coords.altitude:null;
+ gps.altitudeAccuracy=Number.isFinite(pos.coords.altitudeAccuracy)?pos.coords.altitudeAccuracy:null;
+ el.tap.classList.remove('show');
+ setGpsState('ok','GPS aktiv');
+ const force=!!speedLimitStartRefreshPending;
+ if(force)speedLimitStartRefreshPending=false;
+ if(isMarineMode()){
+  currentSpeedLimit=null;currentSpeedLimitRoadLabel='';currentRoadLabel='';
+  maybeRefreshMarineAreaLight(lat,lon,force);
+ }else{
+  maybeRefreshSpeedLimitsLight(lat,lon,force);
+  updateCurrentSpeedLimit(lat,lon);
+  updateCurrentRoadLabel(lat,lon);
+ }
+ renderDashboard();
+}
 
 document.addEventListener('visibilitychange',async()=>{if(document.hidden)return;if(gps.watching){if(!_wakeLockOn)ensureWakeLock();if(gps._lastFixTs){const since=Date.now()-gps._lastFixTs;if(since>GPS_LONG_GAP_MS){setMessage('Appen ble vekket. Henter fersk GPS');await restartWatchPosition('app gjenopptatt')}}}});
 window.addEventListener('pagehide',()=>{});
 el.manualStart.addEventListener('click',()=>{el.tap.classList.remove('show');startGPS()});
-window.addEventListener('load',()=>{renderDashboard();startGPS();setTimeout(()=>{if(!gps.lastPos)el.tap.classList.add('show')},1800)});
+for(const btn of el.unitButtons)btn.addEventListener('click',()=>setDisplayUnit(btn.dataset.unit));
+window.addEventListener('load',()=>{syncUnitButtons();renderDashboard();startGPS();setTimeout(()=>{if(!gps.lastPos)el.tap.classList.add('show')},1800)});
 window.addEventListener('orientationchange',()=>window.scrollTo(0,0));
 document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 </script>
