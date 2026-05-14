@@ -36,6 +36,7 @@ body{position:fixed;inset:0;padding:calc(10px + var(--safeTop)) 12px calc(10px +
 .speed-sign{width:142px;height:142px;border-radius:50%;background:#fff;color:#111;border:14px solid #df1818;display:grid;place-items:center;font-size:56px;font-weight:900;box-shadow:0 12px 30px rgba(0,0,0,.35),inset 0 0 0 2px rgba(0,0,0,.05);font-variant-numeric:tabular-nums;transition:transform .15s ease,filter .15s ease}
 .speed-sign.unknown{color:#666;border-color:#777;font-size:48px}.speed-sign.blink{animation:blinkSign .55s steps(2,start) infinite}@keyframes blinkSign{0%,100%{transform:scale(1);filter:brightness(1);box-shadow:0 12px 30px rgba(0,0,0,.35)}50%{transform:scale(1.08);filter:brightness(1.2);box-shadow:0 12px 30px rgba(0,0,0,.35),0 0 28px 8px rgba(255,48,48,.65)}}
 .speed-sign.marine{background:#eaf7ff;color:#082033;border-color:#2aaeea;font-size:42px;letter-spacing:.08em}
+.speed-sign.marine.limit{font-size:56px;letter-spacing:0}
 .info-panel{display:grid;gap:10px;min-width:225px;max-width:320px;color:var(--muted);font-size:16px}
 .info-line{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:13px 15px;border-radius:17px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
 .gps-line span{font-size:14px;font-weight:600}.gps-line strong{color:var(--text);font-size:16px;font-weight:800;white-space:nowrap}
@@ -81,7 +82,9 @@ body{position:fixed;inset:0;padding:calc(10px + var(--safeTop)) 12px calc(10px +
 
 const NVDB='https://nvdbapiles.atlas.vegvesen.no';
 const STEDSNAVN='https://ws.geonorge.no/stedsnavn/v1';
-const SPEED_LIMIT_TYPE_ID=105, SPEED_LIMIT_PROP_ID=2021, SPEED_LIMIT_MAX_DIST_M=45;
+const KYSTVERKET_WMS='https://services.kystverket.no/wms.ashx';
+const SPEED_LIMIT_TYPE_ID=105, SPEED_LIMIT_PROP_ID=2021, SPEED_LIMIT_MAX_DIST_M=30, ROAD_REF_MAX_DIST_M=40;
+const SPEED_LIMIT_HEADING_MIN_SPEED_MPS=3, SPEED_LIMIT_HEADING_SOFT_DELTA_DEG=45;
 const SPEED_LIMIT_REFRESH_DISTANCE_M=500, SPEED_LIMIT_REFRESH_RADIUS_KM=2.5;
 const GPS_STALE_WARN_MS=30000, GPS_FORCE_RESTART_MS=60000, GPS_LONG_GAP_MS=15000;
 const OVERPASS_URLS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
@@ -92,6 +95,7 @@ const SPEED_UNITS={
  knots:{label:'knop',speedFromMps:1.9438444924406,limitFromKmh:.53995680345572,gaugeMax:50}
 };
 const MARINE_AREA_REFRESH_DISTANCE_M=750, MARINE_AREA_RADIUS_M=5000;
+const MARINE_SPEED_LIMIT_LAYER='layer_759', MARINE_SPEED_LIMIT_REFRESH_DISTANCE_M=150;
 const MARINE_AREA_PRIMARY_TYPES=new Set(['Fjord','Sjøstykke','Havområde','Sund i sjø','Vik i sjø','Våg i sjø','Fjordmunning','Farled/skipslei']);
 const MARINE_AREA_SECONDARY_TYPES=new Set(['Havn','Småbåthavn','Ankringsplass','Soneinndeling til havs','Fiskeplass i sjø']);
 
@@ -108,6 +112,7 @@ let displayUnit=loadDisplayUnit();
 let gps={watching:false,watchId:null,lastPos:null,acc:null,speed:null,heading:null,altitude:null,altitudeAccuracy:null,detectedFylke:null,_lastFixTs:null,_lastTransientErrTs:0};
 let speedLimits=[],roadRefs=[],currentSpeedLimit=null,currentSpeedLimitRoadLabel='',currentRoadLabel='',lastSpeedLimitRefreshPos=null,speedLimitRefreshInFlight=false,speedLimitStartRefreshPending=false,osmEndpointIndex=0;
 let currentMarineAreaLabel='',currentMarineAreaType='',lastMarineAreaRefreshPos=null,marineAreaRefreshInFlight=false;
+let currentMarineSpeedLimitKn=null,currentMarineSpeedLimitLabel='',lastMarineSpeedLimitRefreshPos=null,marineSpeedLimitRefreshInFlight=false;
 let _wakeLockRef=null,_wakeLockOn=false,_gpsHealthTimer=null,_gpsStaleNotified=false;
 
 function loadDisplayUnit(){try{const saved=localStorage.getItem(SPEED_UNIT_STORAGE_KEY);if(SPEED_UNITS[saved])return saved}catch(e){}return'kmh'}
@@ -123,6 +128,10 @@ function isMarineMode(){return displayUnit==='knots'}
 function displaySpeedFromMps(speedMps){return Number.isFinite(speedMps)?Math.round(Math.max(0,speedMps*currentSpeedUnit().speedFromMps)):0}
 function displayLimitFromKmh(limitKmh){return Number.isFinite(limitKmh)?Math.round(limitKmh*currentSpeedUnit().limitFromKmh):null}
 function deltaTextFromKmh(deltaKmh){const unit=currentSpeedUnit();return`${Math.round(Math.max(0,deltaKmh)*unit.limitFromKmh)} ${unit.label}`}
+function deltaTextFromKnots(deltaKn){return`${Math.round(Math.max(0,deltaKn))} knop`}
+function roadLabelKey(label){return String(label||'').toLowerCase().replace(/\s+/g,'')}
+function activeRoadHeading(){return Number.isFinite(gps.heading)&&Number.isFinite(gps.speed)&&gps.speed>=SPEED_LIMIT_HEADING_MIN_SPEED_MPS?gps.heading:null}
+function roadMatchLimits(baseDist){const acc=Number.isFinite(gps.acc)?gps.acc:null,dist=Math.min(42,Math.max(baseDist,(acc||0)+10));return{dist,score:dist+8}}
 function syncUnitButtons(){const unit=currentSpeedUnit();el.unit.textContent=unit.label;for(const btn of el.unitButtons){const active=btn.dataset.unit===displayUnit;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',active?'true':'false')}}
 function setDisplayUnit(nextUnit){
  if(!SPEED_UNITS[nextUnit]||nextUnit===displayUnit)return;
@@ -131,23 +140,49 @@ function setDisplayUnit(nextUnit){
  syncUnitButtons();
  if(isMarineMode()){
   currentSpeedLimit=null;currentSpeedLimitRoadLabel='';currentRoadLabel='';speedLimits=[];roadRefs=[];
-  if(gps.lastPos)maybeRefreshMarineAreaLight(gps.lastPos[0],gps.lastPos[1],true);
+  currentMarineSpeedLimitKn=null;currentMarineSpeedLimitLabel='';
+  if(gps.lastPos){maybeRefreshMarineAreaLight(gps.lastPos[0],gps.lastPos[1],true);maybeRefreshMarineSpeedLimitLight(gps.lastPos[0],gps.lastPos[1],true)}
  }else{
-  currentMarineAreaLabel='';currentMarineAreaType='';
-  if(gps.lastPos){maybeRefreshSpeedLimitsLight(gps.lastPos[0],gps.lastPos[1],true);updateCurrentSpeedLimit(gps.lastPos[0],gps.lastPos[1]);updateCurrentRoadLabel(gps.lastPos[0],gps.lastPos[1])}
+  currentMarineAreaLabel='';currentMarineAreaType='';currentMarineSpeedLimitKn=null;currentMarineSpeedLimitLabel='';
+  if(gps.lastPos){maybeRefreshSpeedLimitsLight(gps.lastPos[0],gps.lastPos[1],true);updateCurrentRoadLabel(gps.lastPos[0],gps.lastPos[1]);updateCurrentSpeedLimit(gps.lastPos[0],gps.lastPos[1])}
  }
  renderDashboard();
 }
 function rad(d){return d*Math.PI/180}
 function dM(la1,lo1,la2,lo2){const R=6371000,dlat=rad(la2-la1),dlon=rad(lo2-lo1),a=Math.sin(dlat/2)**2+Math.cos(rad(la1))*Math.cos(rad(la2))*Math.sin(dlon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))}
 function bearingBetween(la1,lo1,la2,lo2){const p1=rad(la1),p2=rad(la2),dl=rad(lo2-lo1),y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);return(Math.atan2(y,x)*180/Math.PI+360)%360}
+function headingDelta(a,b){const d=Math.abs(((a-b+540)%360)-180);return Number.isFinite(d)?d:null}
 function bboxFromPoint(lat,lon,rKm){const dLat=rKm/111.32,dLon=rKm/(111.32*Math.max(.2,Math.abs(Math.cos(rad(lat)))));return[lon-dLon,lat-dLat,lon+dLon,lat+dLat]}
+function webMercatorFromLonLat(lat,lon){const R=6378137,max=85.05112878,clampedLat=Math.max(-max,Math.min(max,lat));return[R*rad(lon),R*Math.log(Math.tan(Math.PI/4+rad(clampedLat)/2))]}
 function isVLL(c){return Array.isArray(c)&&c.length===2&&Number.isFinite(c[0])&&Number.isFinite(c[1])&&c[0]>=3&&c[0]<=32&&c[1]>=57&&c[1]<=72}
 function dedup(coords){const out=[];let p=null;for(const c of coords){if(!p||p[0]!==c[0]||p[1]!==c[1]){out.push(c);p=c}}return out}
 function parseCoords(text){if(!text)return[];const out=[];for(const t of text.split(',')){const n=t.trim().split(/\s+/).map(Number).filter(Number.isFinite);if(n.length<2)continue;const[x,y]=n;if(y>=55&&y<=72&&x>=3&&x<=32)out.push([x,y]);else if(x>=55&&x<=72&&y>=3&&y<=32)out.push([y,x])}return dedup(out)}
 function parseWkt(wkt){if(!wkt)return[];const t=wkt.trim();if(/^LINESTRING/i.test(t)){const m=t.match(/LINESTRING\s*(?:Z(?:M)?|M)?\s*\((.*?)\)\s*$/is);if(!m)return[];const p=parseCoords(m[1]);return p.length>=2?[p]:[]}if(/^MULTILINESTRING/i.test(t)){const m=t.match(/MULTILINESTRING\s*(?:Z(?:M)?|M)?\s*\((.*)\)\s*$/is);if(!m)return[];let inner=m[1].trim();if(inner.startsWith('(')&&inner.endsWith(')'))inner=inner.slice(1,-1);return inner.split(/\)\s*,\s*\(/).map(p=>parseCoords(p)).filter(p=>p.length>=2)}return[]}
 function ptSeg(lat,lon,a,b){const lat0=(a[1]+b[1]+lat)/3,mLat=111320,mLon=Math.cos(rad(lat0))*111320,ax=a[0]*mLon,ay=a[1]*mLat,bx=b[0]*mLon,by=b[1]*mLat,px=lon*mLon,py=lat*mLat,abx=bx-ax,aby=by-ay,ab2=abx*abx+aby*aby;if(ab2===0)return Math.hypot(px-ax,py-ay);const t=Math.max(0,Math.min(1,((px-ax)*abx+(py-ay)*aby)/ab2));return Math.hypot(px-(ax+t*abx),py-(ay+t*aby))}
 function roadDist(lat,lon,r){let best=Infinity;for(const part of(r.parts||[])){if(!part?.length)continue;if(part.length===1){const d=dM(lat,lon,part[0][1],part[0][0]);if(d<best)best=d;continue}for(let i=0;i<part.length-1;i++){const d=ptSeg(lat,lon,part[i],part[i+1]);if(d<best)best=d}}return best}
+function roadMatch(lat,lon,r,heading=null){
+ let best={dist:Infinity,score:Infinity,headingDelta:null};
+ const useHeading=Number.isFinite(heading);
+ for(const part of(r.parts||[])){
+  if(!part?.length)continue;
+  if(part.length===1){
+   const d=dM(lat,lon,part[0][1],part[0][0]);
+   if(d<best.dist)best={dist:d,score:d,headingDelta:null};
+   continue;
+  }
+  for(let i=0;i<part.length-1;i++){
+   const a=part[i],b=part[i+1],d=ptSeg(lat,lon,a,b);
+   let score=d,hd=null;
+   if(useHeading){
+    const segBearing=bearingBetween(a[1],a[0],b[1],b[0]);
+    hd=Math.min(headingDelta(heading,segBearing),headingDelta(heading,(segBearing+180)%360));
+    if(Number.isFinite(hd))score+=Math.max(0,hd-SPEED_LIMIT_HEADING_SOFT_DELTA_DEG)*1.5;
+   }
+   if(score<best.score)best={dist:d,score,headingDelta:hd};
+  }
+ }
+ return best;
+}
 
 function parseSpeedLimitNumber(v){if(v==null)return null;if(typeof v==='number'&&Number.isFinite(v))return v;if(typeof v==='object'){for(const k of ['verdi','value','enumVerdi','enum_verdi','kortnavn','navn','tekst','displayValue']){const n=parseSpeedLimitNumber(v[k]);if(n!=null)return n}}const m=String(v).match(/\b(5|10|20|30|40|50|60|70|80|90|100|110|120)\b/);return m?Number(m[1]):null}
 function getSpeedLimitFromObject(obj){const direct=parseSpeedLimitNumber(obj?.fartsgrense??obj?.speedLimit??obj?.hastighet);if(direct!=null)return direct;const props=obj?.egenskaper;if(Array.isArray(props)){for(const e of props){const id=Number(e?.id??e?.egenskapstype?.id),name=String(e?.navn??e?.egenskapstype?.navn??'').toLowerCase();if(id===SPEED_LIMIT_PROP_ID||name.includes('fartsgrense')||name.includes('hastighet')){const n=parseSpeedLimitNumber(e?.verdi??e?.enum_verdi??e?.enumVerdi??e?.verdi_tekst??e?.navn);if(n!=null)return n}}for(const e of props){const n=parseSpeedLimitNumber(e?.verdi??e?.navn);if(n!=null)return n}}return null}
@@ -225,13 +260,14 @@ async function loadRoadRefsAround(lat,lon,radiusKm,fylkeNr){
 function updateCurrentRoadLabel(lat,lon){
  currentRoadLabel='';
  if(Number.isFinite(lat)&&Number.isFinite(lon)&&roadRefs.length){
-  let best=null,bestD=Infinity;
+  let best=null,bestMatch=null,bestScore=Infinity;
+  const heading=activeRoadHeading(),limits=roadMatchLimits(ROAD_REF_MAX_DIST_M);
   for(const r of roadRefs){
-   const d=roadDist(lat,lon,r);
-   r.minDist=d;
-   if(d<bestD){best=r;bestD=d}
+   const match=roadMatch(lat,lon,r,heading);
+   r.minDist=match.dist;
+   if(match.score<bestScore){best=r;bestMatch=match;bestScore=match.score}
   }
-  if(best&&bestD<=60){
+  if(best&&bestMatch&&bestMatch.dist<=limits.dist&&bestMatch.score<=limits.score){
    currentRoadLabel=best.label||'';
    return currentRoadLabel;
   }
@@ -293,6 +329,85 @@ async function refreshMarineAreaLight(lat,lon,force=false){
 }
 function maybeRefreshMarineAreaLight(lat,lon,force=false){refreshMarineAreaLight(lat,lon,force).catch(e=>console.warn(e))}
 
+function attrFromFeatureText(block,name){
+ const re=new RegExp(`${name}\\s*=\\s*'([\\s\\S]*?)'`,'i'),m=String(block||'').match(re);
+ return m?m[1].replace(/\s+/g,' ').trim():'';
+}
+function parseMarineSpeedLimitNumber(raw){
+ const m=String(raw||'').match(/(\d+(?:[.,]\d+)?)/);
+ if(!m)return null;
+ const n=Number(m[1].replace(',','.'));
+ return Number.isFinite(n)&&n>0&&n<=80?n:null;
+}
+function parseDayMonth(value){
+ const m=String(value||'').match(/(\d{1,2})\.(\d{1,2})/);
+ if(!m)return null;
+ const day=Number(m[1]),month=Number(m[2]);
+ return month>=1&&month<=12&&day>=1&&day<=31?month*100+day:null;
+}
+function isPeriodActive(from,to,date=new Date()){
+ const start=parseDayMonth(from),end=parseDayMonth(to);
+ if(start==null||end==null)return true;
+ const today=(date.getMonth()+1)*100+date.getDate();
+ return start<=end?today>=start&&today<=end:today>=start||today<=end;
+}
+function parseMarineSpeedLimitInfo(text){
+ if(!text||/Search returned no results/i.test(text))return null;
+ const blocks=String(text).split(/\n\s*Feature\s+\d+:\s*/).slice(1);
+ const candidates=[];
+ for(const block of blocks){
+  const speed=parseMarineSpeedLimitNumber(attrFromFeatureText(block,'hastighet'));
+  if(speed==null||!isPeriodActive(attrFromFeatureText(block,'periodegyldigfra'),attrFromFeatureText(block,'periodegyldigtil')))continue;
+  candidates.push({
+   speed,
+   appliesTo:attrFromFeatureText(block,'gjelderfor'),
+   vesselType:attrFromFeatureText(block,'gjelderforfartoytype'),
+   regulation:attrFromFeatureText(block,'forskriftnavn')
+  });
+ }
+ candidates.sort((a,b)=>a.speed-b.speed);
+ return candidates[0]||null;
+}
+async function fetchMarineSpeedLimitKn(lat,lon){
+ const [x,y]=webMercatorFromLonLat(lat,lon),half=300,bbox=[x-half,y-half,x+half,y+half].join(',');
+ const url=new URL(KYSTVERKET_WMS);
+ url.searchParams.set('SERVICE','WMS');
+ url.searchParams.set('VERSION','1.3.0');
+ url.searchParams.set('REQUEST','GetFeatureInfo');
+ url.searchParams.set('LAYERS',MARINE_SPEED_LIMIT_LAYER);
+ url.searchParams.set('QUERY_LAYERS',MARINE_SPEED_LIMIT_LAYER);
+ url.searchParams.set('STYLES','');
+ url.searchParams.set('CRS','EPSG:3857');
+ url.searchParams.set('BBOX',bbox);
+ url.searchParams.set('WIDTH','101');
+ url.searchParams.set('HEIGHT','101');
+ url.searchParams.set('I','50');
+ url.searchParams.set('J','50');
+ url.searchParams.set('INFO_FORMAT','text/plain');
+ url.searchParams.set('FEATURE_COUNT','10');
+ const resp=await fetch(url,{headers:{Accept:'text/plain'}});
+ if(!resp.ok)throw new Error(`Kystverket fartsgrense ${resp.status}`);
+ return parseMarineSpeedLimitInfo(await resp.text());
+}
+async function refreshMarineSpeedLimitLight(lat,lon,force=false){
+ if(!isMarineMode()||!Number.isFinite(lat)||!Number.isFinite(lon)||marineSpeedLimitRefreshInFlight)return false;
+ if(!force&&lastMarineSpeedLimitRefreshPos&&dM(lastMarineSpeedLimitRefreshPos[0],lastMarineSpeedLimitRefreshPos[1],lat,lon)<MARINE_SPEED_LIMIT_REFRESH_DISTANCE_M)return false;
+ marineSpeedLimitRefreshInFlight=true;
+ try{
+  const limit=await fetchMarineSpeedLimitKn(lat,lon);
+  if(!isMarineMode())return false;
+  currentMarineSpeedLimitKn=Number.isFinite(limit?.speed)?limit.speed:null;
+  currentMarineSpeedLimitLabel=limit?.appliesTo||limit?.regulation||'';
+  lastMarineSpeedLimitRefreshPos=[lat,lon];
+  renderDashboard();
+  return true;
+ }catch(e){
+  console.warn('Sjøfartsgrense-oppslag feilet',e);
+  return false;
+ }finally{marineSpeedLimitRefreshInFlight=false;renderDashboard()}
+}
+function maybeRefreshMarineSpeedLimitLight(lat,lon,force=false){refreshMarineSpeedLimitLight(lat,lon,force).catch(e=>console.warn(e))}
+
 function parseOsmMaxspeed(value){if(!value)return null;const raw=String(value).trim().toLowerCase();if(['none','signals','variable','walk','implicit'].includes(raw))return null;const m=raw.match(/(\d+(?:[.,]\d+)?)/);if(!m)return null;let num=Number(m[1].replace(',','.'));if(!Number.isFinite(num))return null;if(raw.includes('mph'))num*=1.609344;num=Math.round(num);return num>=5&&num<=140?num:null}
 function roadLabelFromOsmTags(tags){return String(tags.ref||tags.official_ref||tags['destination:ref']||tags.name||tags['name:sv']||tags['name:no']||'').trim().replace(/\s+/g,' ')}
 async function fetchOverpass(lat,lon,radiusKm){const [west,south,east,north]=bboxFromPoint(lat,lon,radiusKm);const q=`[out:json][timeout:8];(way["highway"]["maxspeed"](${south},${west},${north},${east}););out geom tags center;`;for(let attempt=0;attempt<OVERPASS_URLS.length;attempt++){const idx=(osmEndpointIndex+attempt)%OVERPASS_URLS.length,url=OVERPASS_URLS[idx];try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(q)});if(!res.ok)throw new Error('HTTP '+res.status);osmEndpointIndex=idx;return await res.json()}catch(err){if(attempt===OVERPASS_URLS.length-1)throw err}}}
@@ -302,13 +417,20 @@ function updateCurrentSpeedLimit(lat,lon){
  currentSpeedLimit=null;
  currentSpeedLimitRoadLabel='';
  if(!speedLimits.length||!Number.isFinite(lat)||!Number.isFinite(lon))return null;
- let best=null,bestD=Infinity;
+ let best=null,bestMatch=null,bestScore=Infinity;
+ const heading=activeRoadHeading(),currentLabelKey=roadLabelKey(currentRoadLabel),limits=roadMatchLimits(SPEED_LIMIT_MAX_DIST_M);
  for(const sl of speedLimits){
-  const d=roadDist(lat,lon,sl);
-  sl.minDist=d;
-  if(d<bestD){best=sl;bestD=d}
+  const match=roadMatch(lat,lon,sl,heading);
+  let score=match.score;
+  const candidateLabelKey=roadLabelKey(sl.roadLabel);
+  if(currentLabelKey&&candidateLabelKey){
+   if(currentLabelKey===candidateLabelKey)score-=8;
+   else score+=25;
+  }
+  sl.minDist=match.dist;
+  if(score<bestScore){best=sl;bestMatch=match;bestScore=score}
  }
- if(best&&bestD<=SPEED_LIMIT_MAX_DIST_M){
+ if(best&&bestMatch&&bestMatch.dist<=limits.dist&&bestScore<=limits.score){
   currentSpeedLimit=best.speed;
   currentSpeedLimitRoadLabel=best.roadLabel||'';
  }
@@ -346,8 +468,8 @@ async function refreshSpeedLimitsLight(lat,lon,reason='auto',force=false){
   roadRefs=Array.isArray(refs)?refs:[];
   lastSpeedLimitRefreshPos=[lat,lon];
 
-  updateCurrentSpeedLimit(lat,lon);
   updateCurrentRoadLabel(lat,lon);
+  updateCurrentSpeedLimit(lat,lon);
   renderDashboard();
  return true;
  }catch(e){
@@ -371,14 +493,24 @@ function renderDashboard(){
  el.speed.textContent=gps.watching&&gps.lastPos?String(speedValue):'--';
 
  if(marine){
-  el.speedSign.textContent='KN';
-  el.speedSign.classList.add('unknown','marine');
-  el.speedSign.classList.remove('blink');
+  const marineLimit=Number.isFinite(currentMarineSpeedLimitKn)?currentMarineSpeedLimitKn:null;
+  const speedKn=Number.isFinite(gps.speed)?gps.speed*SPEED_UNITS.knots.speedFromMps:0;
+  const over=marineLimit!=null&&speedKn>marineLimit+.5;
+  if(marineLimit==null){
+   el.speedSign.textContent='KN';
+   el.speedSign.classList.add('unknown','marine');
+   el.speedSign.classList.remove('limit','blink');
+  }else{
+   el.speedSign.textContent=String(Math.round(marineLimit));
+   el.speedSign.classList.add('marine','limit');
+   el.speedSign.classList.remove('unknown');
+   el.speedSign.classList.toggle('blink',!!over);
+  }
   if(currentMarineAreaLabel){el.roadText.textContent=currentMarineAreaLabel;el.roadText.classList.remove('unknown')}else{el.roadText.textContent='Område ukjent';el.roadText.classList.add('unknown')}
-  el.speed.classList.remove('danger');
-  updateGauge(speedValue,null,false);
+  el.speed.classList.toggle('danger',!!over);
+  updateGauge(speedKn,marineLimit,over);
  }else{
-  el.speedSign.classList.remove('marine');
+  el.speedSign.classList.remove('marine','limit');
   if(limitValue==null){el.speedSign.textContent='--';el.speedSign.classList.add('unknown')}else{el.speedSign.textContent=String(limitValue);el.speedSign.classList.remove('unknown')}
   if(currentRoadLabel){el.roadText.textContent=currentRoadLabel;el.roadText.classList.remove('unknown')}else{el.roadText.textContent='Veg ukjent';el.roadText.classList.add('unknown')}
   const over=limit!=null&&speedKmh>limit+5;
@@ -396,7 +528,11 @@ function renderDashboard(){
  if(!gps.watching)setMessage('GPS stoppet');
  else if(!gps.lastPos)setMessage('Venter på GPS');
  else if(marine){
-  if(marineAreaRefreshInFlight)setMessage('Henter område');
+  const marineLimit=Number.isFinite(currentMarineSpeedLimitKn)?currentMarineSpeedLimitKn:null;
+  const speedKn=Number.isFinite(gps.speed)?gps.speed*SPEED_UNITS.knots.speedFromMps:0;
+  if(marineAreaRefreshInFlight||marineSpeedLimitRefreshInFlight)setMessage('Henter sjødata');
+  else if(marineLimit!=null&&speedKn>marineLimit+.5)setMessage(`Over grense med ${deltaTextFromKnots(speedKn-marineLimit)}`);
+  else if(marineLimit!=null)setMessage('Innenfor fartsgrense');
   else if(currentMarineAreaType)setMessage(currentMarineAreaType);
   else setMessage('Båtmodus');
  }else if(limit==null)setMessage(speedLimitRefreshInFlight?'Henter fartsgrense':'Fartsgrense ukjent');
@@ -438,10 +574,11 @@ function onPos(pos){
  if(isMarineMode()){
   currentSpeedLimit=null;currentSpeedLimitRoadLabel='';currentRoadLabel='';
   maybeRefreshMarineAreaLight(lat,lon,force);
+  maybeRefreshMarineSpeedLimitLight(lat,lon,force);
  }else{
   maybeRefreshSpeedLimitsLight(lat,lon,force);
-  updateCurrentSpeedLimit(lat,lon);
   updateCurrentRoadLabel(lat,lon);
+  updateCurrentSpeedLimit(lat,lon);
  }
  renderDashboard();
 }
