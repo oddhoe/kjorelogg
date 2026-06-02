@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10151d">
+<title>Skiltkontroll</title>
+<style>
+:root{--bg:#10151d;--panel:#171f2a;--panel2:#202a37;--text:#f7fafc;--muted:#9aa7b8;--line:rgba(255,255,255,.12);--ok:#2ee59d;--warn:#ffcc00;--bad:#ff4b4b;--blue:#63b3ed;--safeTop:env(safe-area-inset-top);--safeBottom:env(safe-area-inset-bottom)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#182333 0%,var(--bg) 42%,#090d13 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+body{padding:calc(12px + var(--safeTop)) 12px calc(16px + var(--safeBottom))}
+button,input,textarea{font:inherit}
+.app{width:min(900px,100%);margin:0 auto;display:grid;gap:12px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:grid;gap:1px}.brand strong{font-size:22px;letter-spacing:.01em}.brand span{color:var(--muted);font-size:13px;font-weight:700}
+.pill{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.06);color:var(--muted);font-size:13px;font-weight:800;white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 4px rgba(154,167,184,.13)}.dot.ok{background:var(--ok);box-shadow:0 0 0 4px rgba(46,229,157,.15)}.dot.bad{background:var(--bad);box-shadow:0 0 0 4px rgba(255,75,75,.15)}
+.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:12px}.panel{background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.3)}.panel.pad{padding:14px}
+.hero{display:grid;gap:12px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.meta div{padding:10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07)}.meta span{display:block;color:var(--muted);font-size:12px;font-weight:800}.meta strong{display:block;margin-top:3px;font-size:18px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.current{display:grid;gap:12px;padding:16px;background:radial-gradient(circle at top right,rgba(99,179,237,.16),transparent 45%),var(--panel);border:1px solid var(--line);border-radius:18px;min-height:290px}
+.eyebrow{color:var(--blue);font-size:12px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}.sign-title{font-size:clamp(34px,7vw,62px);font-weight:950;line-height:.95;letter-spacing:-.04em}.sign-desc{color:rgba(255,255,255,.86);font-size:18px;font-weight:800;line-height:1.25}.sign-data{display:grid;gap:6px;color:var(--muted);font-size:14px;font-weight:750}.sign-data b{color:var(--text)}
+.distance{display:inline-flex;align-items:baseline;gap:6px}.distance strong{font-size:42px;line-height:.9}.distance span{color:var(--muted);font-weight:900}
+.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.action{min-height:48px;border:0;border-radius:12px;background:#fff;color:#07101c;font-weight:950}.action.secondary{background:rgba(255,255,255,.09);color:var(--text);border:1px solid rgba(255,255,255,.12)}.action.warn{background:var(--warn);color:#15120a}.action.bad{background:var(--bad);color:#fff}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}.tool{min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.07);color:var(--text);font-weight:900}
+.list{display:grid}.row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid rgba(255,255,255,.08)}.row:first-child{border-top:0}.badge{min-width:62px;padding:9px 8px;border-radius:12px;background:#fff;color:#10151d;text-align:center;font-size:18px;font-weight:950}.row-main{min-width:0}.row-title{font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row-sub{margin-top:3px;color:var(--muted);font-size:13px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row-dist{font-size:20px;font-weight:950;color:var(--ok)}
+.log{display:grid;gap:10px}.log-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.log-head h2{margin:0;font-size:18px}.count{color:var(--muted);font-weight:900}.log-list{display:grid;gap:8px;max-height:330px;overflow:auto}.log-item{display:grid;gap:4px;padding:10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07)}.log-item strong{font-size:14px}.log-item span{color:var(--muted);font-size:12px;font-weight:750}
+.note{width:100%;min-height:72px;resize:vertical;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);color:var(--text);padding:10px;font-weight:750}.hint{color:var(--muted);font-size:13px;font-weight:750;line-height:1.35}.empty{padding:18px;color:var(--muted);font-weight:800;text-align:center}.photoPreview{width:100%;max-height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:none}
+@media(max-width:720px){body{padding-left:9px;padding-right:9px}.grid{grid-template-columns:1fr}.topbar{align-items:flex-start}.brand strong{font-size:20px}.meta{grid-template-columns:repeat(3,minmax(0,1fr))}.meta strong{font-size:16px}.actions{grid-template-columns:1fr}.current{min-height:auto}.row{grid-template-columns:auto 1fr}.row-dist{grid-column:2;justify-self:start;font-size:16px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="brand"><strong>Skiltkontroll</strong><span>NVDB kontrollmodus</span></div>
+    <div class="pill"><span id="gpsDot" class="dot"></span><span id="gpsStatus">Starter GPS</span></div>
+  </header>
+
+  <section class="grid">
+    <div class="hero">
+      <div class="panel pad">
+        <div class="meta">
+          <div><span>Veg</span><strong id="roadText">Ukjent</strong></div>
+          <div><span>Fart</span><strong id="speedText">--</strong></div>
+          <div><span>GPS</span><strong id="accuracyText">--</strong></div>
+        </div>
+      </div>
+
+      <section class="current">
+        <div>
+          <div class="eyebrow" id="currentState">Neste registrerte skilt</div>
+          <div class="sign-title" id="signNumber">--</div>
+        </div>
+        <div class="sign-desc" id="signText">Venter på GPS og NVDB-data.</div>
+        <div class="distance"><strong id="distanceText">--</strong><span>meter fram</span></div>
+        <div class="sign-data">
+          <div>Veg: <b id="signRoad">--</b></div>
+          <div>Retning/side: <b id="signDirection">--</b></div>
+          <div>NVDB-id: <b id="signId">--</b></div>
+        </div>
+        <textarea id="noteText" class="note" placeholder="Kort notat ved avvik"></textarea>
+        <img id="photoPreview" class="photoPreview" alt="">
+        <div class="actions">
+          <button class="action" data-log="sett">Sett</button>
+          <button class="action warn" data-log="mangler">Mangler</button>
+          <button class="action secondary" data-log="feil_registrert">Feil registrert</button>
+          <button class="action secondary" data-log="feil_retning">Feil retning</button>
+          <button class="action secondary" data-log="darlig_stand">Dårlig stand</button>
+          <button id="photoBtn" class="action secondary" type="button">Foto</button>
+        </div>
+        <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+      </section>
+    </div>
+
+    <aside class="panel">
+      <div class="panel pad">
+        <div class="toolbar">
+          <button id="refreshBtn" class="tool" type="button">Oppdater</button>
+          <button id="missingHereBtn" class="tool" type="button">Mangler her</button>
+          <button id="exportCsvBtn" class="tool" type="button">CSV</button>
+          <button id="exportGeoBtn" class="tool" type="button">GeoJSON</button>
+          <button id="clearLogBtn" class="tool" type="button">Tøm logg</button>
+        </div>
+        <p class="hint">MVP: viser registrerte skiltplater foran bilen. Den filtrerer på avstand, kjøreretning og vegnummer der NVDB gir nok data.</p>
+      </div>
+      <div id="signList" class="list"><div class="empty">Ingen skiltdata ennå.</div></div>
+    </aside>
+  </section>
+
+  <section class="panel pad log">
+    <div class="log-head"><h2>Kontrollogg</h2><span id="logCount" class="count">0</span></div>
+    <div id="logList" class="log-list"><div class="empty">Ingen registreringer.</div></div>
+  </section>
+</main>
+
+<script>
+'use strict';
+
+const NVDB='https://nvdbapiles.atlas.vegvesen.no';
+const SIGN_TYPE_ID=96;
+const SIGN_REFRESH_DISTANCE_M=250, SIGN_REFRESH_RADIUS_KM=.8, ROAD_REFRESH_RADIUS_KM=.9;
+const LOOKAHEAD_M=360, SIDE_CONE_DEG=70, HEADING_MIN_SPEED_MPS=2.5;
+const SIGN_LOG_KEY='skiltkontroll-log-v1';
+
+const el={
+ gpsDot:document.getElementById('gpsDot'),gpsStatus:document.getElementById('gpsStatus'),
+ road:document.getElementById('roadText'),speed:document.getElementById('speedText'),accuracy:document.getElementById('accuracyText'),
+ currentState:document.getElementById('currentState'),signNumber:document.getElementById('signNumber'),signText:document.getElementById('signText'),distance:document.getElementById('distanceText'),
+ signRoad:document.getElementById('signRoad'),signDirection:document.getElementById('signDirection'),signId:document.getElementById('signId'),signList:document.getElementById('signList'),
+ note:document.getElementById('noteText'),photoInput:document.getElementById('photoInput'),photoPreview:document.getElementById('photoPreview'),
+ refresh:document.getElementById('refreshBtn'),missingHere:document.getElementById('missingHereBtn'),exportCsv:document.getElementById('exportCsvBtn'),exportGeo:document.getElementById('exportGeoBtn'),clearLog:document.getElementById('clearLogBtn'),
+ logList:document.getElementById('logList'),logCount:document.getElementById('logCount'),photoBtn:document.getElementById('photoBtn')
+};
+
+let gps={watching:false,lastPos:null,acc:null,speed:null,heading:null,_lastFixTs:null};
+let signs=[],roadRefs=[],currentRoadLabel='',currentCandidates=[],currentSign=null,lastRefreshPos=null,refreshInFlight=false,photoData='';
+let logItems=loadLog();
+
+function setGpsState(state,text){el.gpsDot.classList.remove('ok','bad');if(state==='ok')el.gpsDot.classList.add('ok');if(state==='bad')el.gpsDot.classList.add('bad');el.gpsStatus.textContent=text}
+function rad(d){return d*Math.PI/180}
+function dM(la1,lo1,la2,lo2){const R=6371000,dlat=rad(la2-la1),dlon=rad(lo2-lo1),a=Math.sin(dlat/2)**2+Math.cos(rad(la1))*Math.cos(rad(la2))*Math.sin(dlon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))}
+function bearingBetween(la1,lo1,la2,lo2){const p1=rad(la1),p2=rad(la2),dl=rad(lo2-lo1),y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);return(Math.atan2(y,x)*180/Math.PI+360)%360}
+function headingDelta(a,b){return Math.abs(((a-b+540)%360)-180)}
+function bboxFromPoint(lat,lon,rKm){const dLat=rKm/111.32,dLon=rKm/(111.32*Math.max(.2,Math.abs(Math.cos(rad(lat)))));return[lon-dLon,lat-dLat,lon+dLon,lat+dLat]}
+function isVLL(c){return Array.isArray(c)&&c.length===2&&Number.isFinite(c[0])&&Number.isFinite(c[1])&&c[0]>=3&&c[0]<=32&&c[1]>=57&&c[1]<=72}
+function parsePointWkt(wkt){const m=String(wkt||'').match(/POINT\s*(?:Z(?:M)?|M)?\s*\(([^)]+)\)/i);if(!m)return null;const n=m[1].trim().split(/\s+/).map(Number).filter(Number.isFinite);if(n.length<2)return null;let a=[n[0],n[1]];if(a[1]>=55&&a[1]<=72&&a[0]>=3&&a[0]<=32)return a;if(a[0]>=55&&a[0]<=72&&a[1]>=3&&a[1]<=32)return[a[1],a[0]];return null}
+function parseCoords(text){if(!text)return[];const out=[];for(const t of text.split(',')){const n=t.trim().split(/\s+/).map(Number).filter(Number.isFinite);if(n.length<2)continue;const[x,y]=n;if(y>=55&&y<=72&&x>=3&&x<=32)out.push([x,y]);else if(x>=55&&x<=72&&y>=3&&y<=32)out.push([y,x])}return out}
+function parseWkt(wkt){if(!wkt)return[];const t=String(wkt).trim();if(/^LINESTRING/i.test(t)){const m=t.match(/LINESTRING\s*(?:Z(?:M)?|M)?\s*\((.*?)\)\s*$/is);return m?[parseCoords(m[1]).filter(isVLL)].filter(p=>p.length>=2):[]}if(/^MULTILINESTRING/i.test(t)){const m=t.match(/MULTILINESTRING\s*(?:Z(?:M)?|M)?\s*\((.*)\)\s*$/is);if(!m)return[];let inner=m[1].trim();if(inner.startsWith('(')&&inner.endsWith(')'))inner=inner.slice(1,-1);return inner.split(/\)\s*,\s*\(/).map(parseCoords).map(p=>p.filter(isVLL)).filter(p=>p.length>=2)}return[]}
+function ptSeg(lat,lon,a,b){const lat0=(a[1]+b[1]+lat)/3,mLat=111320,mLon=Math.cos(rad(lat0))*111320,ax=a[0]*mLon,ay=a[1]*mLat,bx=b[0]*mLon,by=b[1]*mLat,px=lon*mLon,py=lat*mLat,abx=bx-ax,aby=by-ay,ab2=abx*abx+aby*aby;if(ab2===0)return Math.hypot(px-ax,py-ay);const t=Math.max(0,Math.min(1,((px-ax)*abx+(py-ay)*aby)/ab2));return Math.hypot(px-(ax+t*abx),py-(ay+t*aby))}
+function roadDist(lat,lon,r){let best=Infinity;for(const part of(r.parts||[])){for(let i=0;i<part.length-1;i++){const d=ptSeg(lat,lon,part[i],part[i+1]);if(d<best)best=d}}return best}
+
+function prop(obj,id,name){const p=(obj.egenskaper||[]).find(e=>e.id===id||String(e.navn||'').toLowerCase()===String(name||'').toLowerCase());return p?.verdi??''}
+function signNumberShort(value){return String(value||'').split(' - ')[0].trim()||'--'}
+function signText(value,text){const s=String(value||''),parts=s.split(' - ');return String(text||parts.slice(1).join(' - ')||s||'Ukjent skilt').trim()}
+function roadLabelFromVegsystemRef(vs){const kort=String(vs?.kortform||vs?.vegsystemreferanse?.kortform||'');const direct=kort.match(/\b(EV|RV|FV|KV|PV|E|Rv|Fv|Kv|Pv)\s?(\d+)\b/i);if(direct){const t=direct[1].toLowerCase(),nr=direct[2];if(t==='e'||t==='ev')return`E${nr}`;if(t==='rv')return`Rv ${nr}`;if(t==='fv')return`Fv ${nr}`;if(t==='kv')return`Kv ${nr}`;if(t==='pv')return`Pv ${nr}`}const vegsystem=vs?.vegsystem||vs?.vegsystemreferanse?.vegsystem||{},nr=vegsystem.nummer,kat=String(vegsystem.vegkategori||'').toUpperCase();if(!nr||!kat)return'';return kat==='E'?`E${nr}`:`${kat}v ${nr}`}
+function roadLabelFromObject(obj){const refs=[...(obj?.lokasjon?.vegsystemreferanser||[]),obj?.vegsystemreferanse,obj?.lokasjon?.vegsystemreferanse].filter(Boolean);for(const r of refs){const label=roadLabelFromVegsystemRef(r);if(label)return label}return''}
+function normalizeSign(obj){
+ const point=parsePointWkt(obj?.geometri?.wkt||obj?.lokasjon?.geometri?.wkt);
+ if(!point)return null;
+ const number=prop(obj,5530,'Skiltnummer'),text=prop(obj,1910,'Tekst'),face=prop(obj,1894,'Ansiktsside, rettet mot'),compass=prop(obj,1897,'Himmelretning');
+ const loc=obj?.lokasjon||{},sted=(loc.stedfestinger||[])[0]||{},vs=(loc.vegsystemreferanser||[])[0]||{};
+ return{id:obj.id,lon:point[0],lat:point[1],number:number||'',numberShort:signNumberShort(number),text:signText(number,text),face:face||'',compass:compass||'',roadLabel:roadLabelFromObject(obj),roadRef:vs.kortform||'',direction:sted.retning||vs?.metrertLokasjon?.retning||'',side:sted.sideposisjon||vs?.metrertLokasjon?.sideposisjon||''};
+}
+
+async function fetchSignsAround(lat,lon){
+ const [minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,SIGN_REFRESH_RADIUS_KM);
+ const url=new URL(`${NVDB}/vegobjekter/api/v4/vegobjekter/${SIGN_TYPE_ID}`);
+ url.searchParams.set('srid','4326');url.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);
+ url.searchParams.set('inkluder','egenskaper,geometri,lokasjon,relasjoner');url.searchParams.set('inkluderAntall','false');url.searchParams.set('antall','1000');
+ const out=[];let next=url.toString(),pages=0;
+ while(next&&pages<8){pages++;const r=await fetch(next,{headers:{Accept:'application/json','X-Client':'skiltkontroll-mvp'}});if(!r.ok)throw new Error(`NVDB skilt ${r.status}`);const d=await r.json();for(const o of d.objekter||[]){const s=normalizeSign(o);if(s)out.push(s)}next=d?.metadata?.neste?.href||null}
+ return out;
+}
+async function fetchRoadRefsAround(lat,lon){
+ const [minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,ROAD_REFRESH_RADIUS_KM),url=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
+ url.searchParams.set('srid','4326');url.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);url.searchParams.set('vegsystemreferanse','E,R,F,K,P');url.searchParams.set('inkluderAntall','false');url.searchParams.set('antall','1000');
+ const out=[];let next=url.toString(),pages=0;
+ while(next&&pages<5){pages++;const r=await fetch(next,{headers:{Accept:'application/json','X-Client':'skiltkontroll-mvp'}});if(!r.ok)throw new Error(`NVDB vegnett ${r.status}`);const d=await r.json();for(const o of d.objekter||[]){const label=roadLabelFromVegsystemRef(o?.vegsystemreferanse),parts=parseWkt(o?.geometri?.wkt);if(label&&parts.length)out.push({label,parts})}next=d?.metadata?.neste?.href||null}
+ return out;
+}
+
+async function refreshData(force=false){
+ const pos=gps.lastPos;if(!pos||refreshInFlight)return;
+ if(!force&&lastRefreshPos&&dM(lastRefreshPos[0],lastRefreshPos[1],pos[0],pos[1])<SIGN_REFRESH_DISTANCE_M)return;
+ refreshInFlight=true;el.currentState.textContent='Henter NVDB-data';
+ try{const [freshSigns,freshRoads]=await Promise.all([fetchSignsAround(pos[0],pos[1]),fetchRoadRefsAround(pos[0],pos[1])]);signs=freshSigns;roadRefs=freshRoads;lastRefreshPos=[pos[0],pos[1]]}
+ catch(e){console.warn(e);el.currentState.textContent='NVDB-oppslag feilet'}
+ finally{refreshInFlight=false;updateMatches();render()}
+}
+
+function updateCurrentRoad(){
+ currentRoadLabel='';
+ if(!gps.lastPos||!roadRefs.length)return;
+ let best=null,bestD=Infinity;
+ for(const r of roadRefs){const d=roadDist(gps.lastPos[0],gps.lastPos[1],r);if(d<bestD){best=r;bestD=d}}
+ if(best&&bestD<=45)currentRoadLabel=best.label;
+}
+function signCandidateScore(sign){
+ if(!gps.lastPos)return null;
+ const dist=dM(gps.lastPos[0],gps.lastPos[1],sign.lat,sign.lon);
+ if(dist<5||dist>LOOKAHEAD_M)return null;
+ const heading=Number.isFinite(gps.heading)&&Number.isFinite(gps.speed)&&gps.speed>=HEADING_MIN_SPEED_MPS?gps.heading:null;
+ let delta=0;
+ if(heading!=null){delta=headingDelta(heading,bearingBetween(gps.lastPos[0],gps.lastPos[1],sign.lat,sign.lon));if(delta>SIDE_CONE_DEG)return null}
+ let score=dist+(delta*1.4);
+ if(currentRoadLabel&&sign.roadLabel){score+=currentRoadLabel===sign.roadLabel?-30:120}
+ return{...sign,dist,delta,score};
+}
+function updateMatches(){
+ updateCurrentRoad();
+ currentCandidates=signs.map(signCandidateScore).filter(Boolean).sort((a,b)=>a.score-b.score).slice(0,5);
+ currentSign=currentCandidates[0]||null;
+}
+
+function render(){
+ el.road.textContent=currentRoadLabel||'Ukjent';
+ el.speed.textContent=Number.isFinite(gps.speed)?`${Math.round(gps.speed*3.6)} km/t`:'--';
+ el.accuracy.textContent=Number.isFinite(gps.acc)?`±${Math.round(gps.acc)} m`:'--';
+ if(currentSign){
+  el.currentState.textContent='Neste registrerte skilt';el.signNumber.textContent=currentSign.numberShort;el.signText.textContent=currentSign.text;el.distance.textContent=String(Math.round(currentSign.dist));
+  el.signRoad.textContent=currentSign.roadRef||currentSign.roadLabel||'--';
+  el.signDirection.textContent=[currentSign.face,currentSign.direction,currentSign.side?`side ${currentSign.side}`:''].filter(Boolean).join(' · ')||'--';
+  el.signId.textContent=String(currentSign.id);
+ }else{
+  el.currentState.textContent=refreshInFlight?'Henter NVDB-data':'Ingen skilt foran';el.signNumber.textContent='--';el.signText.textContent=gps.lastPos?'Ingen registrerte skilt funnet i kjøreretningen.':'Venter på GPS og NVDB-data.';el.distance.textContent='--';el.signRoad.textContent='--';el.signDirection.textContent='--';el.signId.textContent='--';
+ }
+ renderList();renderLog();
+}
+function renderList(){
+ if(!currentCandidates.length){el.signList.innerHTML='<div class="empty">Ingen skilt foran i valgt radius.</div>';return}
+ el.signList.innerHTML=currentCandidates.map(s=>`<div class="row"><div class="badge">${escapeHtml(s.numberShort)}</div><div class="row-main"><div class="row-title">${escapeHtml(s.text)}</div><div class="row-sub">${escapeHtml(s.roadRef||s.roadLabel||'Ukjent veg')} · ${escapeHtml(s.face||s.direction||'retning ukjent')}</div></div><div class="row-dist">${Math.round(s.dist)} m</div></div>`).join('');
+}
+function renderLog(){
+ el.logCount.textContent=String(logItems.length);
+ if(!logItems.length){el.logList.innerHTML='<div class="empty">Ingen registreringer.</div>';return}
+ el.logList.innerHTML=logItems.slice().reverse().map(item=>`<div class="log-item"><strong>${escapeHtml(item.status)} · ${escapeHtml(item.signNumber||'uten skilt')}</strong><span>${escapeHtml(item.time)} · ${escapeHtml(item.road||'ukjent veg')} · ${escapeHtml(item.note||'ingen notat')}</span></div>`).join('');
+}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function loadLog(){try{return JSON.parse(localStorage.getItem(SIGN_LOG_KEY)||'[]')}catch(e){return[]}}
+function saveLog(){localStorage.setItem(SIGN_LOG_KEY,JSON.stringify(logItems.slice(-500)))}
+function addLog(status,sign=currentSign){
+ const pos=gps.lastPos||[null,null],item={time:new Date().toISOString(),status,signId:sign?.id||'',signNumber:sign?.numberShort||'',signText:sign?.text||'',road:sign?.roadRef||sign?.roadLabel||currentRoadLabel||'',distance:sign?.dist?Math.round(sign.dist):'',lat:pos[0],lon:pos[1],accuracy:gps.acc,note:el.note.value.trim(),photo:photoData?true:false};
+ logItems.push(item);saveLog();el.note.value='';photoData='';el.photoPreview.style.display='none';renderLog();
+}
+function download(name,type,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function exportCsv(){const headers=['time','status','signId','signNumber','signText','road','distance','lat','lon','accuracy','note','photo'];const rows=[headers.join(',')];for(const item of logItems){rows.push(headers.map(h=>`"${String(item[h]??'').replace(/"/g,'""')}"`).join(','))}download(`skiltkontroll-${Date.now()}.csv`,'text/csv;charset=utf-8',rows.join('\n'))}
+function exportGeo(){const features=logItems.filter(i=>Number.isFinite(i.lat)&&Number.isFinite(i.lon)).map(i=>({type:'Feature',geometry:{type:'Point',coordinates:[i.lon,i.lat]},properties:{...i,lat:undefined,lon:undefined}}));download(`skiltkontroll-${Date.now()}.geojson`,'application/geo+json',JSON.stringify({type:'FeatureCollection',features},null,2))}
+
+function onPos(pos){
+ const lat=Number(pos?.coords?.latitude),lon=Number(pos?.coords?.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lon))return;
+ const prev=gps.lastPos?[...gps.lastPos]:null,spd=Number(pos.coords.speed),rawHeading=Number(pos.coords.heading);
+ let heading=Number.isFinite(rawHeading)&&rawHeading>=0?rawHeading:null;if(heading==null&&prev&&Number.isFinite(spd)&&spd>1&&dM(prev[0],prev[1],lat,lon)>3)heading=bearingBetween(prev[0],prev[1],lat,lon);
+ gps={watching:true,lastPos:[lat,lon],acc:Number.isFinite(Number(pos.coords.accuracy))?Number(pos.coords.accuracy):null,speed:Number.isFinite(spd)&&spd>=0?spd:null,heading,_lastFixTs:Date.now()};
+ setGpsState('ok','GPS aktiv');updateMatches();render();refreshData(false);
+}
+function onPosErr(err){setGpsState('bad',err?.code===1?'GPS nektet':'GPS-feil');render()}
+function startGPS(){if(!navigator.geolocation){setGpsState('bad','GPS mangler');return}setGpsState('','Starter GPS');gps.watching=true;navigator.geolocation.watchPosition(onPos,onPosErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000})}
+
+document.querySelectorAll('[data-log]').forEach(btn=>btn.addEventListener('click',()=>addLog(btn.dataset.log)));
+el.refresh.addEventListener('click',()=>refreshData(true));
+el.missingHere.addEventListener('click',()=>addLog('mangler_her',null));
+el.exportCsv.addEventListener('click',exportCsv);
+el.exportGeo.addEventListener('click',exportGeo);
+el.clearLog.addEventListener('click',()=>{if(confirm('Tømme kontrolloggen?')){logItems=[];saveLog();renderLog()}});
+el.photoBtn.addEventListener('click',()=>el.photoInput.click());
+el.photoInput.addEventListener('change',()=>{const file=el.photoInput.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{photoData=String(reader.result||'');el.photoPreview.src=photoData;el.photoPreview.style.display='block'};reader.readAsDataURL(file)});
+
+renderLog();render();startGPS();
+</script>
+</body>
+</html>
