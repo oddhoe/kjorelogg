@@ -21,7 +21,7 @@ button,input,textarea{font:inherit}
 .current{display:grid;gap:12px;padding:16px;background:radial-gradient(circle at top right,rgba(99,179,237,.16),transparent 45%),var(--panel);border:1px solid var(--line);border-radius:18px;min-height:290px}
 .current-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,210px);gap:14px;align-items:start}.sign-copy{display:grid;gap:12px;min-width:0}
 .eyebrow{color:var(--blue);font-size:12px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}.sign-title{font-size:clamp(34px,7vw,62px);font-weight:950;line-height:.95;letter-spacing:-.04em}.sign-desc{color:rgba(255,255,255,.86);font-size:18px;font-weight:800;line-height:1.25}.sign-data{display:grid;gap:6px;color:var(--muted);font-size:14px;font-weight:750}.sign-data b{color:var(--text)}
-.sign-visual{min-height:196px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));display:grid;place-items:center;padding:12px;overflow:hidden}.sign-visual.empty{color:var(--muted);font-size:13px;font-weight:900;text-align:center}.sign-plate{display:grid;gap:8px;place-items:center;text-align:center}.sign-shape{width:min(138px,34vw);height:min(138px,34vw);display:grid;place-items:center;color:#111;background:#fff;font-weight:950;box-shadow:0 10px 24px rgba(0,0,0,.26)}.sign-shape.speed{border:11px solid #dc1826;border-radius:50%;font-size:46px}.sign-shape.stop{clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);background:#d01824;color:#fff;font-size:26px;letter-spacing:.05em}.sign-shape.info{background:#0d63c7;color:#fff;border:6px solid #fff;border-radius:10px;font-size:26px}.sign-shape.warning{clip-path:polygon(50% 0,100% 92%,0 92%);background:#d01824;color:#111;padding-top:36px}.sign-shape.warning span{width:74%;height:74%;clip-path:polygon(50% 0,100% 92%,0 92%);background:#fff7d2;display:grid;place-items:center;font-size:22px}.sign-shape.generic{border:6px solid #d01824;border-radius:10px;font-size:28px;padding:8px}.sign-visual-text{max-width:190px;color:var(--muted);font-size:12px;font-weight:850;line-height:1.25}
+.sign-visual{min-height:196px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));display:grid;place-items:center;padding:12px;overflow:hidden}.sign-visual.empty{color:var(--muted);font-size:13px;font-weight:900;text-align:center}.sign-plate{display:grid;gap:8px;place-items:center;text-align:center}.sign-img{width:min(148px,36vw);height:min(148px,36vw);object-fit:contain;filter:drop-shadow(0 10px 24px rgba(0,0,0,.26))}.sign-shape{width:min(138px,34vw);height:min(138px,34vw);display:grid;place-items:center;color:#111;background:#fff;font-weight:950;box-shadow:0 10px 24px rgba(0,0,0,.26)}.sign-shape.speed{border:11px solid #dc1826;border-radius:50%;font-size:46px}.sign-shape.stop{clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);background:#d01824;color:#fff;font-size:26px;letter-spacing:.05em}.sign-shape.info{background:#0d63c7;color:#fff;border:6px solid #fff;border-radius:10px;font-size:26px}.sign-shape.warning{clip-path:polygon(50% 0,100% 92%,0 92%);background:#d01824;color:#111;padding-top:36px}.sign-shape.warning span{width:74%;height:74%;clip-path:polygon(50% 0,100% 92%,0 92%);background:#fff7d2;display:grid;place-items:center;font-size:22px}.sign-shape.generic{border:6px solid #d01824;border-radius:10px;font-size:28px;padding:8px}.sign-visual-text{max-width:190px;color:var(--muted);font-size:12px;font-weight:850;line-height:1.25}
 .distance{display:inline-flex;align-items:baseline;gap:6px}.distance strong{font-size:42px;line-height:.9}.distance span{color:var(--muted);font-weight:900}
 .actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.action{min-height:48px;border:0;border-radius:12px;background:#fff;color:#07101c;font-weight:950}.action.secondary{background:rgba(255,255,255,.09);color:var(--text);border:1px solid rgba(255,255,255,.12)}.action.warn{background:var(--warn);color:#15120a}.action.bad{background:var(--bad);color:#fff}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap}.tool{min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.07);color:var(--text);font-weight:900}.tool.active{background:var(--ok);border-color:transparent;color:#07101c}
@@ -279,8 +279,19 @@ function renderLog(){
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
 function speedFromSign(sign){const m=String(`${sign?.text||''} ${sign?.number||''}`).match(/\b(30|40|50|60|70|80|90|100|110)\b/);return m?m[1]:''}
+function geonorgeSignFile(sign){
+ const n=String(sign?.numberShort||'').trim(),speed=speedFromSign(sign);
+ if(/^362\b/.test(n)&&speed)return`362_${speed}.svg`;
+ if(/^204\b/.test(n))return'204_0.svg';
+ if(/^522\b/.test(n))return'522_0.svg';
+ if(/^52[014]\b/.test(n))return`${n}_0.svg`;
+ return'';
+}
+function geonorgeSignUrl(sign){const file=geonorgeSignFile(sign);return file?`https://register.geonorge.no/symbol/files/thumbnail/${file}`:''}
 function signVisualHtml(sign){
  const n=String(sign?.numberShort||''),text=escapeHtml(sign?.text||''),speed=speedFromSign(sign);
+ const asset=geonorgeSignUrl(sign);
+ if(asset)return`<div class="sign-plate"><img class="sign-img" src="${asset}" alt="${text||escapeHtml(n)}" loading="lazy"><div class="sign-visual-text">${text}</div></div>`;
  let cls='generic',label=escapeHtml(n||'--');
  if(/^362\b|fartsgrense/i.test(sign?.text||'')){cls='speed';label=escapeHtml(speed||n||'--')}
  else if(/^204\b|stopp|stop/i.test(sign?.text||'')){cls='stop';label='STOP'}
