@@ -157,9 +157,11 @@ function signText(value,text){const s=String(value||''),parts=s.split(' - ');ret
 function roadInfoFromVegsystemRef(vs){
  const kort=String(vs?.kortform||vs?.vegsystemreferanse?.kortform||''),text=kort.toUpperCase();
  const direct=text.match(/\b(EV|RV|FV|KV|PV|E|R|F|K|P)\s?(\d+)(?:\s+(G))?\b/);
- let label='',route='',key='',isGsv=/\bGSV\b|\bGS\b|GANG|SYKKEL/.test(text);
+ const structuredGsv=String(vs?.strekning?.trafikantgruppe||vs?.vegsystemreferanse?.strekning?.trafikantgruppe||'').toUpperCase()==='G';
+ const typeVegText=String(vs?.typeVeg||vs?.typeVeg_sosi||vs?.vegsystemreferanse?.typeVeg||vs?.vegsystemreferanse?.typeVeg_sosi||'').toUpperCase();
+ let label='',route='',key='',isGsv=structuredGsv||/\bGSV\b|\bGS\b|GANG|SYKKEL|GANGOGSYKKELVEG/.test(`${text} ${typeVegText}`);
  if(direct){
-  const t=direct[1],nr=direct[2],suffix=direct[3]?' G':'';
+  const t=direct[1],nr=direct[2],suffix=(direct[3]||isGsv)?' G':'';
   const cls=t==='E'||t==='EV'?'E':`${t[0]}v`;
   route=cls==='E'?`E${nr}`:`${cls} ${nr}`;
   label=route+suffix;key=label;isGsv=isGsv||suffix.trim()==='G';
@@ -169,8 +171,15 @@ function roadInfoFromVegsystemRef(vs){
  }
  return{label,key,route,isGsv,raw:kort};
 }
-function roadInfoFromObject(obj){const refs=[...(obj?.lokasjon?.vegsystemreferanser||[]),obj?.vegsystemreferanse,obj?.lokasjon?.vegsystemreferanse].filter(Boolean);for(const r of refs){const info=roadInfoFromVegsystemRef(r);if(info.label)return info}return{label:'',key:'',route:'',isGsv:false,raw:''}}
+function roadInfoFromObject(obj){
+ const refs=[...(obj?.lokasjon?.vegsystemreferanser||[]),...(obj?.vegsegmenter||[]).map(s=>({...s.vegsystemreferanse,typeVeg:s.typeVeg,typeVeg_sosi:s.typeVeg_sosi})),obj?.vegsystemreferanse,obj?.lokasjon?.vegsystemreferanse].filter(Boolean);
+ let fallback=null;
+ for(const r of refs){const info=roadInfoFromVegsystemRef(r);if(!info.label)continue;if(info.isGsv)return info;if(!fallback)fallback=info}
+ return fallback||{label:'',key:'',route:'',isGsv:false,raw:''};
+}
 function roadLabelFromVegsystemRef(vs){return roadInfoFromVegsystemRef(vs).label}
+function roadRefDisplay(info,raw){const text=String(raw||info?.raw||'');if(!info?.isGsv||/\bG\b/.test(text))return text;if(info.route){const compact=info.route.replace(/\s+/g,'').toUpperCase();return text.replace(new RegExp(`^${compact}\\b`,'i'),`${compact} G`)}return text}
+function signIsPedCycleOnly(sign){return /^522\b/.test(String(sign?.numberShort||''))||/gang-?\s*og\s*sykkelveg|gang.*sykkel/i.test(String(sign?.text||''))}
 function compassToDeg(value){
  const t=String(value||'').trim().toLowerCase();if(!t)return null;
  const numeric=Number(t.replace(',','.'));if(Number.isFinite(numeric))return(numeric+360)%360;
@@ -182,7 +191,7 @@ function normalizeSign(obj){
  if(!point)return null;
  const number=prop(obj,5530,'Skiltnummer'),text=prop(obj,1910,'Tekst'),face=prop(obj,1894,'Ansiktsside, rettet mot'),compass=prop(obj,1897,'Himmelretning');
  const loc=obj?.lokasjon||{},sted=(loc.stedfestinger||[])[0]||{},vs=(loc.vegsystemreferanser||[])[0]||{},roadInfo=roadInfoFromObject(obj);
- return{id:obj.id,lon:point[0],lat:point[1],number:number||'',numberShort:signNumberShort(number),text:signText(number,text),face:face||'',compass:compass||'',roadLabel:roadInfo.label,roadKey:roadInfo.key,roadRoute:roadInfo.route,isGsv:roadInfo.isGsv,roadRef:vs.kortform||roadInfo.raw||'',direction:sted.retning||vs?.metrertLokasjon?.retning||'',side:sted.sideposisjon||vs?.metrertLokasjon?.sideposisjon||''};
+ return{id:obj.id,lon:point[0],lat:point[1],number:number||'',numberShort:signNumberShort(number),text:signText(number,text),face:face||'',compass:compass||'',roadLabel:roadInfo.label,roadKey:roadInfo.key,roadRoute:roadInfo.route,isGsv:roadInfo.isGsv,roadRef:roadRefDisplay(roadInfo,vs.kortform||roadInfo.raw||''),direction:sted.retning||vs?.metrertLokasjon?.retning||'',side:sted.sideposisjon||vs?.metrertLokasjon?.sideposisjon||''};
 }
 
 async function fetchSignsAround(lat,lon){
@@ -224,6 +233,7 @@ function signCandidateScore(sign){
  if(dist<5||dist>LOOKAHEAD_M)return null;
  const heading=Number.isFinite(gps.heading)&&Number.isFinite(gps.speed)&&gps.speed>=HEADING_MIN_SPEED_MPS?gps.heading:null;
  let delta=0,faceDelta=null;
+ if(!currentRoadIsGsv&&(sign.isGsv||signIsPedCycleOnly(sign)))return null;
  if(currentRoadKey&&sign.roadKey&&sign.roadKey!==currentRoadKey)return null;
  if(currentRoadRoute&&sign.roadRoute&&sign.roadRoute!==currentRoadRoute)return null;
  if(currentRoadKey&&currentRoadIsGsv!==sign.isGsv&&sign.roadKey)return null;
