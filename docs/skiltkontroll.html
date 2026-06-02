@@ -19,14 +19,17 @@ button,input,textarea{font:inherit}
 .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:12px}.panel{background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.3)}.panel.pad{padding:14px}
 .hero{display:grid;gap:12px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.meta div{padding:10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07)}.meta span{display:block;color:var(--muted);font-size:12px;font-weight:800}.meta strong{display:block;margin-top:3px;font-size:18px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .current{display:grid;gap:12px;padding:16px;background:radial-gradient(circle at top right,rgba(99,179,237,.16),transparent 45%),var(--panel);border:1px solid var(--line);border-radius:18px;min-height:290px}
+.current-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,210px);gap:14px;align-items:start}.sign-copy{display:grid;gap:12px;min-width:0}
 .eyebrow{color:var(--blue);font-size:12px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}.sign-title{font-size:clamp(34px,7vw,62px);font-weight:950;line-height:.95;letter-spacing:-.04em}.sign-desc{color:rgba(255,255,255,.86);font-size:18px;font-weight:800;line-height:1.25}.sign-data{display:grid;gap:6px;color:var(--muted);font-size:14px;font-weight:750}.sign-data b{color:var(--text)}
+.sign-visual{min-height:196px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));display:grid;place-items:center;padding:12px;overflow:hidden}.sign-visual.empty{color:var(--muted);font-size:13px;font-weight:900;text-align:center}.sign-plate{display:grid;gap:8px;place-items:center;text-align:center}.sign-shape{width:min(138px,34vw);height:min(138px,34vw);display:grid;place-items:center;color:#111;background:#fff;font-weight:950;box-shadow:0 10px 24px rgba(0,0,0,.26)}.sign-shape.speed{border:11px solid #dc1826;border-radius:50%;font-size:46px}.sign-shape.stop{clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);background:#d01824;color:#fff;font-size:26px;letter-spacing:.05em}.sign-shape.info{background:#0d63c7;color:#fff;border:6px solid #fff;border-radius:10px;font-size:26px}.sign-shape.warning{clip-path:polygon(50% 0,100% 92%,0 92%);background:#d01824;color:#111;padding-top:36px}.sign-shape.warning span{width:74%;height:74%;clip-path:polygon(50% 0,100% 92%,0 92%);background:#fff7d2;display:grid;place-items:center;font-size:22px}.sign-shape.generic{border:6px solid #d01824;border-radius:10px;font-size:28px;padding:8px}.sign-visual-text{max-width:190px;color:var(--muted);font-size:12px;font-weight:850;line-height:1.25}
 .distance{display:inline-flex;align-items:baseline;gap:6px}.distance strong{font-size:42px;line-height:.9}.distance span{color:var(--muted);font-weight:900}
 .actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.action{min-height:48px;border:0;border-radius:12px;background:#fff;color:#07101c;font-weight:950}.action.secondary{background:rgba(255,255,255,.09);color:var(--text);border:1px solid rgba(255,255,255,.12)}.action.warn{background:var(--warn);color:#15120a}.action.bad{background:var(--bad);color:#fff}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap}.tool{min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.07);color:var(--text);font-weight:900}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}.tool{min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.07);color:var(--text);font-weight:900}.tool.active{background:var(--ok);border-color:transparent;color:#07101c}
 .list{display:grid}.row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid rgba(255,255,255,.08)}.row:first-child{border-top:0}.badge{min-width:62px;padding:9px 8px;border-radius:12px;background:#fff;color:#10151d;text-align:center;font-size:18px;font-weight:950}.row-main{min-width:0}.row-title{font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row-sub{margin-top:3px;color:var(--muted);font-size:13px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row-dist{font-size:20px;font-weight:950;color:var(--ok)}
 .log{display:grid;gap:10px}.log-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.log-head h2{margin:0;font-size:18px}.count{color:var(--muted);font-weight:900}.log-list{display:grid;gap:8px;max-height:330px;overflow:auto}.log-item{display:grid;gap:4px;padding:10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07)}.log-item strong{font-size:14px}.log-item span{color:var(--muted);font-size:12px;font-weight:750}
+.camera{display:grid;gap:8px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.04)}.camera-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.camera-status{color:var(--muted);font-size:13px;font-weight:900}.camera video{width:100%;max-height:210px;object-fit:cover;border-radius:10px;background:#05080d;display:none}.camera.on video{display:block}.camera.detect .camera-status{color:var(--ok)}
 .note{width:100%;min-height:72px;resize:vertical;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);color:var(--text);padding:10px;font-weight:750}.hint{color:var(--muted);font-size:13px;font-weight:750;line-height:1.35}.empty{padding:18px;color:var(--muted);font-weight:800;text-align:center}.photoPreview{width:100%;max-height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:none}
-@media(max-width:720px){body{padding-left:9px;padding-right:9px}.grid{grid-template-columns:1fr}.topbar{align-items:flex-start}.brand strong{font-size:20px}.meta{grid-template-columns:repeat(3,minmax(0,1fr))}.meta strong{font-size:16px}.actions{grid-template-columns:1fr}.current{min-height:auto}.row{grid-template-columns:auto 1fr}.row-dist{grid-column:2;justify-self:start;font-size:16px}}
+@media(max-width:720px){body{padding-left:9px;padding-right:9px}.grid{grid-template-columns:1fr}.topbar{align-items:flex-start}.brand strong{font-size:20px}.meta{grid-template-columns:repeat(3,minmax(0,1fr))}.meta strong{font-size:16px}.actions{grid-template-columns:1fr}.current{min-height:auto}.current-main{grid-template-columns:1fr}.sign-visual{min-height:168px}.row{grid-template-columns:auto 1fr}.row-dist{grid-column:2;justify-self:start;font-size:16px}}
 </style>
 </head>
 <body>
@@ -47,21 +50,36 @@ button,input,textarea{font:inherit}
       </div>
 
       <section class="current">
-        <div>
-          <div class="eyebrow" id="currentState">Neste registrerte skilt</div>
-          <div class="sign-title" id="signNumber">--</div>
-        </div>
-        <div class="sign-desc" id="signText">Venter på GPS og NVDB-data.</div>
-        <div class="distance"><strong id="distanceText">--</strong><span>meter fram</span></div>
-        <div class="sign-data">
-          <div>Veg: <b id="signRoad">--</b></div>
-          <div>Retning/side: <b id="signDirection">--</b></div>
-          <div>NVDB-id: <b id="signId">--</b></div>
+        <div class="current-main">
+          <div class="sign-copy">
+            <div>
+              <div class="eyebrow" id="currentState">Neste registrerte skilt</div>
+              <div class="sign-title" id="signNumber">--</div>
+            </div>
+            <div class="sign-desc" id="signText">Venter på GPS og NVDB-data.</div>
+            <div class="distance"><strong id="distanceText">--</strong><span>meter fram</span></div>
+            <div class="sign-data">
+              <div>Veg: <b id="signRoad">--</b></div>
+              <div>Retning/side: <b id="signDirection">--</b></div>
+              <div>NVDB-id: <b id="signId">--</b></div>
+            </div>
+          </div>
+          <div id="signVisual" class="sign-visual empty">Visuelt skilt</div>
         </div>
         <textarea id="noteText" class="note" placeholder="Kort notat ved avvik"></textarea>
         <img id="photoPreview" class="photoPreview" alt="">
+        <div id="cameraBox" class="camera">
+          <div class="camera-head">
+            <span id="cameraStatus" class="camera-status">Kamera av</span>
+            <div class="toolbar">
+              <button id="cameraBtn" class="tool" type="button">Kamera</button>
+              <button id="autoMissingBtn" class="tool active" type="button">Auto mangler</button>
+            </div>
+          </div>
+          <video id="cameraVideo" playsinline muted></video>
+          <canvas id="cameraCanvas" hidden></canvas>
+        </div>
         <div class="actions">
-          <button class="action" data-log="sett">Sett</button>
           <button class="action warn" data-log="mangler">Mangler</button>
           <button class="action secondary" data-log="feil_registrert">Feil registrert</button>
           <button class="action secondary" data-log="feil_retning">Feil retning</button>
@@ -99,21 +117,25 @@ button,input,textarea{font:inherit}
 const NVDB='https://nvdbapiles.atlas.vegvesen.no';
 const SIGN_TYPE_ID=96;
 const SIGN_REFRESH_DISTANCE_M=250, SIGN_REFRESH_RADIUS_KM=.8, ROAD_REFRESH_RADIUS_KM=.9;
-const LOOKAHEAD_M=360, SIDE_CONE_DEG=70, HEADING_MIN_SPEED_MPS=2.5;
+const LOOKAHEAD_M=260, SIDE_CONE_DEG=44, FACE_CONE_DEG=85, HEADING_MIN_SPEED_MPS=2.5, CURRENT_ROAD_MAX_M=32;
+const AUTO_TRACK_START_M=140, AUTO_PASS_MIN_M=26, AUTO_PASS_CLEAR_M=30, CAMERA_SEEN_MS=1400;
 const SIGN_LOG_KEY='skiltkontroll-log-v1';
 
 const el={
  gpsDot:document.getElementById('gpsDot'),gpsStatus:document.getElementById('gpsStatus'),
  road:document.getElementById('roadText'),speed:document.getElementById('speedText'),accuracy:document.getElementById('accuracyText'),
  currentState:document.getElementById('currentState'),signNumber:document.getElementById('signNumber'),signText:document.getElementById('signText'),distance:document.getElementById('distanceText'),
- signRoad:document.getElementById('signRoad'),signDirection:document.getElementById('signDirection'),signId:document.getElementById('signId'),signList:document.getElementById('signList'),
+ signRoad:document.getElementById('signRoad'),signDirection:document.getElementById('signDirection'),signId:document.getElementById('signId'),signList:document.getElementById('signList'),signVisual:document.getElementById('signVisual'),
  note:document.getElementById('noteText'),photoInput:document.getElementById('photoInput'),photoPreview:document.getElementById('photoPreview'),
+ cameraBox:document.getElementById('cameraBox'),cameraBtn:document.getElementById('cameraBtn'),autoMissingBtn:document.getElementById('autoMissingBtn'),cameraStatus:document.getElementById('cameraStatus'),cameraVideo:document.getElementById('cameraVideo'),cameraCanvas:document.getElementById('cameraCanvas'),
  refresh:document.getElementById('refreshBtn'),missingHere:document.getElementById('missingHereBtn'),exportCsv:document.getElementById('exportCsvBtn'),exportGeo:document.getElementById('exportGeoBtn'),clearLog:document.getElementById('clearLogBtn'),
  logList:document.getElementById('logList'),logCount:document.getElementById('logCount'),photoBtn:document.getElementById('photoBtn')
 };
 
 let gps={watching:false,lastPos:null,acc:null,speed:null,heading:null,_lastFixTs:null};
-let signs=[],roadRefs=[],currentRoadLabel='',currentCandidates=[],currentSign=null,lastRefreshPos=null,refreshInFlight=false,photoData='';
+let signs=[],roadRefs=[],currentRoadLabel='',currentRoadKey='',currentRoadRoute='',currentRoadIsGsv=false,currentCandidates=[],currentSign=null,lastRefreshPos=null,refreshInFlight=false,photoData='';
+let camera={active:false,stream:null,timer:null,looks:false,score:0,lastSeenTs:0};
+let autoMissingEnabled=true,autoChecks=new Map();
 let logItems=loadLog();
 
 function setGpsState(state,text){el.gpsDot.classList.remove('ok','bad');if(state==='ok')el.gpsDot.classList.add('ok');if(state==='bad')el.gpsDot.classList.add('bad');el.gpsStatus.textContent=text}
@@ -132,14 +154,35 @@ function roadDist(lat,lon,r){let best=Infinity;for(const part of(r.parts||[])){f
 function prop(obj,id,name){const p=(obj.egenskaper||[]).find(e=>e.id===id||String(e.navn||'').toLowerCase()===String(name||'').toLowerCase());return p?.verdi??''}
 function signNumberShort(value){return String(value||'').split(' - ')[0].trim()||'--'}
 function signText(value,text){const s=String(value||''),parts=s.split(' - ');return String(text||parts.slice(1).join(' - ')||s||'Ukjent skilt').trim()}
-function roadLabelFromVegsystemRef(vs){const kort=String(vs?.kortform||vs?.vegsystemreferanse?.kortform||'');const direct=kort.match(/\b(EV|RV|FV|KV|PV|E|Rv|Fv|Kv|Pv)\s?(\d+)\b/i);if(direct){const t=direct[1].toLowerCase(),nr=direct[2];if(t==='e'||t==='ev')return`E${nr}`;if(t==='rv')return`Rv ${nr}`;if(t==='fv')return`Fv ${nr}`;if(t==='kv')return`Kv ${nr}`;if(t==='pv')return`Pv ${nr}`}const vegsystem=vs?.vegsystem||vs?.vegsystemreferanse?.vegsystem||{},nr=vegsystem.nummer,kat=String(vegsystem.vegkategori||'').toUpperCase();if(!nr||!kat)return'';return kat==='E'?`E${nr}`:`${kat}v ${nr}`}
-function roadLabelFromObject(obj){const refs=[...(obj?.lokasjon?.vegsystemreferanser||[]),obj?.vegsystemreferanse,obj?.lokasjon?.vegsystemreferanse].filter(Boolean);for(const r of refs){const label=roadLabelFromVegsystemRef(r);if(label)return label}return''}
+function roadInfoFromVegsystemRef(vs){
+ const kort=String(vs?.kortform||vs?.vegsystemreferanse?.kortform||''),text=kort.toUpperCase();
+ const direct=text.match(/\b(EV|RV|FV|KV|PV|E|R|F|K|P)\s?(\d+)(?:\s+(G))?\b/);
+ let label='',route='',key='',isGsv=/\bGSV\b|\bGS\b|GANG|SYKKEL/.test(text);
+ if(direct){
+  const t=direct[1],nr=direct[2],suffix=direct[3]?' G':'';
+  const cls=t==='E'||t==='EV'?'E':`${t[0]}v`;
+  route=cls==='E'?`E${nr}`:`${cls} ${nr}`;
+  label=route+suffix;key=label;isGsv=isGsv||suffix.trim()==='G';
+ }else{
+  const vegsystem=vs?.vegsystem||vs?.vegsystemreferanse?.vegsystem||{},nr=vegsystem.nummer,kat=String(vegsystem.vegkategori||'').toUpperCase();
+  if(nr&&kat){route=kat==='E'?`E${nr}`:`${kat}v ${nr}`;label=route;key=route}
+ }
+ return{label,key,route,isGsv,raw:kort};
+}
+function roadInfoFromObject(obj){const refs=[...(obj?.lokasjon?.vegsystemreferanser||[]),obj?.vegsystemreferanse,obj?.lokasjon?.vegsystemreferanse].filter(Boolean);for(const r of refs){const info=roadInfoFromVegsystemRef(r);if(info.label)return info}return{label:'',key:'',route:'',isGsv:false,raw:''}}
+function roadLabelFromVegsystemRef(vs){return roadInfoFromVegsystemRef(vs).label}
+function compassToDeg(value){
+ const t=String(value||'').trim().toLowerCase();if(!t)return null;
+ const numeric=Number(t.replace(',','.'));if(Number.isFinite(numeric))return(numeric+360)%360;
+ const map={n:0,nord:0,north:0,'nordøst':45,'nordaust':45,'nord-øst':45,no:45,ne:45,'øst':90,aust:90,ost:90,east:90,o:90,ø:90,e:90,'sørøst':135,'søraust':135,'sør-øst':135,so:135,se:135,s:180,sør:180,sor:180,south:180,'sørvest':225,'sør-vest':225,sv:225,sw:225,vest:270,west:270,v:270,w:270,'nordvest':315,'nord-vest':315,nv:315,nw:315};
+ return map[t]??null;
+}
 function normalizeSign(obj){
  const point=parsePointWkt(obj?.geometri?.wkt||obj?.lokasjon?.geometri?.wkt);
  if(!point)return null;
  const number=prop(obj,5530,'Skiltnummer'),text=prop(obj,1910,'Tekst'),face=prop(obj,1894,'Ansiktsside, rettet mot'),compass=prop(obj,1897,'Himmelretning');
- const loc=obj?.lokasjon||{},sted=(loc.stedfestinger||[])[0]||{},vs=(loc.vegsystemreferanser||[])[0]||{};
- return{id:obj.id,lon:point[0],lat:point[1],number:number||'',numberShort:signNumberShort(number),text:signText(number,text),face:face||'',compass:compass||'',roadLabel:roadLabelFromObject(obj),roadRef:vs.kortform||'',direction:sted.retning||vs?.metrertLokasjon?.retning||'',side:sted.sideposisjon||vs?.metrertLokasjon?.sideposisjon||''};
+ const loc=obj?.lokasjon||{},sted=(loc.stedfestinger||[])[0]||{},vs=(loc.vegsystemreferanser||[])[0]||{},roadInfo=roadInfoFromObject(obj);
+ return{id:obj.id,lon:point[0],lat:point[1],number:number||'',numberShort:signNumberShort(number),text:signText(number,text),face:face||'',compass:compass||'',roadLabel:roadInfo.label,roadKey:roadInfo.key,roadRoute:roadInfo.route,isGsv:roadInfo.isGsv,roadRef:vs.kortform||roadInfo.raw||'',direction:sted.retning||vs?.metrertLokasjon?.retning||'',side:sted.sideposisjon||vs?.metrertLokasjon?.sideposisjon||''};
 }
 
 async function fetchSignsAround(lat,lon){
@@ -155,7 +198,7 @@ async function fetchRoadRefsAround(lat,lon){
  const [minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,ROAD_REFRESH_RADIUS_KM),url=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
  url.searchParams.set('srid','4326');url.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);url.searchParams.set('vegsystemreferanse','E,R,F,K,P');url.searchParams.set('inkluderAntall','false');url.searchParams.set('antall','1000');
  const out=[];let next=url.toString(),pages=0;
- while(next&&pages<5){pages++;const r=await fetch(next,{headers:{Accept:'application/json','X-Client':'skiltkontroll-mvp'}});if(!r.ok)throw new Error(`NVDB vegnett ${r.status}`);const d=await r.json();for(const o of d.objekter||[]){const label=roadLabelFromVegsystemRef(o?.vegsystemreferanse),parts=parseWkt(o?.geometri?.wkt);if(label&&parts.length)out.push({label,parts})}next=d?.metadata?.neste?.href||null}
+ while(next&&pages<5){pages++;const r=await fetch(next,{headers:{Accept:'application/json','X-Client':'skiltkontroll-mvp'}});if(!r.ok)throw new Error(`NVDB vegnett ${r.status}`);const d=await r.json();for(const o of d.objekter||[]){const info=roadInfoFromVegsystemRef(o?.vegsystemreferanse),parts=parseWkt(o?.geometri?.wkt);if(info.label&&parts.length)out.push({...info,parts})}next=d?.metadata?.neste?.href||null}
  return out;
 }
 
@@ -165,26 +208,32 @@ async function refreshData(force=false){
  refreshInFlight=true;el.currentState.textContent='Henter NVDB-data';
  try{const [freshSigns,freshRoads]=await Promise.all([fetchSignsAround(pos[0],pos[1]),fetchRoadRefsAround(pos[0],pos[1])]);signs=freshSigns;roadRefs=freshRoads;lastRefreshPos=[pos[0],pos[1]]}
  catch(e){console.warn(e);el.currentState.textContent='NVDB-oppslag feilet'}
- finally{refreshInFlight=false;updateMatches();render()}
+ finally{refreshInFlight=false;updateMatches();updateAutoMissing();render()}
 }
 
 function updateCurrentRoad(){
- currentRoadLabel='';
+ currentRoadLabel='';currentRoadKey='';currentRoadRoute='';currentRoadIsGsv=false;
  if(!gps.lastPos||!roadRefs.length)return;
- let best=null,bestD=Infinity;
- for(const r of roadRefs){const d=roadDist(gps.lastPos[0],gps.lastPos[1],r);if(d<bestD){best=r;bestD=d}}
- if(best&&bestD<=45)currentRoadLabel=best.label;
+ let best=null,bestScore=Infinity,bestD=Infinity;
+ for(const r of roadRefs){const d=roadDist(gps.lastPos[0],gps.lastPos[1],r),gsvPenalty=r.isGsv&&Number.isFinite(gps.speed)&&gps.speed>4?28:0,score=d+gsvPenalty;if(score<bestScore){best=r;bestScore=score;bestD=d}}
+ if(best&&bestD<=CURRENT_ROAD_MAX_M){currentRoadLabel=best.label;currentRoadKey=best.key;currentRoadRoute=best.route;currentRoadIsGsv=best.isGsv}
 }
 function signCandidateScore(sign){
  if(!gps.lastPos)return null;
  const dist=dM(gps.lastPos[0],gps.lastPos[1],sign.lat,sign.lon);
  if(dist<5||dist>LOOKAHEAD_M)return null;
  const heading=Number.isFinite(gps.heading)&&Number.isFinite(gps.speed)&&gps.speed>=HEADING_MIN_SPEED_MPS?gps.heading:null;
- let delta=0;
- if(heading!=null){delta=headingDelta(heading,bearingBetween(gps.lastPos[0],gps.lastPos[1],sign.lat,sign.lon));if(delta>SIDE_CONE_DEG)return null}
- let score=dist+(delta*1.4);
- if(currentRoadLabel&&sign.roadLabel){score+=currentRoadLabel===sign.roadLabel?-30:120}
- return{...sign,dist,delta,score};
+ let delta=0,faceDelta=null;
+ if(currentRoadKey&&sign.roadKey&&sign.roadKey!==currentRoadKey)return null;
+ if(currentRoadRoute&&sign.roadRoute&&sign.roadRoute!==currentRoadRoute)return null;
+ if(currentRoadKey&&currentRoadIsGsv!==sign.isGsv&&sign.roadKey)return null;
+ if(heading!=null){
+  const bearing=bearingBetween(gps.lastPos[0],gps.lastPos[1],sign.lat,sign.lon);delta=headingDelta(heading,bearing);if(delta>SIDE_CONE_DEG)return null;
+  const faceDeg=compassToDeg(sign.compass);if(faceDeg!=null){faceDelta=headingDelta(heading,(faceDeg+180)%360);if(faceDelta>FACE_CONE_DEG)return null}
+ }
+ let score=dist+(delta*2.2)+(faceDelta==null?0:faceDelta*.8);
+ if(currentRoadKey&&sign.roadKey&&sign.roadKey===currentRoadKey)score-=45;
+ return{...sign,dist,delta,faceDelta,score};
 }
 function updateMatches(){
  updateCurrentRoad();
@@ -201,8 +250,10 @@ function render(){
   el.signRoad.textContent=currentSign.roadRef||currentSign.roadLabel||'--';
   el.signDirection.textContent=[currentSign.face,currentSign.direction,currentSign.side?`side ${currentSign.side}`:''].filter(Boolean).join(' · ')||'--';
   el.signId.textContent=String(currentSign.id);
+  el.signVisual.classList.remove('empty');el.signVisual.innerHTML=signVisualHtml(currentSign);
  }else{
   el.currentState.textContent=refreshInFlight?'Henter NVDB-data':'Ingen skilt foran';el.signNumber.textContent='--';el.signText.textContent=gps.lastPos?'Ingen registrerte skilt funnet i kjøreretningen.':'Venter på GPS og NVDB-data.';el.distance.textContent='--';el.signRoad.textContent='--';el.signDirection.textContent='--';el.signId.textContent='--';
+  el.signVisual.classList.add('empty');el.signVisual.textContent='Visuelt skilt';
  }
  renderList();renderLog();
 }
@@ -217,22 +268,78 @@ function renderLog(){
 }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
+function speedFromSign(sign){const m=String(`${sign?.text||''} ${sign?.number||''}`).match(/\b(30|40|50|60|70|80|90|100|110)\b/);return m?m[1]:''}
+function signVisualHtml(sign){
+ const n=String(sign?.numberShort||''),text=escapeHtml(sign?.text||''),speed=speedFromSign(sign);
+ let cls='generic',label=escapeHtml(n||'--');
+ if(/^362\b|fartsgrense/i.test(sign?.text||'')){cls='speed';label=escapeHtml(speed||n||'--')}
+ else if(/^204\b|stopp|stop/i.test(sign?.text||'')){cls='stop';label='STOP'}
+ else if(/^1/.test(n)){cls='warning';label='<span>!</span>'}
+ else if(/^5|opplysning|informasjon/i.test(sign?.text||'')){cls='info';label=escapeHtml(n||'i')}
+ return`<div class="sign-plate"><div class="sign-shape ${cls}">${label}</div><div class="sign-visual-text">${text}</div></div>`;
+}
+
 function loadLog(){try{return JSON.parse(localStorage.getItem(SIGN_LOG_KEY)||'[]')}catch(e){return[]}}
 function saveLog(){localStorage.setItem(SIGN_LOG_KEY,JSON.stringify(logItems.slice(-500)))}
-function addLog(status,sign=currentSign){
- const pos=gps.lastPos||[null,null],item={time:new Date().toISOString(),status,signId:sign?.id||'',signNumber:sign?.numberShort||'',signText:sign?.text||'',road:sign?.roadRef||sign?.roadLabel||currentRoadLabel||'',distance:sign?.dist?Math.round(sign.dist):'',lat:pos[0],lon:pos[1],accuracy:gps.acc,note:el.note.value.trim(),photo:photoData?true:false};
- logItems.push(item);saveLog();el.note.value='';photoData='';el.photoPreview.style.display='none';renderLog();
+function addLog(status,sign=currentSign,opts={}){
+ const pos=gps.lastPos||[null,null],item={time:new Date().toISOString(),status,signId:sign?.id||'',signNumber:sign?.numberShort||'',signText:sign?.text||'',road:sign?.roadRef||sign?.roadLabel||currentRoadLabel||'',distance:Number.isFinite(sign?.dist)?Math.round(sign.dist):'',lat:pos[0],lon:pos[1],accuracy:gps.acc,note:opts.note??el.note.value.trim(),photo:photoData?true:false,auto:!!opts.auto,cameraScore:camera.score?Number(camera.score.toFixed(4)):0};
+ logItems.push(item);saveLog();
+ if(opts.clearInputs!==false){el.note.value='';photoData='';el.photoPreview.style.display='none'}
+ renderLog();
 }
 function download(name,type,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
-function exportCsv(){const headers=['time','status','signId','signNumber','signText','road','distance','lat','lon','accuracy','note','photo'];const rows=[headers.join(',')];for(const item of logItems){rows.push(headers.map(h=>`"${String(item[h]??'').replace(/"/g,'""')}"`).join(','))}download(`skiltkontroll-${Date.now()}.csv`,'text/csv;charset=utf-8',rows.join('\n'))}
+function exportCsv(){const headers=['time','status','signId','signNumber','signText','road','distance','lat','lon','accuracy','note','photo','auto','cameraScore'];const rows=[headers.join(',')];for(const item of logItems){rows.push(headers.map(h=>`"${String(item[h]??'').replace(/"/g,'""')}"`).join(','))}download(`skiltkontroll-${Date.now()}.csv`,'text/csv;charset=utf-8',rows.join('\n'))}
 function exportGeo(){const features=logItems.filter(i=>Number.isFinite(i.lat)&&Number.isFinite(i.lon)).map(i=>({type:'Feature',geometry:{type:'Point',coordinates:[i.lon,i.lat]},properties:{...i,lat:undefined,lon:undefined}}));download(`skiltkontroll-${Date.now()}.geojson`,'application/geo+json',JSON.stringify({type:'FeatureCollection',features},null,2))}
+
+async function toggleCamera(){camera.active?stopCamera():await startCamera()}
+async function startCamera(){
+ if(!navigator.mediaDevices?.getUserMedia){el.cameraStatus.textContent='Kamera mangler';return}
+ try{
+  camera.stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:640},height:{ideal:480}}});
+  el.cameraVideo.srcObject=camera.stream;await el.cameraVideo.play();camera.active=true;el.cameraBox.classList.add('on');el.cameraBtn.classList.add('active');el.cameraStatus.textContent='Kamera aktiv';
+  camera.timer=setInterval(sampleCamera,550);
+ }catch(e){el.cameraStatus.textContent='Kamera nektet';camera.active=false}
+}
+function stopCamera(){if(camera.timer)clearInterval(camera.timer);camera.timer=null;camera.stream?.getTracks?.().forEach(t=>t.stop());camera={active:false,stream:null,timer:null,looks:false,score:0,lastSeenTs:camera.lastSeenTs||0};el.cameraVideo.srcObject=null;el.cameraBox.classList.remove('on','detect');el.cameraBtn.classList.remove('active');el.cameraStatus.textContent='Kamera av'}
+function sampleCamera(){
+ if(!camera.active||el.cameraVideo.readyState<2)return;
+ const w=160,h=120,ctx=el.cameraCanvas.getContext('2d');el.cameraCanvas.width=w;el.cameraCanvas.height=h;ctx.drawImage(el.cameraVideo,0,0,w,h);
+ const data=ctx.getImageData(0,0,w,h).data;let hits=0,total=0;
+ for(let y=18;y<h-8;y++){for(let x=18;x<w-18;x++){const i=(y*w+x)*4,r=data[i],g=data[i+1],b=data[i+2],max=Math.max(r,g,b),min=Math.min(r,g,b);if(max<80||max-min<45)continue;total++;const red=r>145&&r-g>45&&r-b>35,yellow=r>150&&g>125&&b<95,blue=b>125&&b-r>35&&g>70;if(red||yellow||blue)hits++}}
+ camera.score=total?hits/total:0;camera.looks=camera.score>.045;
+ if(camera.looks){camera.lastSeenTs=Date.now();markAutoSeen('kamera')}
+ el.cameraBox.classList.toggle('detect',camera.looks);el.cameraStatus.textContent=camera.looks?'Kamera ser mulig skilt':(camera.active?'Kamera aktiv':'Kamera av');
+}
+function cameraRecentlySawSign(){return camera.active&&Date.now()-camera.lastSeenTs<CAMERA_SEEN_MS}
+function autoKey(sign){return String(sign?.id||`${sign?.lat},${sign?.lon},${sign?.numberShort}`)}
+function hasMissingLog(id){return logItems.some(item=>String(item.signId)===String(id)&&(item.status==='auto_mangler'||item.status==='mangler'))}
+function markAutoSeen(source){
+ for(const check of autoChecks.values()){if(check.closed)continue;check.seen=true;check.source=source;check.seenAt=new Date().toISOString()}
+}
+function updateAutoMissing(){
+ if(!gps.lastPos)return;
+ for(const sign of currentCandidates){
+  if(sign.dist>AUTO_TRACK_START_M)continue;
+  const key=autoKey(sign),existing=autoChecks.get(key);
+  if(existing){existing.sign=sign;existing.lastSeen=Date.now();existing.minDist=Math.min(existing.minDist,sign.dist)}
+  else autoChecks.set(key,{key,sign,started:Date.now(),lastSeen:Date.now(),minDist:sign.dist,seen:false,source:''});
+ }
+ if(cameraRecentlySawSign())markAutoSeen('kamera');
+ for(const [key,check] of autoChecks){
+  const s=check.sign,dist=gps.lastPos?dM(gps.lastPos[0],gps.lastPos[1],s.lat,s.lon):Infinity,bearing=gps.lastPos?bearingBetween(gps.lastPos[0],gps.lastPos[1],s.lat,s.lon):0;
+  check.minDist=Math.min(check.minDist,dist);
+  const heading=Number.isFinite(gps.heading)&&Number.isFinite(gps.speed)&&gps.speed>=HEADING_MIN_SPEED_MPS?gps.heading:null,behind=heading!=null&&dist>24&&headingDelta(heading,bearing)>105,passed=check.minDist<=AUTO_PASS_MIN_M&&(dist>check.minDist+AUTO_PASS_CLEAR_M||behind);
+  if(autoMissingEnabled&&camera.active&&passed&&!check.seen&&!hasMissingLog(s.id)){addLog('auto_mangler',{...s,dist},{auto:true,note:'Automatisk: passert uten kameratreff',clearInputs:false});check.closed=true}
+  if(check.closed||dist>LOOKAHEAD_M+120||Date.now()-check.started>120000)autoChecks.delete(key);
+ }
+}
 
 function onPos(pos){
  const lat=Number(pos?.coords?.latitude),lon=Number(pos?.coords?.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lon))return;
  const prev=gps.lastPos?[...gps.lastPos]:null,spd=Number(pos.coords.speed),rawHeading=Number(pos.coords.heading);
  let heading=Number.isFinite(rawHeading)&&rawHeading>=0?rawHeading:null;if(heading==null&&prev&&Number.isFinite(spd)&&spd>1&&dM(prev[0],prev[1],lat,lon)>3)heading=bearingBetween(prev[0],prev[1],lat,lon);
  gps={watching:true,lastPos:[lat,lon],acc:Number.isFinite(Number(pos.coords.accuracy))?Number(pos.coords.accuracy):null,speed:Number.isFinite(spd)&&spd>=0?spd:null,heading,_lastFixTs:Date.now()};
- setGpsState('ok','GPS aktiv');updateMatches();render();refreshData(false);
+ setGpsState('ok','GPS aktiv');updateMatches();updateAutoMissing();render();refreshData(false);
 }
 function onPosErr(err){setGpsState('bad',err?.code===1?'GPS nektet':'GPS-feil');render()}
 function startGPS(){if(!navigator.geolocation){setGpsState('bad','GPS mangler');return}setGpsState('','Starter GPS');gps.watching=true;navigator.geolocation.watchPosition(onPos,onPosErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000})}
@@ -243,6 +350,8 @@ el.missingHere.addEventListener('click',()=>addLog('mangler_her',null));
 el.exportCsv.addEventListener('click',exportCsv);
 el.exportGeo.addEventListener('click',exportGeo);
 el.clearLog.addEventListener('click',()=>{if(confirm('Tømme kontrolloggen?')){logItems=[];saveLog();renderLog()}});
+el.cameraBtn.addEventListener('click',toggleCamera);
+el.autoMissingBtn.addEventListener('click',()=>{autoMissingEnabled=!autoMissingEnabled;el.autoMissingBtn.classList.toggle('active',autoMissingEnabled);el.autoMissingBtn.textContent=autoMissingEnabled?'Auto mangler':'Auto av'});
 el.photoBtn.addEventListener('click',()=>el.photoInput.click());
 el.photoInput.addEventListener('change',()=>{const file=el.photoInput.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{photoData=String(reader.result||'');el.photoPreview.src=photoData;el.photoPreview.style.display='block'};reader.readAsDataURL(file)});
 
