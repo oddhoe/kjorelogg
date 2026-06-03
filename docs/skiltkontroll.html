@@ -283,6 +283,21 @@ function renderLog(){
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
 function speedFromSign(sign){const m=String(`${sign?.text||''} ${sign?.number||''}`).match(/\b(30|40|50|60|70|80|90|100|110)\b/);return m?m[1]:''}
+function inlineSignSvg(sign){
+ const n=String(sign?.numberShort||'').trim(),enumId=String(sign?.enumId||'');
+ if(n==='522'||enumId==='7708')return`<svg class="sign-img" viewBox="0 0 180 180" role="img" aria-label="Gang- og sykkelveg" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="164" height="164" rx="8" fill="#14559d"/>
+  <rect x="11" y="11" width="158" height="158" rx="6" fill="none" stroke="#fff" stroke-width="5"/>
+  <circle cx="66" cy="35" r="9" fill="#fff"/>
+  <path d="M62 48 L52 85 M62 48 L77 57 M55 63 L46 85 M52 85 L41 116 M52 85 L72 113" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="104" cy="50" r="7" fill="#fff"/>
+  <path d="M101 62 L94 88 M101 62 L115 70 M96 76 L88 95 M94 88 L83 113 M94 88 L111 109" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="52" cy="139" r="22" fill="none" stroke="#fff" stroke-width="7"/>
+  <circle cx="122" cy="139" r="22" fill="none" stroke="#fff" stroke-width="7"/>
+  <path d="M52 139 L76 110 L94 139 L122 139 L99 100 M76 110 H101 M101 100 H113" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>`;
+ return'';
+}
 function geonorgeSignFile(sign){
  const n=String(sign?.numberShort||'').trim(),speed=speedFromSign(sign);
  if(/^362\b/.test(n)&&speed)return`362_${speed}.svg`;
@@ -294,6 +309,8 @@ function geonorgeSignFile(sign){
 function geonorgeSignUrl(sign){const file=geonorgeSignFile(sign);return file?`https://register.geonorge.no/symbol/files/thumbnail/${file}`:''}
 function signVisualHtml(sign){
  const n=String(sign?.numberShort||''),text=escapeHtml(sign?.text||''),speed=speedFromSign(sign);
+ const inline=inlineSignSvg(sign);
+ if(inline)return`<div class="sign-plate">${inline}<div class="sign-visual-text">${text}</div></div>`;
  const asset=geonorgeSignUrl(sign);
  if(asset)return`<div class="sign-plate"><img class="sign-img" src="${asset}" alt="${text||escapeHtml(n)}" loading="lazy"><div class="sign-visual-text">${text}</div></div>`;
  let cls='generic',label=escapeHtml(n||'--');
