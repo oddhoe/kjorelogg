@@ -11,7 +11,7 @@ if(!window.L){
 @keyframes gpsdot{0%,100%{opacity:1}50%{opacity:.35}}
 .gps-acc-good{color:#66bb6a;font-weight:700}
 .gps-acc-medium{color:#ffa726;font-weight:700}
-.gps-acc-bad{color:#ef5350;font-weight:700}.gps-info{flex:1;min-width:0}.gps-coord{font-size:10px;color:#b6b6bd;font-weight:700;font-variant-numeric:tabular-nums;min-height:13px}.gps-speed{font-size:26px;font-weight:900;line-height:1.05;margin:1px 0;display:flex;align-items:center;gap:10px}.speed-limit-sign{width:44px;height:44px;border-radius:50%;background:#fff;color:#111;border:5px solid #d71920;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:1000;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.35);flex-shrink:0}.speed-limit-sign.unknown{border-color:#777;color:#777;font-size:14px;background:#f5f5f5}@media(max-width:430px){.speed-limit-sign{width:40px;height:40px;border-width:4px;font-size:16px}.gps-speed{gap:8px}}.gps-sub{font-size:11px;color:#b6b6bd;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.gps-heading{display:inline-flex;align-items:center;gap:5px;background:#2a2a34;border-radius:8px;padding:3px 8px}.compass-arrow{display:inline-block;font-size:13px;transition:transform .4s ease}.heading-val{font-size:12px;font-weight:900;color:#f9a825;font-variant-numeric:tabular-nums}.heading-dir{font-size:10px;color:#b6b6bd}.gps-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap}.gps-btn.start{background:#2e7d32;color:#fff}.gps-btn.stop{background:#7a5054;color:#ffd7d7}.tab-bar{display:flex;background:#1b1b1d;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}.tab{flex:1;padding:10px 3px 9px;font-size:12px;font-weight:900;text-align:center;cursor:pointer;background:0 0;border:none;color:#b7b7bc;position:relative}.tab.active{color:#7bc1ff}.tab.active::after{content:'';position:absolute;bottom:0;left:18%;right:18%;height:3px;background:#1e88ff;border-radius:3px}.content{flex:1;display:none;flex-direction:column;overflow:hidden;background:linear-gradient(90deg,#1e1e22,#17171b)}.content.active{display:flex}.notice{margin:8px 10px 0;background:#5f4b1d;color:#ffe8aa;border:1px solid #8f7641;padding:10px 12px;border-radius:14px;font-size:12px}.error{margin:8px 10px 0;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;padding:10px 12px;border-radius:14px;font-size:12px}.success{margin:8px 10px 0;background:#18361f;color:#c8ffd1;border:1px solid #2b6a39;padding:10px 12px;border-radius:14px;font-size:12px}.loading{display:flex;align-items:center;justify-content:center;padding:22px;font-size:14px;color:#c7c7cd}#overview-tools{padding:8px 10px 8px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px;flex-shrink:0}.ov-row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.ov-field{display:flex;flex-direction:column;gap:4px}.ov-field span{font-size:11px;color:#b6b6bd;font-weight:800}.ov-field input,.ov-field select{padding:9px 12px;border:none;border-radius:14px;font-size:14px;background:#323237;color:#fff}.ov-field input{width:82px}.ov-field select{min-width:190px;max-width:100%}.ov-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a}.ov-primary{background:#0059c9;border-color:#0059c9;color:#fff}.cat-row{align-items:center}.cat-label{font-size:12px;color:#b6b6bd;font-weight:900;margin-right:1px}.cat-chip,.cat-mini{border:none;cursor:pointer;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:900;transition:opacity .12s,box-shadow .12s;-webkit-appearance:none;appearance:none}.cat-chip{background:#1f1f24;color:#9a9aa3;border:1px dashed #3a3a44;opacity:.72}.cat-chip[data-cat="E"]{background:#2a1837;color:#d8b2ff;border-color:#6a1b9a}.cat-chip[data-cat=EGSV]{background:#32173d;color:#efb4ff;border-color:#8e24aa}.cat-chip[data-cat="R"]{background:#142946;color:#aad0ff;border-color:#1565c0}.cat-chip[data-cat=RGSV]{background:#14304d;color:#b6dcff;border-color:#1976d2}.cat-chip[data-cat="F"]{background:#17341c;color:#b7efbd;border-color:#2e7d32}.cat-chip[data-cat=FGSV]{background:#173c22;color:#c2f7c7;border-color:#43a047}.cat-chip[data-cat="K"]{background:#3a3000;color:#ffd866;border-color:#9a7c00}.cat-chip[data-cat=KGSV]{background:#3d2200;color:#ffcc99;border-color:#bf6000}.cat-chip.active{opacity:1;border-style:solid;box-shadow:0 0 0 2px rgba(255,255,255,.35) inset}.cat-chip.active[data-cat="E"]{background:#6a1b9a;color:#fff;border-color:#6a1b9a}.cat-chip.active[data-cat=EGSV]{background:#8e24aa;color:#fff;border-color:#8e24aa}.cat-chip.active[data-cat="R"]{background:#1565c0;color:#fff;border-color:#1565c0}.cat-chip.active[data-cat=RGSV]{background:#1976d2;color:#fff;border-color:#1976d2}.cat-chip.active[data-cat="F"]{background:#2e7d32;color:#fff;border-color:#2e7d32}.cat-chip.active[data-cat=FGSV]{background:#43a047;color:#fff;border-color:#43a047}.cat-chip.active[data-cat="K"]{background:#9a7c00;color:#fff;border-color:#9a7c00}.cat-chip.active[data-cat=KGSV]{background:#ef6c00;color:#fff;border-color:#ef6c00}.road-action-popup .leaflet-popup-content-wrapper{background:#1f1f24;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}.road-action-popup .leaflet-popup-tip{background:#1f1f24}.road-action-popup .leaflet-popup-close-button{color:#888}.kgsv-langs-btn{background:rgba(255,255,255,.06);color:#ccc;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer}.kgsv-langs-btn.active{background:#ef6c00;color:#fff;border-color:#ef6c00}.cat-mini{background:#1f1f24;color:#b6b6bd;border:1px solid #444}.stats-bar{padding:6px 10px}.stats-inner{background:#1f1f24;border-radius:14px;padding:9px 12px}.prog-row{display:flex;align-items:center;gap:10px}.prog-bar{flex:1;background:#2a2a31;border-radius:4px;height:6px;overflow:hidden}.prog-fill{background:#1e88ff;height:6px;border-radius:4px;transition:width .3s}.stat-text{font-size:11px;color:#d7d7db}#road-list{flex:1;overflow-y:auto;padding:6px 10px;padding-bottom:max(12px,env(safe-area-inset-bottom))}.road-card{background:#1f1f24;border-radius:16px;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.18);display:flex}.road-card.active-gps{border:2px solid #1e88ff}.road-accent{width:4px;flex-shrink:0}.road-body{padding:9px 11px;flex:1;min-width:0}.road-top{display:flex;align-items:center;gap:8px}.road-veg{font-size:14px;font-weight:900;flex:1}.road-status{font-size:15px}.road-meta{font-size:11px;color:#b6b6bd;margin-top:2px}.road-gps{font-size:11px;font-weight:900;margin-top:4px}.road-gps.near{color:#7bc1ff}.nav-btns{display:flex;gap:6px;margin-top:8px}.nav-btn{flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none}.nb-g{background:#e6f1fb;color:#185fa5}.table-controls{padding:8px 10px 6px;background:0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0}#table-filter{flex:1;min-width:150px;padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}#table-sort{padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}.table-btn{padding:11px 13px;border:none;border-radius:15px;font-size:13px;font-weight:900;cursor:pointer}.table-btn.sel{background:#323237;color:#fff}.table-btn.done{background:#1a3a1a;color:#8fca8f}.table-btn.clear{background:#3a1a1a;color:#ffb8b8}.table-wrap{flex:1;overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;white-space:nowrap}th{background:#1a1a1f;font-weight:900;font-size:11px;position:sticky;top:0;z-index:1}tr.active-row{background:#19334c}.progress-filter{padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}.progress-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.progress-mobile-summary{display:none}.progress-filter input,.progress-filter select{padding:9px 10px;border:none;border-radius:12px;background:#323237;color:#fff;font-size:13px}.progress-filter label{font-size:11px;color:#b6b6bd;font-weight:800;display:flex;align-items:center;gap:5px}.progress-filter .pf-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}.progress-filter .pf-btn:disabled{background:#22252c;color:#7f8794;border-color:#363b45;cursor:not-allowed;opacity:.75}.progress-filter .pf-quick{background:#24313f;color:#bfe1ff;border-color:#355371}.progress-filter .pf-quick.warn{background:#5f4b1d;color:#ffe8aa;border-color:#8f7641}.progress-summary-chip{display:inline-flex;align-items:center;border-radius:999px;padding:8px 11px;background:#1f1f24;border:1px solid #3d4654;color:#dfe9ff;font-size:12px;font-weight:900;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:100%}.progress-report-status{font-size:12px;font-weight:800;color:#7bc1ff;min-height:18px;line-height:1.25}.plan-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08)}.plan-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer}.plan-btn.active{background:#0d5bd7;color:#fff}.plan-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:6px 10px;background:#2b2b31;color:#d7d7db;font-size:12px;font-weight:900}.plan-card{border-left:4px solid #42a5f5}.manual-marker-dot{width:22px;height:22px;border-radius:50%;background:#ff3b30;border:3px solid #fff;box-shadow:0 0 0 4px rgba(255,59,48,.35)}#tab-map,#tab-progress{position:relative;min-height:0}#map-container,#progress-map-container{width:100%;height:100%;min-height:240px;background:#e5e3df;flex:1;position:relative}.map-error{position:absolute;left:12px;right:12px;top:12px;z-index:1200;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;border-radius:14px;padding:10px 12px;font-size:12px;font-weight:800;line-height:1.35}.map-tools{position:absolute;right:12px;bottom:12px;z-index:900;display:flex;flex-direction:column;gap:8px}.map-tool-btn{background:rgba(31,31,36,.95);color:#fff;border:none;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}#progress-stats{padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:620px){#tab-progress .progress-filter{padding:6px 8px;gap:6px;display:block}#tab-progress .progress-mobile-summary{display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress .progress-mobile-summary::-webkit-scrollbar{display:none}#tab-progress .progress-controls{display:none;margin-top:6px;padding:8px;background:#1f1f24;border:1px solid rgba(255,255,255,.1);border-radius:16px;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}#tab-progress .progress-filter.expanded .progress-controls{display:grid}#tab-progress .progress-controls label{flex-direction:column;align-items:stretch;gap:4px;font-size:10px;color:#b6b6bd}#tab-progress .progress-controls label:nth-child(3){grid-column:1/-1}#tab-progress .progress-controls select{width:100%;min-height:42px;font-size:15px}#tab-progress .progress-controls .pf-btn{min-height:42px;font-size:13px}#tab-progress #progress-report-btn{grid-column:1/2}#tab-progress #progress-show-all-btn{grid-column:2/3}#tab-progress #progress-repair-fylke-btn{grid-column:1/-1}#tab-progress .progress-report-status{display:block;margin-top:4px;font-size:11px;min-height:15px;max-height:32px;overflow:hidden}#tab-progress #progress-stats{flex-wrap:nowrap;overflow-x:auto;padding:6px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress #progress-stats::-webkit-scrollbar{display:none}#tab-progress #progress-stats>div{flex:0 0 auto;white-space:nowrap}#progress-map-container{min-height:300px}}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:430px){.top-bar h1{font-size:17px}.menu-btn{padding:7px 10px;min-width:44px}.ov-field select{min-width:170px}.cat-chip,.cat-mini{padding:8px 10px}#top-menu{left:10px;right:10px;width:auto;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 60px)}}.leaflet-control-layers{border-radius:12px!important;box-shadow:0 2px 10px rgba(0,0,0,.25)!important}.leaflet-control-layers-toggle{width:36px!important;height:36px!important}.leaflet-control-layers-expanded{font-size:13px;line-height:1.35}</style></head><body><div id="app"><div class="top-bar"><div><div class="label" id="hdr-label">Vegmåling · v2.0.82</div><h1 id="hdr-title">Kjørelogg</h1><div class="sub" id="hdr-sub">Klar</div></div><div class="top-actions"><button class="menu-btn" id="menu-btn" title="Meny">⋯</button></div></div><div id="top-menu"><button class="menu-item" id="btn-refreshcenter">🔄 Oppdater området</button><div class="menu-sep"></div><div class="menu-section-title">Vegkategorier</div><div class="menu-cat-wrap"><button class="cat-chip" data-cat="E">EV</button> <button class="cat-chip" data-cat="EGSV">EV-GSV</button> <button class="cat-chip" data-cat="R">RV</button> <button class="cat-chip" data-cat="RGSV">RV-GSV</button> <button class="cat-chip active" data-cat="F">FV</button> <button class="cat-chip" data-cat="FGSV">FV-GSV</button> <button class="cat-chip" data-cat="K">KV</button> <button class="cat-chip" data-cat="KGSV">KV-GSV</button> <div id="kgsv-langs-wrap" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;padding-top:4px;border-top:1px solid rgba(255,255,255,.1);margin-top:2px"><button class="kgsv-langs-btn" data-langs="F">langs FV</button><button class="kgsv-langs-btn" data-langs="E">langs EV</button><button class="kgsv-langs-btn" data-langs="R">langs RV</button></div><button class="cat-mini" id="cat-all">Alle</button> <button class="cat-mini" id="cat-none">Ingen</button></div><div class="menu-sep"></div><button class="menu-item" id="btn-export">📤 Eksporter</button> <button class="menu-item" id="btn-restoresnap">⏪ Gjenopprett fra snapshot</button> <button class="menu-item" id="btn-exportgpx">🛰 Eksporter GPX-spor</button> <button class="menu-item" id="btn-import">📥 Importer</button><div class="menu-sep"></div><button class="menu-item" id="btn-offline">💾 Offline-cache</button> <button class="menu-item" id="btn-offlinemode">✈️ Offline-modus AV</button> <button class="menu-item" id="btn-datasaver">💾 Datasparing PÅ</button> <button class="menu-item" id="btn-backgroundgps">📍 Bakgrunns-GPS PÅ</button> <button class="menu-item" id="btn-sideanlegg">🅿️ Sideanlegg AV</button> <button class="menu-item" id="btn-ramper">🔀 Ramper AV</button> <button class="menu-item" id="btn-cleansideanlegg">🧹 Rens sideanlegg fra historikk</button> <button class="menu-item" id="btn-repairgeom">🔧 Reparer geometri</button> <button class="menu-item" id="btn-repairdir">🔄 Korriger retning</button> <button class="menu-item" id="btn-manualcenter">📍 Sett manuell kartmarkør</button> <button class="menu-item" id="btn-clearmanual">🧹 Fjern manuell markør</button> <button class="menu-item" id="btn-planmode">🗺 Planmodus AV</button> <button class="menu-item" id="btn-clear-plan-menu">🧹 Nullstill dagsrute</button><div class="menu-sep"></div><button class="menu-item" onclick="resetAll()">🗑 Nullstill</button></div><input type="file" id="import-file" class="hidden-file" accept="application/json,.json,.geojson"><div class="gps-sticky"><div id="gps-ui"></div></div><div class="tab-bar"><button class="tab active" data-tab="overview">Oversikt</button> <button class="tab" data-tab="table">Tabell</button> <button class="tab" data-tab="map">🗺 Kart</button> <button class="tab" data-tab="progress">📊 Fremdrift</button></div><div class="content active" id="tab-overview"><div id="secure-warning" class="notice" style="display:none">GPS krever normalt HTTPS eller localhost.</div><div id="overview-tools"><div class="ov-row"><label class="ov-field"><span>Radius</span> <input id="radius" type="number" min="1" max="100" step="1" value="10"></label> <label class="ov-field"><span>Fylke</span> <select id="fylke"><option value="">Fylke fra posisjon</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <button id="refresh" class="ov-btn ov-primary">Oppdater</button></div></div><div id="message-area"></div><div class="stats-bar"><div class="stats-inner"><div class="prog-row"><div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div><div class="stat-text" id="stat-text">0 · 0 km</div></div></div></div><div id="road-list"><div class="loading">Ingen data ennå.</div></div></div><div class="content" id="tab-table"><div class="table-controls"><input id="table-filter" placeholder="Filtrer veg / segment..."> <select id="table-sort"><option value="dist-asc">Avstand (nærmest)</option><option value="veg-asc">Veg (A–Å)</option><option value="veg-desc">Veg (Å–A)</option><option value="len-desc">Lengde (lengst)</option><option value="len-asc">Lengde (kortest)</option><option value="dist-desc">Avstand (lengst)</option></select> <button id="table-select-all" class="table-btn sel">☑️ Velg alle</button> <button id="table-add-plan" class="table-btn sel" style="display:none">🗺 Legg i dagsrute</button> <button id="table-set-done" class="table-btn done">✅ Sett ferdig</button> <button id="table-set-skip" class="table-btn clear">⛔ Kjøres ikke</button> <button id="table-clear-selection" class="table-btn clear">↩ Nullstill valg</button></div><div class="table-wrap"><table id="road-table"><thead><tr><th>Kat</th><th>Veg</th><th>Segment</th><th>Lengde km</th><th>Avstand m</th><th>Rute</th><th>Plan</th></tr></thead><tbody></tbody></table></div></div><div class="content" id="tab-map"><div class="plan-toolbar" id="plan-toolbar" style="display:none"><span class="plan-badge" id="plan-count">Dagsrute: 0 valgt</span> <button class="plan-btn" id="btn-fit-plan" type="button">Tilpass dagsrute</button> <button class="plan-btn" id="btn-clear-plan" type="button">Nullstill dagsrute</button></div><div id="map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-map-btn">🎯 Tilpass kart</button></div></div><div class="content" id="tab-progress"><div class="progress-filter" id="progress-filter-box"><div class="progress-mobile-summary" aria-label="Fremdrift hurtigvalg"><button class="pf-btn pf-quick" id="progress-filter-toggle" type="button" aria-expanded="false">⚙ Filter</button> <button class="pf-btn pf-quick" id="progress-show-all-btn-mobile" type="button">Vis alt</button> <button class="pf-btn" id="progress-report-btn-mobile" type="button" disabled="disabled">PDF</button> <span class="progress-summary-chip" id="progress-filter-summary">Alt · Alle fylker · ingen PDF</span></div><div class="progress-controls" id="progress-controls"><label>Periode <select id="progress-range"><option value="all">Alt</option><option value="today">I dag</option><option value="7">Siste 7 dager</option><option value="14">Siste 14 dager</option><option value="month">Inneværende måned</option></select></label> <label>Fylke <select id="progress-fylke"><option value="">Alle fylker</option><option value="__unknown">Ukjent/uten fylke</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <label>Rapport <select id="progress-report-kind"><option value="">Velg rapport</option><option value="day">Dagsrapport PDF</option><option value="week">Ukerapport PDF</option><option value="month">Månedsrapport PDF</option></select></label> <button class="pf-btn" id="progress-report-btn" type="button" disabled="disabled">Lag PDF</button> <button class="pf-btn pf-quick" id="progress-show-all-btn" type="button">Vis alt</button> <button class="pf-btn" id="progress-toggle-missing-btn" type="button" title="Vis ikke-kjørte veger som røde linjer">🔴 Vis ikke-kjørt</button> <button class="pf-btn" id="progress-load-fylke-btn" type="button" title="Last hele vegnettet for valgt fylke">📥 Last fylkets vegnett</button> <button class="pf-btn" id="progress-repair-fylke-btn" type="button" title="Slår opp fylke mot Geonorge for importert fremdrift">🧭 Korriger fylke</button></div><div class="progress-report-status" id="progress-report-status">Velg rapporttype for å aktivere PDF.</div></div><div id="progress-stats"></div><div id="progress-map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-progress-btn">🎯 Tilpass kart</button></div></div></div><div id="offline-modal" class="hidden"><div class="offline-box"><div class="offline-title">📥 Last ned vegnett offline</div><div class="offline-sub">Laster rutenett av tiles. Bruk på wifi!</div><div class="offline-row"><label>Fylke</label> <select id="dl-fylke"><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15" selected="selected">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></div><div class="offline-row"><label>Tile-rad.</label> <select id="dl-radius"><option value="5">5 km (tett KV)</option><option value="10" selected="selected">10 km</option><option value="15">15 km</option><option value="20">20 km</option><option value="30">30 km</option><option value="40">40 km</option><option value="50">50 km</option></select></div><div class="offline-prog-wrap"><div class="offline-prog-fill" id="dl-prog"></div></div><div class="offline-status" id="dl-status">Klar</div><div class="offline-btns"><button class="offline-btn-start" id="dl-start">Last ned</button> <button class="offline-btn-close" id="dl-close">Lukk</button></div><div class="offline-btns" style="margin-top:8px"><button class="offline-btn-close" id="dl-clear" style="flex:1;background:#3a1a1a;color:#ffb8b8;border:1px solid #5a2a2a">🗑 Slett cache for dette fylket</button></div><div class="offline-cache-info" id="dl-cache-info"></div></div></div><script>'use strict';
+.gps-acc-bad{color:#ef5350;font-weight:700}.gps-info{flex:1;min-width:0}.gps-coord{font-size:10px;color:#b6b6bd;font-weight:700;font-variant-numeric:tabular-nums;min-height:13px}.gps-speed{font-size:26px;font-weight:900;line-height:1.05;margin:1px 0;display:flex;align-items:center;gap:10px}.speed-limit-sign{width:44px;height:44px;border-radius:50%;background:#fff;color:#111;border:5px solid #d71920;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:1000;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.35);flex-shrink:0}.speed-limit-sign.unknown{border-color:#777;color:#777;font-size:14px;background:#f5f5f5}@media(max-width:430px){.speed-limit-sign{width:40px;height:40px;border-width:4px;font-size:16px}.gps-speed{gap:8px}}.gps-sub{font-size:11px;color:#b6b6bd;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.gps-heading{display:inline-flex;align-items:center;gap:5px;background:#2a2a34;border-radius:8px;padding:3px 8px}.compass-arrow{display:inline-block;font-size:13px;transition:transform .4s ease}.heading-val{font-size:12px;font-weight:900;color:#f9a825;font-variant-numeric:tabular-nums}.heading-dir{font-size:10px;color:#b6b6bd}.gps-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap}.gps-btn.start{background:#2e7d32;color:#fff}.gps-btn.stop{background:#7a5054;color:#ffd7d7}.tab-bar{display:flex;background:#1b1b1d;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}.tab{flex:1;padding:10px 3px 9px;font-size:12px;font-weight:900;text-align:center;cursor:pointer;background:0 0;border:none;color:#b7b7bc;position:relative}.tab.active{color:#7bc1ff}.tab.active::after{content:'';position:absolute;bottom:0;left:18%;right:18%;height:3px;background:#1e88ff;border-radius:3px}.content{flex:1;display:none;flex-direction:column;overflow:hidden;background:linear-gradient(90deg,#1e1e22,#17171b)}.content.active{display:flex}.notice{margin:8px 10px 0;background:#5f4b1d;color:#ffe8aa;border:1px solid #8f7641;padding:10px 12px;border-radius:14px;font-size:12px}.error{margin:8px 10px 0;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;padding:10px 12px;border-radius:14px;font-size:12px}.success{margin:8px 10px 0;background:#18361f;color:#c8ffd1;border:1px solid #2b6a39;padding:10px 12px;border-radius:14px;font-size:12px}.loading{display:flex;align-items:center;justify-content:center;padding:22px;font-size:14px;color:#c7c7cd}#overview-tools{padding:8px 10px 8px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px;flex-shrink:0}.ov-row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.ov-field{display:flex;flex-direction:column;gap:4px}.ov-field span{font-size:11px;color:#b6b6bd;font-weight:800}.ov-field input,.ov-field select{padding:9px 12px;border:none;border-radius:14px;font-size:14px;background:#323237;color:#fff}.ov-field input{width:82px}.ov-field select{min-width:190px;max-width:100%}.ov-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a}.ov-primary{background:#0059c9;border-color:#0059c9;color:#fff}.cat-row{align-items:center}.cat-label{font-size:12px;color:#b6b6bd;font-weight:900;margin-right:1px}.cat-chip,.cat-mini{border:none;cursor:pointer;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:900;transition:opacity .12s,box-shadow .12s;-webkit-appearance:none;appearance:none}.cat-chip{background:#1f1f24;color:#9a9aa3;border:1px dashed #3a3a44;opacity:.72}.cat-chip[data-cat="E"]{background:#2a1837;color:#d8b2ff;border-color:#6a1b9a}.cat-chip[data-cat=EGSV]{background:#32173d;color:#efb4ff;border-color:#8e24aa}.cat-chip[data-cat="R"]{background:#142946;color:#aad0ff;border-color:#1565c0}.cat-chip[data-cat=RGSV]{background:#14304d;color:#b6dcff;border-color:#1976d2}.cat-chip[data-cat="F"]{background:#17341c;color:#b7efbd;border-color:#2e7d32}.cat-chip[data-cat=FGSV]{background:#173c22;color:#c2f7c7;border-color:#43a047}.cat-chip[data-cat="K"]{background:#3a3000;color:#ffd866;border-color:#9a7c00}.cat-chip[data-cat=KGSV]{background:#3d2200;color:#ffcc99;border-color:#bf6000}.cat-chip.active{opacity:1;border-style:solid;box-shadow:0 0 0 2px rgba(255,255,255,.35) inset}.cat-chip.active[data-cat="E"]{background:#6a1b9a;color:#fff;border-color:#6a1b9a}.cat-chip.active[data-cat=EGSV]{background:#8e24aa;color:#fff;border-color:#8e24aa}.cat-chip.active[data-cat="R"]{background:#1565c0;color:#fff;border-color:#1565c0}.cat-chip.active[data-cat=RGSV]{background:#1976d2;color:#fff;border-color:#1976d2}.cat-chip.active[data-cat="F"]{background:#2e7d32;color:#fff;border-color:#2e7d32}.cat-chip.active[data-cat=FGSV]{background:#43a047;color:#fff;border-color:#43a047}.cat-chip.active[data-cat="K"]{background:#9a7c00;color:#fff;border-color:#9a7c00}.cat-chip.active[data-cat=KGSV]{background:#ef6c00;color:#fff;border-color:#ef6c00}.road-action-popup .leaflet-popup-content-wrapper{background:#1f1f24;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}.road-action-popup .leaflet-popup-tip{background:#1f1f24}.road-action-popup .leaflet-popup-close-button{color:#888}.kgsv-langs-btn{background:rgba(255,255,255,.06);color:#ccc;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer}.kgsv-langs-btn.active{background:#ef6c00;color:#fff;border-color:#ef6c00}.cat-mini{background:#1f1f24;color:#b6b6bd;border:1px solid #444}.stats-bar{padding:6px 10px}.stats-inner{background:#1f1f24;border-radius:14px;padding:9px 12px}.prog-row{display:flex;align-items:center;gap:10px}.prog-bar{flex:1;background:#2a2a31;border-radius:4px;height:6px;overflow:hidden}.prog-fill{background:#1e88ff;height:6px;border-radius:4px;transition:width .3s}.stat-text{font-size:11px;color:#d7d7db}#road-list{flex:1;overflow-y:auto;padding:6px 10px;padding-bottom:max(12px,env(safe-area-inset-bottom))}.road-card{background:#1f1f24;border-radius:16px;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.18);display:flex}.road-card.active-gps{border:2px solid #1e88ff}.road-accent{width:4px;flex-shrink:0}.road-body{padding:9px 11px;flex:1;min-width:0}.road-top{display:flex;align-items:center;gap:8px}.road-veg{font-size:14px;font-weight:900;flex:1}.road-status{font-size:15px}.road-meta{font-size:11px;color:#b6b6bd;margin-top:2px}.road-gps{font-size:11px;font-weight:900;margin-top:4px}.road-gps.near{color:#7bc1ff}.nav-btns{display:flex;gap:6px;margin-top:8px}.nav-btn{flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none}.nb-g{background:#e6f1fb;color:#185fa5}.table-controls{padding:8px 10px 6px;background:0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0}#table-filter{flex:1;min-width:150px;padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}#table-sort{padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}.table-btn{padding:11px 13px;border:none;border-radius:15px;font-size:13px;font-weight:900;cursor:pointer}.table-btn.sel{background:#323237;color:#fff}.table-btn.done{background:#1a3a1a;color:#8fca8f}.table-btn.clear{background:#3a1a1a;color:#ffb8b8}.table-wrap{flex:1;overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;white-space:nowrap}th{background:#1a1a1f;font-weight:900;font-size:11px;position:sticky;top:0;z-index:1}tr.active-row{background:#19334c}.progress-filter{padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}.progress-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.progress-mobile-summary{display:none}.progress-filter input,.progress-filter select{padding:9px 10px;border:none;border-radius:12px;background:#323237;color:#fff;font-size:13px}.progress-filter label{font-size:11px;color:#b6b6bd;font-weight:800;display:flex;align-items:center;gap:5px}.progress-filter .pf-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}.progress-filter .pf-btn:disabled{background:#22252c;color:#7f8794;border-color:#363b45;cursor:not-allowed;opacity:.75}.progress-filter .pf-quick{background:#24313f;color:#bfe1ff;border-color:#355371}.progress-filter .pf-quick.warn{background:#5f4b1d;color:#ffe8aa;border-color:#8f7641}.progress-summary-chip{display:inline-flex;align-items:center;border-radius:999px;padding:8px 11px;background:#1f1f24;border:1px solid #3d4654;color:#dfe9ff;font-size:12px;font-weight:900;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:100%}.progress-report-status{font-size:12px;font-weight:800;color:#7bc1ff;min-height:18px;line-height:1.25}.plan-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08)}.plan-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer}.plan-btn.active{background:#0d5bd7;color:#fff}.plan-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:6px 10px;background:#2b2b31;color:#d7d7db;font-size:12px;font-weight:900}.plan-card{border-left:4px solid #42a5f5}.manual-marker-dot{width:22px;height:22px;border-radius:50%;background:#ff3b30;border:3px solid #fff;box-shadow:0 0 0 4px rgba(255,59,48,.35)}#tab-map,#tab-progress{position:relative;min-height:0}#map-container,#progress-map-container{width:100%;height:100%;min-height:240px;background:#e5e3df;flex:1;position:relative}.map-error{position:absolute;left:12px;right:12px;top:12px;z-index:1200;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;border-radius:14px;padding:10px 12px;font-size:12px;font-weight:800;line-height:1.35}.map-tools{position:absolute;right:12px;bottom:12px;z-index:900;display:flex;flex-direction:column;gap:8px}.map-tool-btn{background:rgba(31,31,36,.95);color:#fff;border:none;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}#progress-stats{padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:620px){#tab-progress .progress-filter{padding:6px 8px;gap:6px;display:block}#tab-progress .progress-mobile-summary{display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress .progress-mobile-summary::-webkit-scrollbar{display:none}#tab-progress .progress-controls{display:none;margin-top:6px;padding:8px;background:#1f1f24;border:1px solid rgba(255,255,255,.1);border-radius:16px;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}#tab-progress .progress-filter.expanded .progress-controls{display:grid}#tab-progress .progress-controls label{flex-direction:column;align-items:stretch;gap:4px;font-size:10px;color:#b6b6bd}#tab-progress .progress-controls label:nth-child(3){grid-column:1/-1}#tab-progress .progress-controls select{width:100%;min-height:42px;font-size:15px}#tab-progress .progress-controls .pf-btn{min-height:42px;font-size:13px}#tab-progress #progress-report-btn{grid-column:1/2}#tab-progress #progress-show-all-btn{grid-column:2/3}#tab-progress #progress-repair-fylke-btn{grid-column:1/-1}#tab-progress .progress-report-status{display:block;margin-top:4px;font-size:11px;min-height:15px;max-height:32px;overflow:hidden}#tab-progress #progress-stats{flex-wrap:nowrap;overflow-x:auto;padding:6px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress #progress-stats::-webkit-scrollbar{display:none}#tab-progress #progress-stats>div{flex:0 0 auto;white-space:nowrap}#progress-map-container{min-height:300px}}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:430px){.top-bar h1{font-size:17px}.menu-btn{padding:7px 10px;min-width:44px}.ov-field select{min-width:170px}.cat-chip,.cat-mini{padding:8px 10px}#top-menu{left:10px;right:10px;width:auto;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 60px)}}.leaflet-control-layers{border-radius:12px!important;box-shadow:0 2px 10px rgba(0,0,0,.25)!important}.leaflet-control-layers-toggle{width:36px!important;height:36px!important}.leaflet-control-layers-expanded{font-size:13px;line-height:1.35}</style></head><body><div id="app"><div class="top-bar"><div><div class="label" id="hdr-label">Vegmåling · v2.0.91</div><h1 id="hdr-title">Kjørelogg</h1><div class="sub" id="hdr-sub">Klar</div></div><div class="top-actions"><button class="menu-btn" id="menu-btn" title="Meny">⋯</button></div></div><div id="top-menu"><button class="menu-item" id="btn-refreshcenter">🔄 Oppdater området</button><div class="menu-sep"></div><div class="menu-section-title">Vegkategorier</div><div class="menu-cat-wrap"><button class="cat-chip" data-cat="E">EV</button> <button class="cat-chip" data-cat="EGSV">EV-GSV</button> <button class="cat-chip" data-cat="R">RV</button> <button class="cat-chip" data-cat="RGSV">RV-GSV</button> <button class="cat-chip active" data-cat="F">FV</button> <button class="cat-chip" data-cat="FGSV">FV-GSV</button> <button class="cat-chip" data-cat="K">KV</button> <button class="cat-chip" data-cat="KGSV">KV-GSV</button> <div id="kgsv-langs-wrap" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;padding-top:4px;border-top:1px solid rgba(255,255,255,.1);margin-top:2px"><button class="kgsv-langs-btn" data-langs="F">langs FV</button><button class="kgsv-langs-btn" data-langs="E">langs EV</button><button class="kgsv-langs-btn" data-langs="R">langs RV</button></div><button class="cat-mini" id="cat-all">Alle</button> <button class="cat-mini" id="cat-none">Ingen</button></div><div class="menu-sep"></div><button class="menu-item" id="btn-export">📤 Eksporter</button> <button class="menu-item" id="btn-restoresnap">⏪ Gjenopprett fra snapshot</button> <button class="menu-item" id="btn-exportgpx">🛰 Eksporter GPX-spor</button> <button class="menu-item" id="btn-import">📥 Importer</button><div class="menu-sep"></div><button class="menu-item" id="btn-offline">💾 Offline-cache</button> <button class="menu-item" id="btn-offlinemode">✈️ Offline-modus AV</button> <button class="menu-item" id="btn-datasaver">💾 Datasparing PÅ</button> <button class="menu-item" id="btn-backgroundgps">📍 Bakgrunns-GPS PÅ</button> <button class="menu-item" id="btn-sideanlegg">🅿️ Sideanlegg AV</button> <button class="menu-item" id="btn-ramper">🔀 Ramper AV</button> <button class="menu-item" id="btn-cleansideanlegg">🧹 Rens sideanlegg fra historikk</button> <button class="menu-item" id="btn-repairgeom">🔧 Reparer geometri</button> <button class="menu-item" id="btn-repairdir">🔄 Korriger retning</button> <button class="menu-item" id="btn-manualcenter">📍 Sett manuell kartmarkør</button> <button class="menu-item" id="btn-clearmanual">🧹 Fjern manuell markør</button> <button class="menu-item" id="btn-planmode">🗺 Planmodus AV</button> <button class="menu-item" id="btn-clear-plan-menu">🧹 Nullstill dagsrute</button><div class="menu-sep"></div><button class="menu-item" onclick="resetAll()">🗑 Nullstill</button></div><input type="file" id="import-file" class="hidden-file" accept="application/json,.json,.geojson"><div class="gps-sticky"><div id="gps-ui"></div></div><div class="tab-bar"><button class="tab active" data-tab="overview">Oversikt</button> <button class="tab" data-tab="table">Tabell</button> <button class="tab" data-tab="map">🗺 Kart</button> <button class="tab" data-tab="progress">📊 Fremdrift</button></div><div class="content active" id="tab-overview"><div id="secure-warning" class="notice" style="display:none">GPS krever normalt HTTPS eller localhost.</div><div id="overview-tools"><div class="ov-row"><label class="ov-field"><span>Radius</span> <input id="radius" type="number" min="1" max="100" step="1" value="10"></label> <label class="ov-field"><span>Fylke</span> <select id="fylke"><option value="">Fylke fra posisjon</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <button id="refresh" class="ov-btn ov-primary">Oppdater</button></div></div><div id="message-area"></div><div class="stats-bar"><div class="stats-inner"><div class="prog-row"><div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div><div class="stat-text" id="stat-text">0 · 0 km</div></div></div></div><div id="road-list"><div class="loading">Ingen data ennå.</div></div></div><div class="content" id="tab-table"><div class="table-controls"><input id="table-filter" placeholder="Filtrer veg / segment..."> <select id="table-sort"><option value="dist-asc">Avstand (nærmest)</option><option value="veg-asc">Veg (A–Å)</option><option value="veg-desc">Veg (Å–A)</option><option value="len-desc">Lengde (lengst)</option><option value="len-asc">Lengde (kortest)</option><option value="dist-desc">Avstand (lengst)</option></select> <button id="table-select-all" class="table-btn sel">☑️ Velg alle</button> <button id="table-add-plan" class="table-btn sel" style="display:none">🗺 Legg i dagsrute</button> <button id="table-set-done" class="table-btn done">✅ Sett ferdig</button> <button id="table-set-skip" class="table-btn clear">⛔ Kjøres ikke</button> <button id="table-clear-selection" class="table-btn clear">↩ Nullstill valg</button></div><div class="table-wrap"><table id="road-table"><thead><tr><th>Kat</th><th>Veg</th><th>Segment</th><th>Lengde km</th><th>Avstand m</th><th>Rute</th><th>Plan</th></tr></thead><tbody></tbody></table></div></div><div class="content" id="tab-map"><div class="plan-toolbar" id="plan-toolbar" style="display:none"><span class="plan-badge" id="plan-count">Dagsrute: 0 valgt</span> <button class="plan-btn" id="btn-fit-plan" type="button">Tilpass dagsrute</button> <button class="plan-btn" id="btn-clear-plan" type="button">Nullstill dagsrute</button></div><div id="map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-map-btn">🎯 Tilpass kart</button></div></div><div class="content" id="tab-progress"><div class="progress-filter" id="progress-filter-box"><div class="progress-mobile-summary" aria-label="Fremdrift hurtigvalg"><button class="pf-btn pf-quick" id="progress-filter-toggle" type="button" aria-expanded="false">⚙ Filter</button> <button class="pf-btn pf-quick" id="progress-show-all-btn-mobile" type="button">Vis alt</button> <button class="pf-btn" id="progress-report-btn-mobile" type="button" disabled="disabled">PDF</button> <span class="progress-summary-chip" id="progress-filter-summary">Alt · Alle fylker · ingen PDF</span></div><div class="progress-controls" id="progress-controls"><label>Periode <select id="progress-range"><option value="all">Alt</option><option value="today">I dag</option><option value="7">Siste 7 dager</option><option value="14">Siste 14 dager</option><option value="month">Inneværende måned</option></select></label> <label>Fylke <select id="progress-fylke"><option value="">Alle fylker</option><option value="__unknown">Ukjent/uten fylke</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <label>Rapport <select id="progress-report-kind"><option value="">Velg rapport</option><option value="day">Dagsrapport PDF</option><option value="week">Ukerapport PDF</option><option value="month">Månedsrapport PDF</option></select></label> <button class="pf-btn" id="progress-report-btn" type="button" disabled="disabled">Lag PDF</button> <button class="pf-btn pf-quick" id="progress-show-all-btn" type="button">Vis alt</button> <button class="pf-btn" id="progress-toggle-missing-btn" type="button" title="Vis ikke-kjørte veger som røde linjer">🔴 Vis ikke-kjørt</button> <button class="pf-btn" id="progress-load-fylke-btn" type="button" title="Last hele vegnettet for valgt fylke">📥 Last fylkets vegnett</button> <button class="pf-btn" id="progress-repair-fylke-btn" type="button" title="Slår opp fylke mot Geonorge for importert fremdrift">🧭 Korriger fylke</button></div><div class="progress-report-status" id="progress-report-status">Velg rapporttype for å aktivere PDF.</div></div><div id="progress-stats"></div><div id="progress-map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-progress-btn">🎯 Tilpass kart</button></div></div></div><div id="offline-modal" class="hidden"><div class="offline-box"><div class="offline-title">📥 Last ned vegnett offline</div><div class="offline-sub">Laster rutenett av tiles. Bruk på wifi!</div><div class="offline-row"><label>Fylke</label> <select id="dl-fylke"><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15" selected="selected">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></div><div class="offline-row"><label>Tile-rad.</label> <select id="dl-radius"><option value="5">5 km (tett KV)</option><option value="10" selected="selected">10 km</option><option value="15">15 km</option><option value="20">20 km</option><option value="30">30 km</option><option value="40">40 km</option><option value="50">50 km</option></select></div><div class="offline-prog-wrap"><div class="offline-prog-fill" id="dl-prog"></div></div><div class="offline-status" id="dl-status">Klar</div><div class="offline-btns"><button class="offline-btn-start" id="dl-start">Last ned</button> <button class="offline-btn-close" id="dl-close">Lukk</button></div><div class="offline-btns" style="margin-top:8px"><button class="offline-btn-close" id="dl-clear" style="flex:1;background:#3a1a1a;color:#ffb8b8;border:1px solid #5a2a2a">🗑 Slett cache for dette fylket</button></div><div class="offline-cache-info" id="dl-cache-info"></div></div></div><script>'use strict';
 
 /* ───────────────────── KONFIG ───────────────────── */
 const NVDB='https://nvdbapiles.atlas.vegvesen.no';
@@ -26,17 +26,18 @@ const COMMENT_STORE='mr_veg_road_comments_v1';
 const TILE_SIZE_KM=10;
 const HAS_INDEXED_DB=typeof indexedDB!=='undefined';
 
-const ENTER_THRESH_M=12, EXIT_THRESH_M=24, EXIT_CONSEC=4, HEADING_MAX_DEG=25, RETNING_PAUSE_MS=20000;
+const ENTER_THRESH_M=12, EXIT_THRESH_M=24, EXIT_CONSEC=4, HEADING_MAX_DEG=20, RETNING_PAUSE_MS=20000;
 const DIR_FLIP_MIN_SPEED_MS=5.5, DIR_FLIP_MAX_ACC_M=12;
 // v2.0.61: minimum meter køyrt i gjeldande retning før retningsflip er tillat
 const DIR_LOCK_M=100;
-const GPS_MAX_ACC_M=25, GPS_MIN_DRIVE_SPEED_MS=1.4, GPS_ENTER_CONSEC=3, GPS_UNAMBIG_MARGIN_M=7, GPS_UNAMBIG_RATIO=1.45;
+const GPS_MAX_ACC_M=25, GPS_MIN_DRIVE_SPEED_MS=1.4, GPS_ENTER_CONSEC=3, GPS_UNAMBIG_MARGIN_M=8, GPS_UNAMBIG_RATIO=1.55;
+const TURNAROUND_END_M=160,TURNAROUND_CONSEC=2,TURNAROUND_MIN_DRIVEN_M=60,TURNAROUND_MAX_ACC_M=18;
 const GPS_LOG_INTERVAL_MS=2500, GPS_LOG_MIN_MOVE_M=4;
 // v2.0.31: massiv økning i tunnel-/dødssone-toleranse. Lærdalstunnelen=24,5km, Eiksund=7,7km,
 // Atlanterhavstunnelen=5,7km, Romsdalsfjordtunnelen=14,3km. Vi må kunne brokoble GPS-tap gjennom
 // alle norske tunneler uten å miste dekning. buildIntervalsFromTrackPoints aksepterer derfor nå
 // gap på opptil 30 km eller 30 minutter når sporene er på samme veg.
-const GPS_TRACK_MAX_GAP_M=30000, GPS_TRACK_MAX_TIME_GAP_MS=1800000, GPS_MIN_DRAW_INTERVAL_M=180;
+const GPS_TRACK_MAX_GAP_M=30000, GPS_TRACK_MAX_TIME_GAP_MS=1800000, GPS_MIN_DRAW_INTERVAL_M=50;
 const ONEWAY_DONE_SLIVER_M=220;
 // v2.0.30: routeLog cap 1500/decim 1800 (uendret i v2.0.31).
 const ROUTE_LOG_CAP=1500, ROUTE_LOG_DECIMATE_AT=1800;
@@ -52,7 +53,8 @@ const SELECT_STORE='mr_veg_table_selection_v1';
 const DATA_SAVER_ON={reloadDistKm:20,maxPerPage:400,maxPages:4,radiusDefault:3,mapMaxZoom:16,autoPan:false};
 const DATA_SAVER_OFF={reloadDistKm:5,maxPerPage:1000,maxPages:20,radiusDefault:10,mapMaxZoom:19,autoPan:true};
 const ALLOWED_KATS=new Set(['E','R','F','K']);
-const ROAD_FETCH_REFS='E,R,F,K', ROAD_FETCH_MAX_PER_PAGE=1000, ROAD_FETCH_MAX_PAGES=80, ROAD_TILE_SCHEMA=10;
+const ROAD_FETCH_REFS='E,R,F,K', ROAD_FETCH_MAX_PER_PAGE=1000, ROAD_FETCH_MAX_PAGES=80, ROAD_TILE_SCHEMA=12;
+const ROAD_FETCH_SPLIT_MIN_RADIUS_KM=0.9, ROAD_FETCH_MAX_SPLIT_DEPTH=5, ROAD_FETCH_SPLIT_OVERLAP=1.15;
 const COUNTY_CACHE_TTL_MS=14*24*3600*1000, COUNTY_CACHE_REMINDER_COOLDOWN_MS=12*3600*1000;
 const SPEED_LIMIT_TYPE_ID=105, SPEED_LIMIT_PROP_ID=2021, SPEED_LIMIT_MAX_DIST_M=45;
 const SPEED_LIMIT_REFRESH_DISTANCE_M=500, SPEED_LIMIT_REFRESH_RADIUS_KM=2.5;
@@ -68,11 +70,13 @@ const DEFAULT_CATEGORY_FILTER={E:false,EGSV:false,R:false,RGSV:false,F:true,FGSV
 let settings={dataSaver:false,backgroundGps:true,includeSideanlegg:false,includeRamper:false,categoryFilter:{...DEFAULT_CATEGORY_FILTER},kvgsvLangsKat:'',progressShowMissing:false,progressShowDone:true,progressShowOneway:true,countyCacheReminder:{}};
 let roads=[],skipKeys=new Set(),deletedGeomKeys=new Set(),drivenKeys=new Set(),oneWayKeys=new Set(),directionState={},selectedTableKeys=new Set(),planKeys=new Set(),visitLog={},geomCache={},routeLog={},roadComments={},manualMarker=null,planLayer=null;
 let gps={watching:false,watchId:null,lastPos:null,acc:null,speed:null,heading:null,activeKey:null,detectedFylke:null,activeDir:null,exitCount:0,_lastActiveKey:null,_lastActiveDir:null,_activeKeyLeftAt:null,_candidateKey:null,_candidateCount:0,_candidateDist:null,_sessionId:null,_sessionStartedAt:null,_dirFlipCandidate:null,_dirFlipCount:0,_dirDrivenM:0,_dirLastPos:null};
-let map=null,carMarker=null,carTailLayer=null,roadLayers=[],progressMap=null,_svgRenderer=null,_progressAutoFitDone=false;
+let map=null,carMarker=null,carTailLayer=null,roadLayers=[],roadLayerGroup=null,progressMap=null,_svgRenderer=null,_progressAutoFitDone=false;
 let speedLimits=[],currentSpeedLimit=null,lastSpeedLimitFetchKey='',lastSpeedLimitRefreshPos=null,speedLimitRefreshInFlight=false,speedLimitStartRefreshPending=false;
 let lastCenter=null,lastCenterRadius=null,lastCenterFylke=null,nvdbLoading=false,offlineMode=false,nativeGpsTimer=null,nativeWatchId=null,lastNativeFixTs=0;
-let lastRenderTime=0,lastRenderPos=null,_countyCacheMem=new Map();
+let lastRenderTime=0,lastRenderPos=null,_countyCacheMem=new Map(),_mapOverlayTimer=null,_activeTabLightRenderTimer=null,_lastMapPanTs=0,_lastMapOverlayRenderTs=0,_lastProgressMapRenderTs=0,_pendingNvdbRefresh=null,_gpsRestarting=false,_resumeGpsTimer=null;
 const RENDER_INTERVAL_MS=5000,RENDER_MOVE_M=10;
+const MAP_PAN_INTERVAL_MS=5000,MAP_OVERLAY_ACTIVE_THROTTLE_MS=7000,PROGRESS_MAP_ACTIVE_THROTTLE_MS=10000;
+const MAP_VIEW_PAD_RATIO=0.45,MAP_GPS_MAX_ROADS=550;
 const IDB_NAME='nvdb_tiles',IDB_STORE='tiles',IDB_META_STORE='appdata',IDB_SNAPSHOT_STORE='progress_snapshots',IDB_VER=3;let _idb=null;
 const PROGRESS_IDB_KEY='__kjorelogg_progress_state_v3';
 const PROGRESS_META_STORE='mr_veg_progress_meta_v3';
@@ -85,14 +89,14 @@ const FYLKER=[
 {id:'34',name:'Innlandet'},{id:'39',name:'Vestfold'},{id:'40',name:'Telemark'},{id:'42',name:'Agder'},
 {id:'11',name:'Rogaland'},{id:'46',name:'Vestland'},{id:'15',name:'Møre og Romsdal'},{id:'50',name:'Trøndelag'},
 {id:'18',name:'Nordland'},{id:'55',name:'Troms'},{id:'56',name:'Finnmark'}];
-const APP_VERSION='v2.0.82';
+const APP_VERSION='v2.0.91';
 
 const FYLKE_BBOX={
-'31':[10.5,58.8,12.0,59.7],'32':[10.4,59.5,12.0,60.4],'3':[10.6,59.8,10.9,60.0],
-'33':[8.8,59.3,10.7,60.7],'34':[9.0,60.0,13.2,62.6],'39':[9.8,59.0,10.6,59.6],
-'40':[7.5,58.8,9.8,60.1],'42':[6.3,57.9,9.5,59.1],'11':[5.1,58.2,7.0,59.7],
-'46':[4.6,59.8,7.5,61.9],'15':[5.3,61.9,9.7,63.5],'50':[10.0,62.5,15.5,64.7],
-'18':[11.5,64.9,18.5,68.9],'55':[15.5,68.5,21.0,70.5],'56':[21.0,69.5,31.0,71.3]};
+'31':[10.45,58.75,12.10,59.85],'32':[10.15,59.35,12.25,60.60],'3':[10.45,59.75,11.00,60.05],
+'33':[7.25,59.20,10.85,61.10],'34':[7.75,59.70,14.05,62.80],'39':[9.55,58.80,10.75,59.75],
+'40':[7.00,58.65,10.10,60.40],'42':[6.15,57.75,9.75,59.75],'11':[4.70,58.00,7.55,59.95],
+'46':[4.20,59.45,8.55,62.35],'15':[4.95,61.70,9.95,63.65],'50':[7.35,62.00,15.85,65.60],
+'18':[11.00,64.60,18.90,69.45],'55':[14.90,68.10,22.30,70.60],'56':[20.00,68.80,31.50,71.50]};
 
 /* ───────────────────── HJELPERE ───────────────────── */
 function currentProfile(){return settings.dataSaver?DATA_SAVER_ON:DATA_SAVER_OFF}
@@ -159,26 +163,40 @@ function activeTabId(){
  const active=document.querySelector('.content.active');
  return active?.id?.replace(/^tab-/,'')||'overview';
 }
-function renderAllViews(){
+function scheduleMapOverlayRender(delay=0){
+ if(!document.getElementById('tab-map')?.classList.contains('active'))return;
+ if(_mapOverlayTimer){
+  if(!(delay>0&&delay<1000))return;
+  clearTimeout(_mapOverlayTimer);_mapOverlayTimer=null;
+ }
+ const wait=delay>0?delay:(gps.watching?MAP_OVERLAY_ACTIVE_THROTTLE_MS:0);
+ _mapOverlayTimer=setTimeout(()=>{
+  _mapOverlayTimer=null;
+  try{updateMapOverlay(false)}catch(e){console.warn('Kart-overlay rendering feilet',e)}
+ },wait);
+}
+function renderActiveTabLight({allowMap=false,progressFit=false}={}){
  const tab=activeTabId();
  renderStats();
  if(tab==='overview')renderRoads();
- if(tab==='table')renderTable();
- if(tab==='map')updateMapOverlay(false);
- if(tab==='progress')updateProgressMap();
+ else if(tab==='table')renderTable();
+ else if(tab==='map'&&allowMap){if(gps.watching)scheduleMapOverlayRender(MAP_OVERLAY_ACTIVE_THROTTLE_MS);else updateMapOverlay(false)}
+ else if(tab==='progress')progressFit?updateProgressMap({fit:true}):updateProgressMap();
+}
+function scheduleActiveTabLightRender(delay=0,opts={}){
+ if(_activeTabLightRenderTimer)return;
+ _activeTabLightRenderTimer=setTimeout(()=>{
+  _activeTabLightRenderTimer=null;
+  try{renderActiveTabLight(opts)}catch(e){console.warn('Lett fanerendering feilet',e)}
+ },Math.max(0,delay));
+}
+function renderAllViews(){
+ renderActiveTabLight({allowMap:true});
  updatePlanLayer();
 }
 function renderAll(){renderAllViews()}
-let _liveProgressRenderTimer=null;
 function scheduleLiveProgressRender(){
- if(_liveProgressRenderTimer)return;
- _liveProgressRenderTimer=setTimeout(()=>{
-  _liveProgressRenderTimer=null;
-  // Kun rendering: endrer ikke GPS-/stemplingslogikken. Holder kart/fremdrift ajour mens GPS går.
-  try{if(document.getElementById('tab-map')?.classList.contains('active'))updateMapOverlay(false)}catch(e){}
-  try{if(document.getElementById('tab-progress')?.classList.contains('active'))updateProgressMap()}catch(e){}
-  try{const tab=activeTabId();renderStats();if(tab==='overview')renderRoads();if(tab==='table')renderTable()}catch(e){}
- },700);
+ scheduleActiveTabLightRender(gps.watching?5000:700,{allowMap:!gps.watching});
 }
 function closeMenu(){document.getElementById('top-menu').classList.remove('visible')}
 function isNativeApp(){try{return !!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform())}catch(e){return false}}
@@ -209,7 +227,7 @@ async function startBackgroundGPS(){
   bgWatchId=await bg.addWatcher({requestPermissions:true,stale:false,distanceFilter:8,backgroundTitle:'Kjørelogg',backgroundMessage:'Kjørelogg måler posisjon i bakgrunnen'},(loc,err)=>{
    if(err){console.warn('Bakgrunns-GPS feil',err);return}
    if(!loc)return;
-   onPos({coords:{latitude:loc.latitude,longitude:loc.longitude,accuracy:loc.accuracy,speed:loc.speed,heading:loc.bearing??loc.heading}})
+   handleGpsPosition({coords:{latitude:loc.latitude,longitude:loc.longitude,accuracy:loc.accuracy,speed:loc.speed,heading:loc.bearing??loc.heading}})
   });
   return true;
  }catch(e){console.warn('Kunne ikke starte bakgrunns-GPS',e);return false}
@@ -230,22 +248,44 @@ function safeLocalSet(key,value){
 }
 function safeLocalRemove(key){try{localStorage.removeItem(key)}catch(e){}}
 function parseJsonMaybe(raw,fb=null){try{return raw==null?fb:JSON.parse(raw)}catch(e){return fb}}
+const _idbWritePromises=new Map();
+function trackIdbWrite(key,writer){
+ const prev=_idbWritePromises.get(key)||Promise.resolve(true);
+ const p=prev.catch(()=>false).then(()=>typeof writer==='function'?writer():writer).then(Boolean,()=>false).finally(()=>{if(_idbWritePromises.get(key)===p)_idbWritePromises.delete(key)});
+ _idbWritePromises.set(key,p);
+ return p;
+}
+async function flushPendingIdbWrites(){
+ let ok=true;
+ while(_idbWritePromises.size){
+  const results=await Promise.all([..._idbWritePromises.values()]);
+  ok=results.every(Boolean)&&ok;
+ }
+ return ok;
+}
+function persistJsonToLocalFallback(key,obj,opt={}){
+ let json='';
+ try{json=JSON.stringify(obj??{})}catch(e){console.warn('Kunne ikke serialisere',key,e);return false}
+ const limit=Number(opt.localLimit)||300000;
+ if(json.length<=limit)return safeLocalSet(key,json);
+ safeLocalRemove(key);
+ return false;
+}
 function persistJsonStore(key,obj,opt={}){
  // v2.0.46: IDB er sannhetskilden for alle store data. localStorage brukes kun for små settings
  // (opt.smallSetting=true). Dette eliminerer race condition der iOS jetsam-kill mellom localStorage
  // og IDB skriving kunne etterlate localStorage med delvis/foreldet data som overskrev god IDB-data
  // ved oppstart. Brukeren mistet 2 uker med Trøndelag-data i v2.0.45 på grunn av dette.
  if(HAS_INDEXED_DB){
-  if(!opt.smallSetting)safeLocalRemove(key);
-  idbSetAppData(key,obj).catch(e=>console.warn('IndexedDB-lagring feilet for',key,e));
+  const write=()=>idbSetAppData(key,obj).then(ok=>{if(!opt.smallSetting)safeLocalRemove(key);return ok}).catch(e=>{
+   console.warn('IndexedDB-lagring feilet for',key,e);
+   if(!opt.smallSetting)persistJsonToLocalFallback(key,obj,opt);
+   return false;
+  });
+  trackIdbWrite(key,write);
   return true;
  }
- let json='';
- try{json=JSON.stringify(obj??{})}catch(e){console.warn('Kunne ikke serialisere',key,e);return false}
- const limit=Number(opt.localLimit)||300000;
- if(json.length<=limit){if(!safeLocalSet(key,json))safeLocalRemove(key)}
- else safeLocalRemove(key);
- return true;
+ return persistJsonToLocalFallback(key,obj,opt);
 }
 function applyStatusStateObject(d){
  skipKeys.clear();deletedGeomKeys.clear();drivenKeys.clear();oneWayKeys.clear();
@@ -324,6 +364,7 @@ async function loadProgressSnapshotFromIDB(){
 }
 async function flushProgressPersistence(){
  try{saveState();saveDirectionState();saveRouteLog();saveGeomCache();saveRoadComments()}catch(e){}
+ await flushPendingIdbWrites();
  return await saveProgressSnapshotToIDB();
 }
 
@@ -349,6 +390,7 @@ async function flushAllPendingWritesNow(){
  if(_progressSaveTimer){clearTimeout(_progressSaveTimer);_progressSaveTimer=null}
  try{saveState();saveDirectionState();saveRouteLog();saveGeomCache();saveRoadComments()}catch(e){}
  if(_progressSaveTimer){clearTimeout(_progressSaveTimer);_progressSaveTimer=null}
+ await flushPendingIdbWrites();
  try{await saveProgressSnapshotToIDB()}catch(e){console.warn('Snapshot-flush feilet',e)}
 }
 async function hydrateLargeStoresFromIDB(){
@@ -499,21 +541,21 @@ function _isOneWayKey(key){
 }
 function markDirectionDriven(key,dir){
  if(!key||(dir!=='fwd'&&dir!=='rev'))return false;
- skipKeys.delete(key);
- deletedGeomKeys.delete(key);
+ const hadSkip=skipKeys.delete(key),hadDeleted=deletedGeomKeys.delete(key);
  if(!directionState[key])directionState[key]={fwd:false,rev:false};
- const now=Date.now(),st=directionState[key],wasNew=!st[dir];
+ const now=Date.now(),st=directionState[key],wasNew=!st[dir],hadFirst=Number.isFinite(st[dir+'FirstTs']);
  st[dir]=true;st[dir+'LastTs']=now;
- if(!st[dir+'FirstTs'])st[dir+'FirstTs']=now;
- // v2.0.46: alltid synkron skriving. directionState er kjernen av det brukeren har målt og må
- // overleve enhver krasj/jetsam-kill. routeLog kan fortsatt debouncest fordi punktene gjenskapes
- // fra GPS-strømmen, men retningsstatus mistes for godt hvis den ikke skrives.
- saveDirectionState();
- rebuildStatusSetsFromDirections();
- saveState();
- // Lagre geometri første gang retning merkes, slik at fremdriftskart fungerer
- // også for vegar kjørt i eit anna NVDB-vindauge enn det aktive.
- if(wasNew){const r=roadByKeyAny(key);if(r)persistRoadGeometry(normalizeRoadRecordForList(r,key));triggerDirectionAutoBackup();}
+ if(!hadFirst)st[dir+'FirstTs']=now;
+ const changed=wasNew||!hadFirst||hadSkip||hadDeleted;
+ if(changed){
+  // Statusoverganger skrives straks; rene GPS-tidsstempler debounces via logRoadDrivePoint.
+  saveDirectionState();
+  rebuildStatusSetsFromDirections();
+  saveState();
+  // Lagre geometri første gang retning merkes, slik at fremdriftskart fungerer
+  // også for vegar kjørt i eit anna NVDB-vindauge enn det aktive.
+  if(wasNew){const r=roadByKeyAny(key);if(r)persistRoadGeometry(normalizeRoadRecordForList(r,key));triggerDirectionAutoBackup();}
+ }else markDirectionDirty();
  return true;
 }
 function clearRoadProgressForKey(key,opts={}){
@@ -1357,13 +1399,17 @@ async function loadCountyRoadsForArea(lat,lon,radiusKm,f){
 }
 async function countTilesByFylke(f){if(!HAS_INDEXED_DB)return 0;try{const db=await openIDB();return await new Promise(res=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).getAllKeys();req.onsuccess=()=>{const rx=new RegExp(`_f${String(f)}$|_f${String(f)}_`);res(req.result.filter(k=>rx.test(String(k))&&!String(k).startsWith('nvdb_county_')).length)};req.onerror=()=>res(0)})}catch(e){return 0}}
 async function deleteTilesByFylke(f){if(!HAS_INDEXED_DB)return 0;try{const db=await openIDB();return await new Promise(res=>{const tx=db.transaction(IDB_STORE,'readwrite'),store=tx.objectStore(IDB_STORE),req=store.getAllKeys();req.onsuccess=()=>{const rx=new RegExp(`_f${String(f)}$|_f${String(f)}_`),keys=req.result.filter(k=>rx.test(String(k)));keys.forEach(k=>{store.delete(k);if(String(k).startsWith('nvdb_county_')){_countyCacheMem.delete(String(k));idbDeleteAppData('__county_meta_'+String(k)).catch(()=>{})}});tx.oncomplete=()=>res(keys.length)};req.onerror=()=>res(0)})}catch(e){return 0}}
-async function exportAllTiles(){const db=await openIDB();return await new Promise((resolve,reject)=>{const tx=db.transaction(IDB_STORE,'readonly'),store=tx.objectStore(IDB_STORE),kr=store.getAllKeys(),vr=store.getAll();kr.onerror=()=>reject(kr.error);vr.onerror=()=>reject(vr.error);Promise.all([new Promise(res=>kr.onsuccess=()=>res(kr.result||[])),new Promise(res=>vr.onsuccess=()=>res(vr.result||[]))]).then(([keys,vals])=>resolve(keys.map((k,i)=>({key:String(k),value:vals[i]})))).catch(reject)})}
-async function clearAllTiles(){const db=await openIDB();return await new Promise((res,rej)=>{const req=db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).clear();req.onsuccess=()=>res();req.onerror=()=>rej(req.error)})}
 async function importAllTiles(items){const db=await openIDB();return await new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readwrite'),store=tx.objectStore(IDB_STORE);for(const item of items||[])if(item&&typeof item.key==='string'&&item.value)store.put(item.value,item.key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error('IDB import avbrutt'))})}
 
 async function idbSetAppData(key,value){
  const db=await openIDB();
- return await new Promise((res,rej)=>{const tx=db.transaction(IDB_META_STORE,'readwrite'),store=tx.objectStore(IDB_META_STORE);const req=store.put({value,ts:Date.now()},key);req.onsuccess=()=>res(true);req.onerror=()=>rej(req.error);tx.onerror=()=>rej(tx.error)})
+ return await new Promise((res,rej)=>{
+  const tx=db.transaction(IDB_META_STORE,'readwrite'),store=tx.objectStore(IDB_META_STORE);
+  tx.oncomplete=()=>res(true);
+  tx.onerror=()=>rej(tx.error||new Error('IDB-transaksjon feilet'));
+  tx.onabort=()=>rej(tx.error||new Error('IDB-transaksjon avbrutt'));
+  store.put({value,ts:Date.now()},key);
+ })
 }
 async function idbGetAppData(key){
  const db=await openIDB();
@@ -1980,6 +2026,25 @@ function dM(la1,lo1,la2,lo2){const R=6371000,dlat=(la2-la1)*Math.PI/180,dlon=(lo
 function ptSeg(lat,lon,a,b){const lat0=(a[1]+b[1]+lat)/3,mLat=111320,mLon=Math.cos(lat0*Math.PI/180)*111320,ax=a[0]*mLon,ay=a[1]*mLat,bx=b[0]*mLon,by=b[1]*mLat,px=lon*mLon,py=lat*mLat,abx=bx-ax,aby=by-ay,ab2=abx*abx+aby*aby;if(ab2===0)return Math.hypot(px-ax,py-ay);const t=Math.max(0,Math.min(1,((px-ax)*abx+(py-ay)*aby)/ab2));return Math.hypot(px-(ax+t*abx),py-(ay+t*aby))}
 function roadDist(lat,lon,r){let best=Infinity;for(const part of(r.parts||[])){if(!part?.length)continue;if(part.length===1){const d=dM(lat,lon,part[0][1],part[0][0]);if(d<best)best=d;continue}for(let i=0;i<part.length-1;i++){const d=ptSeg(lat,lon,part[i],part[i+1]);if(d<best)best=d}}return best}
 
+function roadBBox(r){
+ if(r?._bbox)return r._bbox;
+ let minLat=Infinity,minLon=Infinity,maxLat=-Infinity,maxLon=-Infinity;
+ for(const part of(r?.parts||[]))for(const c of(part||[])){if(!isVLL(c))continue;const lon=c[0],lat=c[1];if(lat<minLat)minLat=lat;if(lat>maxLat)maxLat=lat;if(lon<minLon)minLon=lon;if(lon>maxLon)maxLon=lon}
+ const b=Number.isFinite(minLat)?{minLat,minLon,maxLat,maxLon}:null;
+ if(r)r._bbox=b;
+ return b;
+}
+function roadBBoxDist(lat,lon,r){
+ const b=roadBBox(r);if(!b)return Infinity;
+ const clampedLat=Math.max(b.minLat,Math.min(b.maxLat,lat)),clampedLon=Math.max(b.minLon,Math.min(b.maxLon,lon));
+ return dM(lat,lon,clampedLat,clampedLon);
+}
+function nearbyRoadsForGps(lat,lon,limitM=250){
+ const out=[];
+ for(const r of roads||[]){const bd=roadBBoxDist(lat,lon,r);if(bd<=limitM){r._bboxDist=bd;out.push(r)}}
+ return out;
+}
+
 function clipSegmentToRadius(a,b,lat,lon,radiusM){
  const lat0=(a[1]+b[1]+lat)/3,mLat=111320,mLon=Math.cos(lat0*Math.PI/180)*111320,ax=(a[0]-lon)*mLon,ay=(a[1]-lat)*mLat,bx=(b[0]-lon)*mLon,by=(b[1]-lat)*mLat,dx=bx-ax,dy=by-ay;
  const aa=dx*dx+dy*dy,bb=2*(ax*dx+ay*dy),cc=ax*ax+ay*ay-radiusM*radiusM,insideA=cc<=0,insideB=bx*bx+by*by<=radiusM*radiusM;
@@ -2071,8 +2136,9 @@ function _isSideanleggRec(r){
  return tv.includes('snuplass')||tv.includes('parkeringsomr')||tv.includes('rasteplass');
 }
 function _isAuxRoad(r){return r&&(_isSideanleggRec(r)||isKonnektering(r)||isRampe(r)||(isRundkjoring(r)&&_isRampConnectedRoundabout(r)));}
-function sortedRoadCandidates(lat,lon){
- const all=roads.filter(r=>roadPassesCategoryFilter(r)).map(r=>({r,d:roadDist(lat,lon,r)})).filter(x=>Number.isFinite(x.d)).sort((a,b)=>a.d-b.d);
+function sortedRoadCandidates(lat,lon,source=null){
+ source=source||(gps.watching?nearbyRoadsForGps(lat,lon,350):roads);
+ const all=source.filter(r=>roadPassesCategoryFilter(r)).map(r=>({r,d:roadDist(lat,lon,r)})).filter(x=>Number.isFinite(x.d)).sort((a,b)=>a.d-b.d);
  // Deprioritiser rundkøyringar: fjern dei frå kandidatlista viss det finst ein vanleg veg
  // innanfor ENTER_THRESH_M. Hindrar GPS-snapping til rundkøyring når hovudveg er nærast.
  const hasMainRoad=all.some(x=>!isRundkjoring(x.r)&&x.d<=ENTER_THRESH_M);
@@ -2086,6 +2152,34 @@ function isUnambiguousCandidate(cands){
  if(b.d<=3)return true;
  if(!s)return true;
  return (s.d-b.d)>=GPS_UNAMBIG_MARGIN_M || (s.d/Math.max(1,b.d))>=GPS_UNAMBIG_RATIO;
+}
+function pickEntryCandidate(cands,lat,lon,heading){
+ if(!cands.length)return null;
+ if(heading==null)return isUnambiguousCandidate(cands)?cands[0]:null;
+ const aligned=cands.map(x=>({...x,ai:roadAlignmentInfo(lat,lon,x.r,heading)})).filter(x=>x.ai.ok);
+ if(!aligned.length)return null;
+ return isUnambiguousCandidate(aligned)?aligned[0]:null;
+}
+function roadProjectionInfo(lat,lon,r){
+ const cachedParts=r?.key?getRoadPartsForKey(r.key):[];
+ const parts=cachedParts&&cachedParts.length?cachedParts:(r?.parts||[]);
+ const chains=makeChainsFromParts(parts,35);
+ let best=null;
+ for(const ch of chains){
+  const measures=chainMeasures(ch),total=measures[measures.length-1];
+  const p=projectLatLonToChain(lat,lon,ch,measures);
+  if(!Number.isFinite(p.m)||!Number.isFinite(total)||total<=0)continue;
+  const info={...p,total,edgeM:Math.min(p.m,total-p.m)};
+  if(!best||info.d<best.d)best=info;
+ }
+ return best;
+}
+function isLikelyEndpointTurnaround(r,lat,lon,proposed){
+ if(!r||_isOneWayKey(r.key)||!(proposed==='fwd'||proposed==='rev')||proposed===gps.activeDir)return false;
+ if(gps.acc!=null&&gps.acc>TURNAROUND_MAX_ACC_M)return false;
+ if((gps._dirDrivenM||0)<TURNAROUND_MIN_DRIVEN_M)return false;
+ const p=roadProjectionInfo(lat,lon,r);
+ return !!(p&&p.d<=EXIT_THRESH_M&&p.edgeM<=TURNAROUND_END_M);
 }
 function resetGpsCandidate(){
  gps._candidateKey=null;gps._candidateCount=0;gps._candidateDist=null;
@@ -2243,10 +2337,31 @@ async function updateFylkeFromPosition(lat,lon){
   if(fc)updateFromCenter(true,fc.lat,fc.lon);
  }
 }
+function shouldPreSplitDenseRoadFetch(lat,lon,radiusKm,fetchRefs,depth){
+ if(depth!==0||!String(fetchRefs||'').includes('K')||!Number.isFinite(radiusKm)||radiusKm<DENSE_CITY_RADIUS_LIMIT_KM)return null;
+ return DENSE_CITY_RADIUS_AREAS.find(c=>dM(lat,lon,c.lat,c.lon)<=c.triggerKm*1000)||null;
+}
+async function loadRoadsAroundSplit(lat,lon,radiusKm,fylkeNr,depth,fallbackOut=null){
+ const subRadius=radiusKm/2,fetchRadius=Math.max(ROAD_FETCH_SPLIT_MIN_RADIUS_KM,subRadius*ROAD_FETCH_SPLIT_OVERLAP),cos=Math.cos(lat*Math.PI/180)||1,latOff=subRadius/111.32,lonOff=subRadius/(111.32*Math.max(0.2,Math.abs(cos)));
+ const centers=[[lat-latOff,lon-lonOff],[lat-latOff,lon+lonOff],[lat+latOff,lon-lonOff],[lat+latOff,lon+lonOff]];
+ const nested=[];let splitFailures=0;
+ for(const[cLat,cLon]of centers){
+  try{nested.push(...await loadRoadsAround(cLat,cLon,fetchRadius,fylkeNr,depth+1))}
+  catch(e){splitFailures++;console.warn('Delhenting av tett NVDB-område feilet',e)}
+ }
+ if(!nested.length)return null;
+ const merged=mergeRoads(splitFailures&&Array.isArray(fallbackOut)?fallbackOut.concat(nested):nested);
+ return filterFetchedRoadsByActiveCategories(merged);
+}
 async function loadRoadsAround(lat,lon,radiusKm,fylkeNr,depth=0){
  const profile=currentProfile(),perPage=Math.max(profile.maxPerPage,ROAD_FETCH_MAX_PER_PAGE),maxPages=Math.max(profile.maxPages,ROAD_FETCH_MAX_PAGES),[minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm),base=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
  const fetchRefs=activeRoadFetchRefs();
  if(!fetchRefs){if(depth===0)setMessage('Velg minst én vegkategori før nedlasting av vegnett.','notice');return[]}
+ const preSplitArea=shouldPreSplitDenseRoadFetch(lat,lon,radiusKm,fetchRefs,depth);
+ if(preSplitArea){
+  const splitResult=await loadRoadsAroundSplit(lat,lon,radiusKm,fylkeNr,depth);
+  if(splitResult?.length){setMessage(`${preSplitArea.name}: tett KV-område hentes i mindre ruter for komplett 5 km-dekning.`,'notice');return splitResult}
+ }
  base.searchParams.set('srid','4326');base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);base.searchParams.set('vegsystemreferanse',fetchRefs);
  // v2.0.71: Send fylke-nummer direkte til NVDB. NVDB filtrerer da serverside basert på sine
  // egne fylkesgrenser, så vi får kun veger som faktisk tilhører det valgte fylket.
@@ -2287,23 +2402,17 @@ async function loadRoadsAround(lat,lon,radiusKm,fylkeNr,depth=0){
  if(skippedSideanlegg>0)console.log(`v2.0.32: filtrerte ut ${skippedSideanlegg} sideanlegg-segmenter fra vegnettet`);
  // v2.0.30: hvis vi avslutter med pages==maxPages OG det finnes en neste-URL, har vi truffet taket
  // og data er trunkert. Synlig advarsel slik at brukeren vet området ikke er komplett.
- if(url&&pages>=maxPages){
-  console.warn(`NVDB pagination-tak nådd (${pages} sider × ${perPage} pr side). Området er trunkert.`);
-  if(radiusKm>4&&depth<3){
-   const subRadius=Math.max(2.5,radiusKm/2),cos=Math.cos(lat*Math.PI/180)||1,latOff=(radiusKm/2)/111.32,lonOff=(radiusKm/2)/(111.32*Math.max(0.2,Math.abs(cos)));
-   const centers=[[lat-latOff,lon-lonOff],[lat-latOff,lon+lonOff],[lat+latOff,lon-lonOff],[lat+latOff,lon+lonOff]];
-   const nested=[];
-   for(const[cLat,cLon]of centers){
-    try{nested.push(...await loadRoadsAround(cLat,cLon,subRadius*1.08,fylkeNr,depth+1))}
-    catch(e){console.warn('Delhenting av tett NVDB-område feilet',e)}
+  if(url&&pages>=maxPages){
+   console.warn(`NVDB pagination-tak nådd (${pages} sider × ${perPage} pr side). Området er trunkert.`);
+   if(radiusKm>ROAD_FETCH_SPLIT_MIN_RADIUS_KM&&depth<ROAD_FETCH_MAX_SPLIT_DEPTH){
+    const splitResult=await loadRoadsAroundSplit(lat,lon,radiusKm,fylkeNr,depth,out);
+    if(splitResult?.length){
+     if(depth===0)setMessage(`Tett NVDB-område: hentingen ble delt opp i mindre ruter for komplett dekning (${splitResult.length} delstrekninger).`,'notice');
+     return splitResult;
+    }
    }
-   if(nested.length){
-    if(depth===0)setMessage(`Tett KV/NVDB-område: hentingen ble delt opp for bedre dekning (${nested.length} segmentgrupper).`,'notice');
-    return filterFetchedRoadsByActiveCategories(mergeRoads(nested));
-   }
+   setMessage(`Området er stort: NVDB-svar truncert ved ${pages*perPage} segmenter. Reduser radius eller bruk Last fylkets vegnett for fullstendig dekning.`,'notice');
   }
-  setMessage(`Området er stort: NVDB-svar truncert ved ${pages*perPage} segmenter. Reduser radius eller bruk Last fylkets vegnett for fullstendig dekning.`,'notice');
- }
  return filterFetchedRoadsByActiveCategories(mergeRoads(out))
 }
 function mergeRoads(raw){
@@ -2438,6 +2547,16 @@ async function toggleGPS(){
  }
 }
 function normalizePositionFromNative(pos){const c=pos?.coords||pos||{};return{coords:{latitude:c.latitude,longitude:c.longitude,accuracy:c.accuracy,speed:c.speed,heading:c.heading??c.bearing??c.course}}}
+function handleGpsPosition(pos){
+ try{onPos(pos)}
+ catch(e){
+  console.error('GPS-punkt ignorert etter intern feil',e);
+  if(Date.now()-(gps._lastGpsHandlerErrorTs||0)>15000){
+   gps._lastGpsHandlerErrorTs=Date.now();
+   setMessage('Ett GPS-punkt ble ignorert etter en intern feil. GPS fortsetter.','notice');
+  }
+ }
+}
 function bearingBetween(la1,lo1,la2,lo2){const p1=la1*Math.PI/180,p2=la2*Math.PI/180,dl=(lo2-lo1)*Math.PI/180,y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);return(Math.atan2(y,x)*180/Math.PI+360)%360}
 async function ensureLocationPermission(){try{const geo=getCapGeolocation();if(isNativeApp()&&geo){const p=await geo.checkPermissions?.().catch(()=>({location:'prompt'}));if(p.location==='granted'||p.coarseLocation==='granted')return true;const r=await geo.requestPermissions?.({permissions:['location']}).catch(()=>null);return r?.location==='granted'||r?.coarseLocation==='granted'}return true}catch(e){console.error(e);return false}}
 async function getCurrentNativePosition(){const geo=getCapGeolocation();if(!(isNativeApp()&&geo?.getCurrentPosition))return null;try{return await geo.getCurrentPosition({enableHighAccuracy:true,timeout:20000,maximumAge:1000})}catch(e){console.error(e);return null}}
@@ -2455,25 +2574,25 @@ function startNativeWatchdog(){
   if(!gps.watching||gps.watchId!=='native_watch')return;
   if(Date.now()-lastNativeFixTs<10000)return;
   const pos=await getCurrentNativePosition();
-  if(pos)onPos(normalizePositionFromNative(pos));
+  if(pos)handleGpsPosition(normalizePositionFromNative(pos));
  },5000);
 }
 async function startNativeForegroundGPS(){
  const geo=getCapGeolocation();
  if(!(isNativeApp()&&geo))return false;
  const first=await getCurrentNativePosition();
- if(first)onPos(normalizePositionFromNative(first));
+ if(first)handleGpsPosition(normalizePositionFromNative(first));
  if(typeof geo.watchPosition==='function'){
   nativeWatchId=await geo.watchPosition({enableHighAccuracy:true,timeout:20000,maximumAge:1000},(pos,err)=>{
    if(err){console.warn('GPS watch-feil',err);return}
-   if(pos)onPos(normalizePositionFromNative(pos));
+   if(pos)handleGpsPosition(normalizePositionFromNative(pos));
   });
   gps.watchId='native_watch';
   startNativeWatchdog();
   return true;
  }
  if(nativeGpsTimer)clearInterval(nativeGpsTimer);
- nativeGpsTimer=setInterval(async()=>{if(!gps.watching)return;const pos=await getCurrentNativePosition();if(pos)onPos(normalizePositionFromNative(pos))},3000);
+ nativeGpsTimer=setInterval(async()=>{if(!gps.watching)return;const pos=await getCurrentNativePosition();if(pos)handleGpsPosition(normalizePositionFromNative(pos))},3000);
  gps.watchId='native_interval';
  return true;
 }
@@ -2505,14 +2624,30 @@ async function releaseWakeLock(){
 // skjermen låses og åpnes igjen) og watch-callbacken ikke gjenopptas av seg selv.
 async function restartWatchPosition(reason='ukjent'){
  if(!gps.watching)return;
+ if(_gpsRestarting)return;
+ _gpsRestarting=true;
  console.warn('Restart GPS-watch ('+reason+')');
  try{
   if(gps.watchId==='background_plugin'){await stopBackgroundGPS();gps.watchId=null;
    const ok=await startBackgroundGPS();if(ok){gps.watchId='background_plugin';return}
   }
   if(gps.watchId==='native_watch'||gps.watchId==='native_interval'){clearNativeForegroundGPS();gps.watchId=null;await startNativeForegroundGPS();return}
-  if(typeof gps.watchId==='number'&&navigator.geolocation){navigator.geolocation.clearWatch(gps.watchId);gps.watchId=navigator.geolocation.watchPosition(onPos,onPosErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000});return}
+  if(typeof gps.watchId==='number'&&navigator.geolocation){navigator.geolocation.clearWatch(gps.watchId);gps.watchId=navigator.geolocation.watchPosition(handleGpsPosition,onPosErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000});return}
  }catch(e){console.warn('restartWatchPosition feilet',e)}
+ finally{_gpsRestarting=false}
+}
+function scheduleGpsResumeCheck(reason='app synlig'){
+ if(!gps.watching)return;
+ if(_resumeGpsTimer)clearTimeout(_resumeGpsTimer);
+ _resumeGpsTimer=setTimeout(async()=>{
+  _resumeGpsTimer=null;
+  if(!gps.watching)return;
+  try{if(!_wakeLockOn)ensureWakeLock()}catch(e){}
+  const pos=await getCurrentNativePosition();
+  if(pos)handleGpsPosition(normalizePositionFromNative(pos));
+  const sinceFix=gps._lastFixTs?Date.now()-gps._lastFixTs:Infinity;
+  if(sinceFix>GPS_STALE_WARN_MS)await restartWatchPosition(reason+' · ingen fersk fix på '+Math.round(sinceFix/1000)+'s');
+ },1200);
 }
 
 // Helse-overvåking: tikker hvert 5. sek og sjekker om det har gått for lenge siden siste fix.
@@ -2535,7 +2670,7 @@ function maybeAdvanceDeadReckoning(){
  // Aktiver dead reckoning bare når GPS har vært stille >10 sek og vi var aktive på en veg
  if(sinceFix<10000){if(_deadReckon.active)resetDeadReckoning();return}
  const key=gps.activeKey||gps._lastActiveKey;
- const dir=gps.activeDir;
+ const dir=gps.activeDir||gps._lastActiveDir;
  if(!key||!dir||!gps.lastPos)return;
  // Initialiser hvis ny dead reckoning-økt
  if(!_deadReckon.active){
@@ -2638,7 +2773,7 @@ async function startGPS(){
   if(isNativeApp()&&settings.backgroundGps&&await startBackgroundGPS()){gps.watchId='background_plugin';renderGPS();return}
   if(await startNativeForegroundGPS()){renderGPS();return}
   if(!('geolocation'in navigator)){gps.watching=false;renderGPS();setMessage('Ingen geolocation.','error');return}
-  gps.watchId=navigator.geolocation.watchPosition(onPos,onPosErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000})
+  gps.watchId=navigator.geolocation.watchPosition(handleGpsPosition,onPosErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000})
  }catch(e){gps.watching=false;stopGpsHealthWatchdog();releaseWakeLock();clearNativeForegroundGPS();renderGPS();setMessage('GPS-feil: '+(e?.message||e),'error')}
 }
 async function stopGPS(){
@@ -2698,7 +2833,7 @@ function onPos(pos){
    fromTs:gps._lastFixTs,fromPos:prev,toTs:nowTs,toPos:[lat,lon],ms:sinceFix,
    detectedAt:nowTs,
    lastActiveKey:gps.activeKey||gps._lastActiveKey||null,
-   lastActiveDir:gps.activeDir||null,
+    lastActiveDir:gps.activeDir||gps._lastActiveDir||null,
    bridgeAttempts:0
   };
   // v2.0.33: når GPS gjenoppstår etter et gap, fjern dead-reckoning-tilstanden. Hvis bridging
@@ -2709,23 +2844,24 @@ function onPos(pos){
  gps._lastFixTs=nowTs;
  gps.lastPos=[lat,lon];gps.acc=Number.isFinite(acc)?acc:null;gps.speed=(Number.isFinite(spd)&&spd>=0)?spd:null;gps.heading=heading;
  lastNativeFixTs=nowTs;
- const now=nowTs,movedEnough=!lastRenderPos||dM(lastRenderPos[0],lastRenderPos[1],lat,lon)>RENDER_MOVE_M,timeOk=(now-lastRenderTime)>RENDER_INTERVAL_MS;
+ const now=nowTs,movedEnough=!lastRenderPos||dM(lastRenderPos[0],lastRenderPos[1],lat,lon)>RENDER_MOVE_M,timeOk=(now-lastRenderTime)>RENDER_INTERVAL_MS,prevActiveKey=gps.activeKey,prevActiveDir=gps.activeDir;
  updateDistancesAndActiveRoad();
+ const activeChanged=prevActiveKey!==gps.activeKey||prevActiveDir!==gps.activeDir;
  // v2.0.33: forsøk å bridge — flere strategier, og holdt levende i opptil 30 sek slik at vi
  // får mange forsøk mens activeKey-detektoren jobber seg gjennom GPS_ENTER_CONSEC.
- if(gps._gapPending){
-  let bridged=false;
-  // Strategi A: bridge mot gjeldende aktive veg (best case — vi er låst på samme veg som før gap)
-  if(gps.activeKey&&gps.activeDir){
-   try{bridged=maybeBridgeGapOnSameRoad(gps._gapPending,gps.activeKey,gps.activeDir)}
-   catch(e){console.warn('Gap-bridge A feilet',e)}
-  }
-  // Strategi B: bridge mot SIST aktive veg fra før gapet (vi er fortsatt på samme veg, men
-  // candidate-detection har ikke nådd consec=3 enda). Dette er typisk tilfelle rett etter en lang tunnel.
-  if(!bridged&&gps._gapPending.lastActiveKey&&gps._gapPending.lastActiveDir){
-   try{bridged=maybeBridgeGapOnSameRoad(gps._gapPending,gps._gapPending.lastActiveKey,gps._gapPending.lastActiveDir)}
-   catch(e){console.warn('Gap-bridge B feilet',e)}
-  }
+  if(gps._gapPending){
+   let bridged=false;
+   // Bridge først mot SIST aktive veg/retning fra før gapet. Etter tunnel kan første nye fix
+   // ha ustabil heading og ellers snappe motsatt retning før brokoblingen rekker å skje.
+   if(gps._gapPending.lastActiveKey&&gps._gapPending.lastActiveDir){
+    try{bridged=maybeBridgeGapOnSameRoad(gps._gapPending,gps._gapPending.lastActiveKey,gps._gapPending.lastActiveDir)}
+    catch(e){console.warn('Gap-bridge B feilet',e)}
+   }
+   // Fallback: bridge mot gjeldende aktive veg hvis før-gap-retning ikke traff.
+   if(!bridged&&gps.activeKey&&gps.activeDir){
+    try{bridged=maybeBridgeGapOnSameRoad(gps._gapPending,gps.activeKey,gps.activeDir)}
+    catch(e){console.warn('Gap-bridge A feilet',e)}
+   }
   gps._gapPending.bridgeAttempts++;
   // Time-out: gi opp etter 30 sek eller 15 forsøk
   const ageMs=nowTs-gps._gapPending.detectedAt;
@@ -2741,7 +2877,8 @@ function onPos(pos){
  if(forceSpeedLimitRefresh)speedLimitStartRefreshPending=false;
  maybeRefreshSpeedLimitsLight(lat,lon,forceSpeedLimitRefresh);
  updateCurrentSpeedLimit(lat,lon);renderGPS();
- if(movedEnough||timeOk){lastRenderTime=now;lastRenderPos=[lat,lon];updateFylkeFromPosition(lat,lon);setMessage('');if(document.getElementById('tab-map').classList.contains('active'))updateMap(lat,lon);updateFromCenter(false)}
+ if(activeChanged)scheduleMapOverlayRender(120);
+ if(movedEnough||timeOk){lastRenderTime=now;lastRenderPos=[lat,lon];updateFylkeFromPosition(lat,lon);setMessage('');if(document.getElementById('tab-map').classList.contains('active'))updateMap(lat,lon);updateFromCenter(false).catch(e=>console.warn('Live-oppdatering av vegnett feilet',e))}
  else if(map&&carMarker&&document.getElementById('tab-map').classList.contains('active')){carMarker.setLatLng([lat,lon]);drawTail(lat,lon)}
 }
 // v2.0.31: smart visibilitychange + pagehide. Tidligere stoppet pagehide GPS uansett, slik at
@@ -2753,8 +2890,9 @@ function onPos(pos){
 //     forklare situasjonen til brukeren.
 document.addEventListener('visibilitychange',async()=>{
  if(document.hidden){
-  // v2.0.46: tving auto-backup når appen går i bakgrunn.
-  if(gps.watching){autoBackupToFiles('app-hidden',true).catch(e=>{});saveIdbSnapshot('app-hidden',true).catch(e=>{})}
+  // v2.0.90: ved telefonsamtale/app-bytte må vi unngå tung Filesystem-backup akkurat idet
+  // iOS suspenderer webviewen. Flush små pending writes nå; periodisk backup/snapshot tar resten.
+  if(gps.watching)flushAllPendingWritesNow().catch(()=>{});
   if(gps.watching&&isNativeApp()&&!settings.backgroundGps){
    await stopGPS();
    setMessage('GPS stoppet automatisk fordi appen gikk i bakgrunnen. Slå på Bakgrunns-GPS i menyen for å unngå dette.','notice');
@@ -2767,10 +2905,10 @@ document.addEventListener('visibilitychange',async()=>{
   if(gps._lastFixTs){
    const sinceFix=Date.now()-gps._lastFixTs;
    if(sinceFix>GPS_LONG_GAP_MS){
-    setMessage('Appen ble vekket. Henter fersk GPS-posisjon …','notice');
-    await restartWatchPosition('app gjenopptatt etter '+Math.round(sinceFix/1000)+'s');
+    setMessage('Appen ble vekket etter pause/samtale. Sjekker GPS …','notice');
+    scheduleGpsResumeCheck('app gjenopptatt etter '+Math.round(sinceFix/1000)+'s');
    }
-  }
+  }else scheduleGpsResumeCheck('app gjenopptatt uten tidligere fix');
  }
 });
 // pagehide: bare stopp GPS hvis bakgrunns-GPS er AV. Ellers la den løpe.
@@ -2780,19 +2918,49 @@ window.addEventListener('pagehide',()=>{if(gps.watching&&!settings.backgroundGps
 function visibleRoadsList(){return roads.filter(r=>roadPassesCategoryFilter(r))}
 function matchFilter(r,filter){if(!filter)return true;return filter.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean).some(term=>{const num=term.replace(/^[a-zæøå]+/,'');if(num&&/^\d+$/.test(num)&&r.veg.replace(/^[A-Za-z]+/,'')===num)return true;return(r.seg||'').toLowerCase().includes(term)||(r.veg||'').toLowerCase().includes(term)})}
 function activeFilteredRoads(){const f=(document.getElementById('table-filter')?.value||'').toLowerCase().trim();return visibleRoadsList().filter(r=>matchFilter(r,f))}
-function mapRoadsToRender(){
+function paddedMapBBox(targetMap,padRatio=MAP_VIEW_PAD_RATIO){
+ if(!targetMap||typeof targetMap.getBounds!=='function')return null;
+ try{
+  const b=targetMap.getBounds(),sw=b.getSouthWest(),ne=b.getNorthEast();
+  const latPad=(ne.lat-sw.lat)*padRatio,lonPad=(ne.lng-sw.lng)*padRatio;
+  return{minLat:sw.lat-latPad,maxLat:ne.lat+latPad,minLon:sw.lng-lonPad,maxLon:ne.lng+lonPad};
+ }catch(e){return null}
+}
+function roadIntersectsBBox(r,bbox){
+ if(!bbox)return true;
+ const b=roadBBox(r);if(!b)return true;
+ return !(b.maxLat<bbox.minLat||b.minLat>bbox.maxLat||b.maxLon<bbox.minLon||b.minLon>bbox.maxLon);
+}
+function keyIntersectsMapBBox(key,bbox){
+ if(!bbox||key===gps.activeKey)return true;
+ const rec=roadByKeyAny(key)||geomCache[key];
+ return rec?roadIntersectsBBox(rec,bbox):true;
+}
+function prioritizeGpsMapRoads(list){
+ if(!gps.watching||list.length<=MAP_GPS_MAX_ROADS)return list;
+ const active=[],rest=[];
+ for(const r of list)(r.key===gps.activeKey?active:rest).push(r);
+ if(gps.lastPos){
+  const[lat,lon]=gps.lastPos;
+  rest.sort((a,b)=>(a._bboxDist??roadBBoxDist(lat,lon,a))-(b._bboxDist??roadBBoxDist(lat,lon,b)));
+ }
+ return[...active,...rest.slice(0,Math.max(0,MAP_GPS_MAX_ROADS-active.length))];
+}
+function mapRoadsToRender(opts={}){
+ const viewBox=opts.viewBox===undefined?(opts.fit?null:paddedMapBBox(map)):opts.viewBox;
  if(settings.planMode&&planKeys.size){
   const out=[],seen=new Set();
   for(const key of planKeys){
    if(seen.has(key)||!keyPassesCategoryFilter(key)||!keyPassesMapFylke(key))continue;
    const r=roadByKeyAny(key);
    if(!r)continue;
+   if(!roadIntersectsBBox(r,viewBox)&&key!==gps.activeKey)continue;
    seen.add(key);
    out.push(r);
   }
-  return out;
+  return prioritizeGpsMapRoads(out);
  }
- return activeFilteredRoads().filter(r=>keyPassesMapFylke(r.key));
+ return prioritizeGpsMapRoads(activeFilteredRoads().filter(r=>keyPassesMapFylke(r.key)&&roadIntersectsBBox(r,viewBox)));
 }
 function activeCategoryText(){const cf=settings.categoryFilter,a=[];if(cf.E)a.push('EV');if(cf.EGSV)a.push('EV-GSV');if(cf.R)a.push('RV');if(cf.RGSV)a.push('RV-GSV');if(cf.F)a.push('FV');if(cf.FGSV)a.push('FV-GSV');if(cf.K)a.push('KV');if(cf.KGSV)a.push('KV-GSV');return a.length?a.join('/'): 'Ingen'}
 function getFylkeNameById(id){return FYLKER.find(f=>f.id===String(id))?.name||''}
@@ -2840,7 +3008,8 @@ function updateTablePlanAction(){
 function updateDistancesAndActiveRoad(){
  if(!gps.lastPos||!roads.length){finalizeActiveRoad();return}
  const [lat,lon]=gps.lastPos;
- roads.forEach(r=>{r.minDist=roadDist(lat,lon,r)});
+ const gpsNearRoads=gps.watching?nearbyRoadsForGps(lat,lon,1200):roads;
+ gpsNearRoads.forEach(r=>{r.minDist=roadDist(lat,lon,r)});
  const accOk=gps.acc==null||gps.acc<=GPS_MAX_ACC_M;
  const speedOk=gps.speed==null||gps.speed>=GPS_MIN_DRIVE_SPEED_MS;
  const headingOk=gps.heading!=null;
@@ -2851,8 +3020,9 @@ function updateDistancesAndActiveRoad(){
   }
   return;
  }
- const cands=sortedRoadCandidates(lat,lon);
- const best=cands[0];
+ const candidateSource=gps.watching?gpsNearRoads.filter(r=>(r._bboxDist??Infinity)<=350):roads;
+ const cands=sortedRoadCandidates(lat,lon,candidateSource);
+ const best=pickEntryCandidate(cands,lat,lon,headingOk?gps.heading:null);
  if(gps.activeKey){
   const prev=roads.find(r=>r.key===gps.activeKey),prevDist=prev?roadDist(lat,lon,prev):Infinity;
   if(prev&&prevDist<=EXIT_THRESH_M){
@@ -2867,35 +3037,17 @@ function updateDistancesAndActiveRoad(){
     if(_stepM<150)gps._dirDrivenM=(gps._dirDrivenM||0)+_stepM;
    }
    gps._dirLastPos=[lat,lon];
-   // v2.0.30: krev 2 påfølgende fixes for å snu retning på en aktiv veg. Det stabiliserer
-   // R1/R2-tildelingen ved sløyfer og loops der vegens egenretning peker motsatt av kjøreretningen
-   // i et kort segment.
-   // v2.0.61-fix: Heva terskel + distanselås for å hindre feilaktig retningsflip på kurver:
-   //   - Distanselås: retningsflip er blokkert dei første DIR_LOCK_M metrane på vegen
-   //   - Normalt: krev 8 påfølgande fixes (opp frå 4) → ~64m ved 30 km/h
-   //   - Kritisk: viss MOTRETNING allereie er registrert som køyrd, krev 14 fixes
-   //     → forhindrar at eit kort GPS-glitch set vegen til "Ferdig" med ein gong.
-   //   Brukaren kan alltid bruke "Avbrutt"-knappen manuelt for å registrere kjørt retning.
-   if(proposed!==gps.activeDir&&(proposed==='fwd'||proposed==='rev')){
-    const _flipSpeedOk=gps.speed!=null&&gps.speed>=DIR_FLIP_MIN_SPEED_MS;
-    const _flipAccOk=gps.acc!=null&&gps.acc<=DIR_FLIP_MAX_ACC_M;
-    if(!_flipSpeedOk||!_flipAccOk){
-     gps._dirFlipCandidate=null;gps._dirFlipCount=0;
-    }else{
-    const _locked=(gps._dirDrivenM||0)<DIR_LOCK_M;
-    if(!_locked){
+    // v2.0.90: retning er låst på samme veg, men tillat reelt kort-snu nær endepunkt.
+    // Dette gjør målingen grønn når sjåføren snur tett ved enden, uten å åpne for falsk
+    // motsatt kjørefelt midt på vegen.
+    if(proposed!==gps.activeDir&&(proposed==='fwd'||proposed==='rev')&&isLikelyEndpointTurnaround(prev,lat,lon,proposed)){
      if(gps._dirFlipCandidate===proposed)gps._dirFlipCount=(gps._dirFlipCount||0)+1;
      else{gps._dirFlipCandidate=proposed;gps._dirFlipCount=1}
-     const _otherDirDriven=!!(directionState[prev.key]||{})[proposed];
-     const _flipThresh=_otherDirDriven?14:8;
-     if(gps._dirFlipCount>=_flipThresh){
-      gps.activeDir=proposed;
+     if(gps._dirFlipCount>=TURNAROUND_CONSEC){
+      gps.activeDir=proposed;gps._lastActiveDir=proposed;gps._dirDrivenM=0;gps._dirLastPos=[lat,lon];
       gps._dirFlipCandidate=null;gps._dirFlipCount=0;
-      gps._dirDrivenM=0;gps._dirLastPos=[lat,lon];
      }
-    }
-    }
-   }else{gps._dirFlipCandidate=null;gps._dirFlipCount=0}
+    }else{gps._dirFlipCandidate=null;gps._dirFlipCount=0}
    if(gps.activeDir==='fwd'||gps.activeDir==='rev'){
     logRoadDrivePoint(prev.key,gps.activeDir,lat,lon);
     markDirectionDriven(prev.key,gps.activeDir);
@@ -2907,8 +3059,8 @@ function updateDistancesAndActiveRoad(){
   if(gps.exitCount<EXIT_CONSEC)return;
   finalizeActiveRoad();
  }
- if(!best||best.d>ENTER_THRESH_M||!isUnambiguousCandidate(cands)){resetGpsCandidate();return}
- const ai=headingOk?roadAlignmentInfo(lat,lon,best.r,gps.heading):{ok:true,dir:null};
+ if(!best||best.d>ENTER_THRESH_M){resetGpsCandidate();return}
+ const ai=headingOk?(best.ai||roadAlignmentInfo(lat,lon,best.r,gps.heading)):{ok:true,dir:null};
  if(headingOk&&!ai.ok){resetGpsCandidate();return}
  if(gps._candidateKey===best.r.key)gps._candidateCount++;else{gps._candidateKey=best.r.key;gps._candidateCount=1;gps._candidateDist=best.d}
  if(gps._candidateCount<GPS_ENTER_CONSEC)return;
@@ -2919,7 +3071,9 @@ function updateDistancesAndActiveRoad(){
  if(!(dir==='fwd'||dir==='rev'))return;
  // Viss GPS re-entrar same veg innan 10 sek, bruk siste kjente retning
  // for å hindre feil rev-registrering ved GPS-hopp/glitch.
- const _reDir=(gps._lastActiveKey===best.r.key&&gps._activeKeyLeftAt&&(Date.now()-gps._activeKeyLeftAt)<10000&&(gps._lastActiveDir==='fwd'||gps._lastActiveDir==='rev'))?gps._lastActiveDir:dir;
+  const _gapReDir=(gps._gapPending&&gps._gapPending.lastActiveKey===best.r.key&&(gps._gapPending.lastActiveDir==='fwd'||gps._gapPending.lastActiveDir==='rev'))?gps._gapPending.lastActiveDir:null;
+  const _shortReDir=(gps._lastActiveKey===best.r.key&&gps._activeKeyLeftAt&&(Date.now()-gps._activeKeyLeftAt)<10000&&(gps._lastActiveDir==='fwd'||gps._lastActiveDir==='rev'))?gps._lastActiveDir:null;
+  const _reDir=_gapReDir||_shortReDir||dir;
  gps.activeKey=best.r.key;gps.activeDir=_reDir;gps.exitCount=0;resetGpsCandidate();
  // v2.0.61: nullstill distanselås ved ny veginngang
  gps._dirDrivenM=0;gps._dirLastPos=[lat,lon];
@@ -2936,11 +3090,12 @@ function addCssOnce(href,id){
  if(document.getElementById(id))return;
  const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);
 }
-function addScriptOnce(src,id){
+function addScriptOnce(src,id,timeoutMs=8000){
  if(document.getElementById(id))return Promise.resolve();
  return new Promise((resolve,reject)=>{
   const script=document.createElement('script');script.id=id;script.src=src;script.async=true;
-  script.onload=()=>resolve();script.onerror=()=>reject(new Error('Kunne ikke laste '+src));
+  const timer=setTimeout(()=>{script.onload=null;script.onerror=null;reject(new Error('Timeout ved lasting av '+src))},timeoutMs);
+  script.onload=()=>{clearTimeout(timer);resolve()};script.onerror=()=>{clearTimeout(timer);reject(new Error('Kunne ikke laste '+src))};
   document.head.appendChild(script);
  });
 }
@@ -2948,8 +3103,13 @@ async function ensureLeafletReady(){
  if(leafletReady())return true;
  if(!_leafletLoadPromise){
   _leafletLoadPromise=(async()=>{
+   try{
+    addCssOnce('./vendor/leaflet.css','leaflet-css-local-late');
+    await addScriptOnce('./vendor/leaflet.js','leaflet-js-local-late',6000);
+    if(leafletReady())return true;
+   }catch(e){console.warn('Lokal Leaflet fallback feilet',e)}
    addCssOnce('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css','leaflet-css-cdn');
-   await addScriptOnce('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','leaflet-js-cdn');
+   await addScriptOnce('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','leaflet-js-cdn',8000);
    return leafletReady();
   })().catch(e=>{console.error(e);return false});
  }
@@ -2966,14 +3126,15 @@ function safeInvalidate(m){try{if(m&&typeof m.invalidateSize==='function')m.inva
 
 /* ───────────────────── MAPS ───────────────────── */
 function createBaseLayers(maxZoom=19){
- const common={maxZoom,detectRetina:false};
+ const common={maxZoom,detectRetina:false,updateWhenIdle:true,updateWhenZooming:false,keepBuffer:0,updateInterval:800,errorTileUrl:'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='};
  const topoUrl='https://cache.kartverket.no/v1/service?service=WMTS&request=GetTile&version=1.0.0&layer=topo&style=default&tilematrixset=webmercator&format=image/png&tilematrix={z}&tilerow={y}&tilecol={x}';
  const topo=L.tileLayer(topoUrl,{...common,attribution:'© Kartverket'});
  const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{...common,attribution:'© OpenStreetMap',subdomains:'abc'});
  const esriStreet=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{...common,attribution:'Tiles © Esri'});
- const googleSat=L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{maxZoom:20,subdomains:['mt0','mt1','mt2','mt3'],attribution:'© Google'});
+ const googleSat=L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{...common,maxZoom:20,subdomains:['mt0','mt1','mt2','mt3'],attribution:'© Google'});
+ const blank=L.layerGroup();
  // OSM brukes som standard fordi det nesten alltid svarer i WKWebView. Topo/Esri/Google ligger i lagvelgeren.
- return {'OpenStreetMap':osm,'Topo':topo,'Esri vegkart':esriStreet,'Google satellitt':googleSat};
+ return {'OpenStreetMap':osm,'Stabil uten kartfliser':blank,'Topo':topo,'Esri vegkart':esriStreet,'Google satellitt':googleSat};
 }
 function addBaseLayerControl(targetMap,layers){try{L.control.layers(layers,null,{position:'topleft',collapsed:true}).addTo(targetMap)}catch(e){console.warn('Kartlag-kontroll feilet',e)}}
 function initMap(){
@@ -2982,23 +3143,27 @@ function initMap(){
  try{
   setMapError('map-container','');
   const p=currentProfile(),baseLayers=createBaseLayers(p.mapMaxZoom),base=baseLayers['OpenStreetMap'];
-  map=L.map('map-container',{center:gps.lastPos||[62.7,7.2],zoom:gps.lastPos?13:10,layers:[base],zoomControl:true,preferCanvas:true});
-  addBaseLayerControl(map,baseLayers);
-  _svgRenderer=L.svg();map.whenReady(()=>{safeInvalidate(map);updateManualMarker();updatePlanLayer();updateMapOverlay(false)});
+   map=L.map('map-container',{center:gps.lastPos||[62.7,7.2],zoom:gps.lastPos?13:10,layers:[base],zoomControl:true,preferCanvas:true,zoomAnimation:false,fadeAnimation:false,markerZoomAnimation:false,inertia:false});
+   addBaseLayerControl(map,baseLayers);
+   _svgRenderer=L.canvas({padding:.2,tolerance:8});roadLayerGroup=L.layerGroup().addTo(map);map.whenReady(()=>{safeInvalidate(map);updateManualMarker();updatePlanLayer();updateMapOverlay(false)});
   return map;
  }catch(e){console.error('Kart init feilet',e);setMapError('map-container','Kart kunne ikke startes: '+(e?.message||e));return null}
 }
 function rebuildMapIfNeeded(){
- if(map){map.remove();map=null;carMarker=null;carTailLayer=null;roadLayers=[];_svgRenderer=null}
+ if(map){map.remove();map=null;carMarker=null;carTailLayer=null;roadLayers=[];roadLayerGroup=null;_svgRenderer=null}
  if(document.getElementById('tab-map').classList.contains('active')){
   initMap();updateManualMarker();updatePlanLayer();
   setTimeout(()=>{safeInvalidate(map);updateMapOverlay(false);if(gps.lastPos)updateMap(gps.lastPos[0],gps.lastPos[1])},100);
  }
 }
-function drawTail(lat,lon){if(!map)return;if(carTailLayer){map.removeLayer(carTailLayer);carTailLayer=null}
+function drawTail(lat,lon){if(!map)return;
  // v2.0.30: krev finite, ikke-null heading. Tidligere `gps.heading!=null` slapp gjennom NaN i sjeldne tilfeller.
- if(gps.activeKey&&Number.isFinite(gps.heading)){const color=getRoadStatus(gps.activeKey)==='done'?'#43a047':'#f97316',len=80,rad=(gps.heading-180)*Math.PI/180,dLat=(len/111320)*Math.cos(rad),dLon=(len/(111320*Math.cos(lat*Math.PI/180)))*Math.sin(rad);carTailLayer=L.polyline([[lat,lon],[lat+dLat,lon+dLon]],{color,weight:6,opacity:.85}).addTo(map)}}
-function updateMap(lat,lon){const m=initMap();if(!m)return;drawTail(lat,lon);if(!carMarker)carMarker=L.circleMarker([lat,lon],{radius:9,color:'#bf5000',fillColor:'#bf5000',fillOpacity:1}).addTo(map);else carMarker.setLatLng([lat,lon]);if(document.getElementById('tab-map').classList.contains('active')&&currentProfile().autoPan){const b=map.getBounds(),ne=b.getNorthEast(),sw=b.getSouthWest(),latSpan=ne.lat-sw.lat,lonSpan=ne.lng-sw.lng,marg=.25,inCenter=lat>sw.lat+latSpan*marg&&lat<ne.lat-latSpan*marg&&lon>sw.lng+lonSpan*marg&&lon<ne.lng-lonSpan*marg;if(!inCenter)map.panTo([lat,lon],{animate:true})}}
+ if(!(gps.activeKey&&Number.isFinite(gps.heading))){if(carTailLayer){map.removeLayer(carTailLayer);carTailLayer=null}return}
+ const color=getRoadStatus(gps.activeKey)==='done'?'#43a047':'#f97316',len=80,rad=(gps.heading-180)*Math.PI/180,dLat=(len/111320)*Math.cos(rad),dLon=(len/(111320*Math.cos(lat*Math.PI/180)))*Math.sin(rad),lls=[[lat,lon],[lat+dLat,lon+dLon]];
+ if(carTailLayer){carTailLayer.setLatLngs(lls);carTailLayer.setStyle({color})}
+ else carTailLayer=L.polyline(lls,{color,weight:6,opacity:.85,interactive:false}).addTo(map)
+}
+function updateMap(lat,lon){const m=initMap();if(!m)return;drawTail(lat,lon);if(!carMarker)carMarker=L.circleMarker([lat,lon],{radius:9,color:'#bf5000',fillColor:'#bf5000',fillOpacity:1,interactive:false}).addTo(map);else carMarker.setLatLng([lat,lon]);if(document.getElementById('tab-map').classList.contains('active')&&currentProfile().autoPan){const b=map.getBounds(),ne=b.getNorthEast(),sw=b.getSouthWest(),latSpan=ne.lat-sw.lat,lonSpan=ne.lng-sw.lng,marg=.25,inCenter=lat>sw.lat+latSpan*marg&&lat<ne.lat-latSpan*marg&&lon>sw.lng+lonSpan*marg&&lon<ne.lng-lonSpan*marg;if(!inCenter&&Date.now()-_lastMapPanTs>MAP_PAN_INTERVAL_MS){_lastMapPanTs=Date.now();map.panTo([lat,lon],{animate:false,noMoveStart:true})}}}
 function openRoadPopup(key,latlng){
  const r=roads.find(x=>x.key===key);
  if(!r)return;
@@ -3014,15 +3179,21 @@ window._mapSetSkip=key=>{deletedGeomKeys.delete(key);skipKeys.add(key);clearDire
 window._mapReset=key=>{clearRoadProgressForKey(key,{clearSkip:true});map.closePopup();renderAllViews()};
 function updateMapOverlay(fit=false){
  if(!map)return;
- roadLayers.forEach(l=>map.removeLayer(l));roadLayers=[];
- const bounds=[],toRender=mapRoadsToRender();
- const draw=(part,color,weight,opacity,key)=>{const v=part.filter(isVLL);if(v.length<2)return;const lls=v.map(c=>[c[1],c[0]]),opts={color,weight,opacity,interactive:!!key,bubblingMouseEvents:false};if(key&&_svgRenderer)opts.renderer=_svgRenderer;const pl=L.polyline(lls,opts).addTo(map);if(key){pl.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});const hit=L.polyline(lls,{color:'transparent',weight:20,opacity:0,interactive:true,bubblingMouseEvents:false,renderer:_svgRenderer||L.svg()}).addTo(map);hit.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});roadLayers.push(hit);}roadLayers.push(pl);bounds.push(...lls)};
+ if(gps.watching&&!fit){
+  const now=Date.now();
+  if(now-_lastMapOverlayRenderTs<MAP_OVERLAY_ACTIVE_THROTTLE_MS){scheduleMapOverlayRender(MAP_OVERLAY_ACTIVE_THROTTLE_MS-(now-_lastMapOverlayRenderTs));return}
+  _lastMapOverlayRenderTs=now;
+ }
+ if(!roadLayerGroup)roadLayerGroup=L.layerGroup().addTo(map);
+ roadLayerGroup.clearLayers();roadLayers=[];
+ const bounds=[],viewBox=fit?null:paddedMapBBox(map),toRender=mapRoadsToRender({fit,viewBox});
+ const draw=(part,color,weight,opacity,key)=>{const v=part.filter(isVLL);if(v.length<2)return;const lls=v.map(c=>[c[1],c[0]]),opts={color,weight,opacity,interactive:!!key,bubblingMouseEvents:false};if(key&&_svgRenderer)opts.renderer=_svgRenderer;const pl=L.polyline(lls,opts).addTo(roadLayerGroup);if(key){pl.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});const hit=L.polyline(lls,{color:'transparent',weight:20,opacity:0,interactive:true,bubblingMouseEvents:false,renderer:_svgRenderer||L.canvas({padding:.2,tolerance:8})}).addTo(roadLayerGroup);hit.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});roadLayers.push(hit);}roadLayers.push(pl);bounds.push(...lls)};
  for(const pass of[false,true])for(const r of toRender){
   const act=gps.activeKey===r.key;if(pass!==act)continue;
   const st=getRoadStatus(r.key),done=st==='done',one=st==='oneway',skip=skipKeys.has(r.key),plans=getCoverageDrawPlans(r.key);
   if(plans.length){
    for(const part of roadRenderParts(r))draw(part,skip?'#444':'#d32f2f',skip?3:4,skip?.35:.45,r.key);
-   drawCoveragePlans(map,r.key,bounds,coverageDrawOptionsForKey(r.key,{oneWeight:7,oneOpacity:.95,bothWeight:8,bothOpacity:.98,status:st}));
+    drawCoveragePlans(roadLayerGroup,r.key,bounds,coverageDrawOptionsForKey(r.key,{oneWeight:7,oneOpacity:.95,bothWeight:8,bothOpacity:.98,status:st}));
    if(act)for(const part of roadRenderParts(r))draw(part,'#1e88ff',3,.75,r.key);
    continue;
   }
@@ -3032,7 +3203,8 @@ function updateMapOverlay(fit=false){
  const inView=new Set(toRender.map(r=>r.key));
  for(const key of [...oneWayKeys,...drivenKeys]){
   if(inView.has(key)||!keyPassesCategoryFilter(key)||!keyPassesMapFylke(key))continue;
-  const cov=drawCoveragePlans(map,key,bounds,coverageDrawOptionsForKey(key,{oneWeight:7,oneOpacity:.9,bothWeight:8,bothOpacity:.95}));
+  if(!keyIntersectsMapBBox(key,viewBox))continue;
+   const cov=drawCoveragePlans(roadLayerGroup,key,bounds,coverageDrawOptionsForKey(key,{oneWeight:7,oneOpacity:.9,bothWeight:8,bothOpacity:.95}));
   if(!cov.drew&&oneWayKeys.has(key)){const parts=getGeomParts(geomCache[key]);if(parts.length)for(const part of parts)draw(part,'#f9a825',5,.35,key)}
  }
  if(fit){if(gps.lastPos)bounds.push([gps.lastPos[0],gps.lastPos[1]]);if(bounds.length>=2)map.fitBounds(L.latLngBounds(bounds),{padding:[20,20]});else if(gps.lastPos)map.setView(gps.lastPos,14)}
@@ -3141,7 +3313,6 @@ function getRoadPartsForKey(key){
  const cacheKm=calcPartsKm(cacheParts),liveKm=calcPartsKm(liveParts);
  return cacheKm>=liveKm?cacheParts:liveParts;
 }
-function makeChainFromParts(parts,maxGapM=250){const ordered=orderPartsForBridging(parts,maxGapM),chain=[];for(const part of ordered){const v=(part||[]).filter(isVLL);if(v.length<2)continue;if(chain.length){const last=chain[chain.length-1],first=v[0],gap=endpointDistM(last,first);if(gap>0&&gap<=maxGapM)chain.push(first)}for(const c of v){const last=chain[chain.length-1];if(!last||last[0]!==c[0]||last[1]!==c[1])chain.push([c[0],c[1]])}}return chain}
 function chainMeasures(chain){const m=[0];for(let i=0;i<chain.length-1;i++)m.push(m[m.length-1]+dM(chain[i][1],chain[i][0],chain[i+1][1],chain[i+1][0]));return m}
 function interpolateLonLat(a,b,t){return[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]}
 function projectLatLonToChain(lat,lon,chain,measures){let best={m:null,d:Infinity,idx:-1,t:0};for(let i=0;i<chain.length-1;i++){const a=chain[i],b=chain[i+1],lat0=(a[1]+b[1]+lat)/3,mLat=111320,mLon=Math.cos(lat0*Math.PI/180)*111320;const ax=a[0]*mLon,ay=a[1]*mLat,bx=b[0]*mLon,by=b[1]*mLat,px=lon*mLon,py=lat*mLat,abx=bx-ax,aby=by-ay,ab2=abx*abx+aby*aby;const t=ab2?Math.max(0,Math.min(1,((px-ax)*abx+(py-ay)*aby)/ab2)):0,qx=ax+t*abx,qy=ay+t*aby,d=Math.hypot(px-qx,py-qy);if(d<best.d)best={m:measures[i]+(measures[i+1]-measures[i])*t,d,idx:i,t}}return best}
@@ -3162,8 +3333,8 @@ function absorbOneWaySliversForDoneRoad(key,one,both){
  }
  return {one:mergeIntervals(keep),both:mergeIntervals([...(both||[]),...promote])};
 }
-function buildIntervalsFromTrackPoints(pts,chain,measures,snapFactor=2.0){
- const maxSnap=Math.max(ENTER_THRESH_M*snapFactor,30),total=measures[measures.length-1],intervals=[];
+function buildIntervalsFromTrackPoints(pts,chain,measures,snapFactor=1.55){
+ const maxSnap=Math.max(ENTER_THRESH_M*snapFactor,snapFactor<=1?14:22),total=measures[measures.length-1],intervals=[];
  const projected=(pts||[])
   .filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon))
   .map(p=>({...projectLatLonToChain(p.lat,p.lon,chain,measures),ts:p.ts,lat:p.lat,lon:p.lon}))
@@ -3278,7 +3449,7 @@ function buildCoveragePlanForChain(key,chain,manualFull=false,strictSnap=false){
  }else{
   // strictSnap=true: bruk ENTER_THRESH_M (1x) i staden for 2x for sideanlegg/rampar/rundkøyringar.
   // Hindrar at GPS-punkt logga på hovudvegen geometrisk projiserer over på nærliggande hjelpevegar.
-  const snapFactor=strictSnap?1.0:2.0;
+  const snapFactor=strictSnap?1.0:1.55;
   for(const dir of ['fwd','rev']){
    const pts=(log[dir]||[]).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon));
    if(!pts.length)continue;
@@ -3319,12 +3490,6 @@ function getCoverageSummaryForKey(key){
  const plans=getCoverageDrawPlans(key);
  if(!plans.length)return null;
  return plans.reduce((a,p)=>{a.total+=(p.total||0);a.oneKm+=(p.oneKm||0);a.bothKm+=(p.bothKm||0);a.hasTrack=a.hasTrack||p.hasTrack;a.hasLoggedTrack=a.hasLoggedTrack||p.hasLoggedTrack;a.manualFull=a.manualFull||p.manualFull;return a},{total:0,oneKm:0,bothKm:0,hasTrack:false,hasLoggedTrack:false,manualFull:false,plans});
-}
-function getDirectionalCoverageForKey(key){
- const sum=getCoverageSummaryForKey(key);
- if(!sum)return null;
- const first=sum.plans[0];
- return {...first,total:sum.total,oneKm:sum.oneKm,bothKm:sum.bothKm,hasTrack:sum.hasTrack,hasLoggedTrack:sum.hasLoggedTrack,plans:sum.plans};
 }
 function getCoverageDrawPlan(key){
  const plans=getCoverageDrawPlans(key);
@@ -3397,7 +3562,7 @@ function openProgressStatusPopup(key,latlng,statusHint=''){
 function refreshProgressAfterPopup(message,type='success'){
  const keepView=progressMap?{center:progressMap.getCenter(),zoom:progressMap.getZoom()}:null;
  if(progressMap)progressMap.closePopup();
- updateProgressMap({fit:false});
+ updateProgressMap({fit:false,force:true});
  if(progressMap&&keepView)progressMap.setView(keepView.center,keepView.zoom,{animate:false});
  renderStats();
  updateProgressReportUi();
@@ -3480,8 +3645,16 @@ window._progressRemoveMissing=encoded=>{
  refreshProgressAfterPopup('Strekningen er fjernet fra fremdrift-cache og markert som Kjøres ikke.');
 };
 
+function progressPct(km,totalKm){
+ return totalKm>0?((km/totalKm)*100).toFixed(1)+'%':'0.0%';
+}
 function updateProgressMap(opts={}){
  if(!progressMap)return;
+ if(gps.watching&&!opts.fit&&!opts.force){
+  const now=Date.now();
+  if(now-_lastProgressMapRenderTs<PROGRESS_MAP_ACTIVE_THROTTLE_MS)return;
+  _lastProgressMapRenderTs=now;
+ }
  progressMap.eachLayer(layer=>{if(layer instanceof L.Polyline)progressMap.removeLayer(layer)});
  const bounds=[];let green=0,orange=0,red=0,missing=0,partialSnap=0;
  const historyStyle={weight:6,opacity:.82};
@@ -3521,11 +3694,17 @@ function updateProgressMap(opts={}){
   }
  }
  const missingChip=settings.progressShowMissing
-  ?'<div style="background:#3a1a1a;border:1px solid #7a3a3a;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#ef9a9a">🔴 '+red.toFixed(1)+' km ikkje kjørt</div>'
+  ?'<div style="background:#3a1a1a;border:1px solid #7a3a3a;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#ef9a9a">🔴 '+red.toFixed(1)+' km ikke kjørt</div>'
   :'';
  const doneTxt=settings.progressShowDone?green.toFixed(1)+' km':'skjult';
  const oneTxt=settings.progressShowOneway?orange.toFixed(1)+' km':'skjult';
- document.getElementById('progress-stats').innerHTML='<div style="background:#1a3a1a;border:1px solid #2a5a2a;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🟢 '+doneTxt+'</div><div style="background:#3a2a00;border:1px solid #7a5500;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#f9a825">🟠 '+oneTxt+'</div>'+missingChip+'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#d7d7db">Σ '+(green+orange).toFixed(1)+' km</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">'+activeCategoryText()+'</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">Snappet GPS-spor</div>'+(partialSnap?'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🧭 '+partialSnap+' delstrekninger</div>':'')+(missing?'<div style="background:#55282b;border:1px solid #8f4f56;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#ffd7d7">⚠ '+missing+' mangler spor/geometri</div>':'');
+ const pctTotal=(settings.progressShowDone?green:0)+(settings.progressShowOneway?orange:0)+(settings.progressShowMissing?red:0);
+ const donePct=settings.progressShowDone?progressPct(green,pctTotal):'skjult';
+ const onePct=settings.progressShowOneway?progressPct(orange,pctTotal):'skjult';
+ const missingPct=settings.progressShowMissing?progressPct(red,pctTotal):'skjult';
+ const pctChip='<button type="button" onclick="window._progressPercentInfo&&window._progressPercentInfo()" title="Prosent av synlig/valgt vegnett" style="background:#172433;border:1px solid #355371;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#bfe1ff;cursor:pointer;flex:0 0 auto;white-space:nowrap">📊 Ferdig '+donePct+' · 1 rt '+onePct+' · ikke kjørt '+missingPct+'</button>';
+ window._progressPercentInfo=()=>setMessage(`Prosent av synlig/valgt vegnett: Ferdig ${donePct} (${green.toFixed(1)} km), kjørt 1 retning ${onePct} (${orange.toFixed(1)} km), ikke kjørt ${missingPct} (${red.toFixed(1)} km). Grunnlag: ${pctTotal.toFixed(1)} km.`,'notice');
+ document.getElementById('progress-stats').innerHTML='<div style="background:#1a3a1a;border:1px solid #2a5a2a;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🟢 '+doneTxt+'</div><div style="background:#3a2a00;border:1px solid #7a5500;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#f9a825">🟠 '+oneTxt+'</div>'+missingChip+pctChip+'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#d7d7db">Σ '+(green+orange).toFixed(1)+' km</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">'+activeCategoryText()+'</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">Snappet GPS-spor</div>'+(partialSnap?'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🧭 '+partialSnap+' delstrekninger</div>':'')+(missing?'<div style="background:#55282b;border:1px solid #8f4f56;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#ffd7d7">⚠ '+missing+' mangler spor/geometri</div>':'');
  if(bounds.length>0){
   const shouldFit=opts.fit===true||(opts.fit!==false&&!_progressAutoFitDone);
   if(shouldFit){
@@ -3546,8 +3725,9 @@ async function updateFromCenter(force=false,centerLat=null,centerLon=null){
   const changed=radius!==lastCenterRadius||fylkeNr!==lastCenterFylke;
  // v2.0.30: avstandssjekk FØR loadTile. Tidligere åpnet vi IDB-transaksjon på hver onPos selv om
  // vi var langt under reload-grensen — unødvendig disk-I/O under kjøring.
- if(!force&&!changed&&lastCenter){const dist=dM(lastCenter[0],lastCenter[1],lat,lon)/1000;if(dist<getReloadDistKm()){updateDistancesAndActiveRoad();renderAllViews();return}}
- if(nvdbLoading)return;nvdbLoading=true;document.getElementById('road-list').innerHTML='<div class="loading">Laster vegnett…</div>';setMessage(c.manual?'Laster vegnett rundt manuell markør…':(denseCityRule?`${denseCityRule.name}: tett vegnett, radius satt til ${DENSE_CITY_RADIUS_LIMIT_KM} km for komplett lasting.`:''));
+ if(!force&&!changed&&lastCenter){const dist=dM(lastCenter[0],lastCenter[1],lat,lon)/1000;if(dist<getReloadDistKm()){if(gps.watching)scheduleActiveTabLightRender(900,{allowMap:false});else{updateDistancesAndActiveRoad();renderAllViews()}return}}
+ if(nvdbLoading){if(force||changed)_pendingNvdbRefresh={force,centerLat:lat,centerLon:lon};return}
+ nvdbLoading=true;document.getElementById('road-list').innerHTML='<div class="loading">Laster vegnett…</div>';setMessage(c.manual?'Laster vegnett rundt manuell markør…':(denseCityRule?`${denseCityRule.name}: tett vegnett, radius satt til ${DENSE_CITY_RADIUS_LIMIT_KM} km for komplett lasting.`:''));
  try{
   let countyHit=fylkeNr?await loadCountyRoadsForArea(lat,lon,radius,fylkeNr):null;
   let newRoads=countyHit?countyHit.data:((!force||offlineMode)?await loadTile(lat,lon,radius,fylkeNr):null);
@@ -3578,7 +3758,7 @@ async function updateFromCenter(force=false,centerLat=null,centerLon=null){
   renderAllViews();updatePlanLayer();
   if(countyHit&&countyHit.stale)maybeWarnCountyCacheUpdate(fylkeNr,countyHit);
   if(!roads.length)setMessage(`Ingen E/R/F-veger funnet innen ${radius} km.`,'notice')
- }catch(e){console.error(e);setMessage('Feil ved lasting av vegnett: '+e.message,'error');document.getElementById('road-list').innerHTML='<div class="loading" style="color:#f66">Feil ved lasting – trykk Oppdater.</div>';updateProgressMap()}finally{nvdbLoading=false}
+ }catch(e){console.error(e);setMessage('Feil ved lasting av vegnett: '+e.message,'error');document.getElementById('road-list').innerHTML='<div class="loading" style="color:#f66">Feil ved lasting – trykk Oppdater.</div>';updateProgressMap()}finally{nvdbLoading=false;if(_pendingNvdbRefresh){const p=_pendingNvdbRefresh;_pendingNvdbRefresh=null;setTimeout(()=>updateFromCenter(p.force,p.centerLat,p.centerLon).catch(e=>console.warn('Kølagt NVDB-oppdatering feilet',e)),250)}}
 }
 function refreshCurrentCenter(close=true){const c=currentFetchCenter();if(close)closeMenu();return updateFromCenter(true,c?.lat,c?.lon)}
 function resetAll(){if(!confirm('Nullstille alt (inkl. kjørt-status og cache)?'))return;roads=[];speedLimits=[];currentSpeedLimit=null;lastSpeedLimitFetchKey='';lastSpeedLimitRefreshPos=null;speedLimitRefreshInFlight=false;speedLimitStartRefreshPending=false;drivenKeys.clear();oneWayKeys.clear();skipKeys.clear();deletedGeomKeys.clear();planKeys.clear();visitLog={};geomCache={};routeLog={};roadComments={};directionState={};selectedTableKeys.clear();gps.activeKey=null;gps.activeDir=null;gps.exitCount=0;gps._lastActiveKey=null;gps._activeKeyLeftAt=null;gps._sessionId=null;gps._sessionStartedAt=null;gps._dirDrivenM=0;gps._dirLastPos=null;resetGpsCandidate();clearNativeForegroundGPS();lastCenter=null;lastCenterRadius=null;lastCenterFylke=null;try{localStorage.removeItem(STORE);localStorage.removeItem(GEOM_STORE);localStorage.removeItem(LEGACY_GEOM);localStorage.removeItem(DIR_STORE);localStorage.removeItem(ROUTE_STORE);localStorage.removeItem(PLAN_STORE);localStorage.removeItem(COMMENT_STORE);localStorage.removeItem(PROGRESS_META_STORE);localStorage.removeItem(SELECT_STORE);if(HAS_INDEXED_DB)openIDB().then(db=>{try{db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).clear()}catch(e){}try{db.transaction(IDB_META_STORE,'readwrite').objectStore(IDB_META_STORE).clear()}catch(e){}}).catch(()=>{})}catch(e){}renderAllViews();setMessage('Nullstilt.')}
@@ -3603,7 +3783,24 @@ async function showTab(t){
 }
 
 /* ───────────────────── OFFLINE DOWNLOAD ───────────────────── */
-function generateTileGrid(fylkeNr,tileRadiusKm){const bbox=FYLKE_BBOX[fylkeNr];if(!bbox)return[];const[minLon,minLat,maxLon,maxLat]=bbox,stepLat=(tileRadiusKm*1.5)/111.32,midLat=(minLat+maxLat)/2,stepLon=(tileRadiusKm*1.5)/(111.32*Math.cos(midLat*Math.PI/180)),tiles=[];for(let lat=minLat;lat<=maxLat+stepLat;lat+=stepLat)for(let lon=minLon;lon<=maxLon+stepLon;lon+=stepLon)tiles.push([Math.min(lat,maxLat),Math.min(lon,maxLon)]);return tiles}
+function expandBboxByKm(bbox,km){
+ const [minLon,minLat,maxLon,maxLat]=bbox,midLat=(minLat+maxLat)/2,dLat=km/111.32,dLon=km/(111.32*Math.max(0.2,Math.abs(Math.cos(midLat*Math.PI/180))));
+ return [minLon-dLon,minLat-dLat,maxLon+dLon,maxLat+dLat];
+}
+function gridAxisCenters(min,max,step){
+ const out=[];
+ for(let v=min;v<=max+1e-9;v+=step)out.push(Math.min(v,max));
+ if(!out.length||out[out.length-1]<max-1e-9)out.push(max);
+ return out;
+}
+function generateTileGrid(fylkeNr,tileRadiusKm){
+ const base=FYLKE_BBOX[fylkeNr];if(!base)return[];
+ const radius=Math.max(2,Number(tileRadiusKm)||10),bbox=expandBboxByKm(base,Math.min(40,Math.max(15,radius*.5)));
+ const[minLon,minLat,maxLon,maxLat]=bbox,midLat=(minLat+maxLat)/2,stepKm=Math.max(2,radius*1.3),stepLat=stepKm/111.32,stepLon=stepKm/(111.32*Math.max(0.2,Math.abs(Math.cos(midLat*Math.PI/180)))),tiles=[];
+ const lats=gridAxisCenters(minLat,maxLat,stepLat),lons=gridAxisCenters(minLon,maxLon,stepLon);
+ for(const lat of lats)for(const lon of lons)tiles.push([lat,lon]);
+ return tiles;
+}
 let dlAbort=false;
 function updateOfflineDialogLabels(){
  const title=document.querySelector('.offline-title'),sub=document.querySelector('.offline-sub'),start=document.getElementById('dl-start'),labels=document.querySelectorAll('.offline-row label');
@@ -3828,7 +4025,15 @@ function savePlanKeys(){persistJsonStore(PLAN_STORE,[...planKeys],{localLimit:50
 function loadSelectedTableKeys(){try{selectedTableKeys=new Set(JSON.parse(localStorage.getItem(SELECT_STORE)||'[]'))}catch(e){selectedTableKeys=new Set()}}
 function saveSelectedTableKeys(){try{localStorage.setItem(SELECT_STORE,JSON.stringify([...selectedTableKeys]))}catch(e){}}
 function togglePlanKey(key){if(!key)return;if(planKeys.has(key))planKeys.delete(key);else planKeys.add(key);savePlanKeys();renderAll();updatePlanLayer();setMessage(planKeys.has(key)?'Lagt til i dagsrute.':'Fjernet fra dagsrute.','success')}
-function roadByKeyAny(key){return roads.find(r=>r.key===key)||geomCache[key]||null}
+let _roadIndexSource=null,_roadIndex=new Map();
+function roadByKeyAny(key){
+ if(_roadIndexSource!==roads){
+  _roadIndexSource=roads;
+  _roadIndex=new Map();
+  for(const r of roads||[])if(r&&r.key&&!_roadIndex.has(r.key))_roadIndex.set(r.key,r);
+ }
+ return _roadIndex.get(key)||geomCache[key]||null;
+}
 function getManualCenter(){return settings.manualCenter&&Number.isFinite(settings.manualCenter.lat)&&Number.isFinite(settings.manualCenter.lon)?settings.manualCenter:null}
 function updateManualMarker(){
  if(!map)return;
