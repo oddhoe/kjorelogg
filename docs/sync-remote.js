@@ -52,7 +52,7 @@
    const last=rows.at(-1);return{rows,cursor:last?{server_updated_at:last.server_updated_at,id:last.id}:cursor||null};
   }
   async function countUserMigrationData(){
-   const{client,user}=await context(),spec=[['road_progress','user_id'],['asphalt_plans','owner_user_id'],['asphalt_progress','user_id'],['measurement_tracks','user_id']],counts={};
+   const{client,user}=await context(),spec=[['road_progress','user_id'],['asphalt_plans','owner_user_id'],['asphalt_progress','user_id'],['measurement_tracks','user_id'],['app_settings','user_id'],['day_plans','user_id']],counts={};
    for(const[table,owner]of spec){const result=await client.from(table).select('id',{count:'exact',head:true}).eq(owner,user.id);if(result.error)throw normalizeError(result.error);counts[table]=result.count||0}
    return counts;
   }
