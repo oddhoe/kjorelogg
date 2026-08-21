@@ -3,7 +3,16 @@
  const CORE_STORES=['tiles','appdata','progress_snapshots'],SYNC_OUTBOX='sync_outbox',SYNC_META='sync_meta';
  const request=req=>new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});
  function error(code,message,details={}){const value=new Error(message);value.code=code;value.details=details;return value}
- function openExisting(idb,name){return new Promise((resolve,reject)=>{const req=idb.open(name);let created=false;req.onupgradeneeded=()=>{created=true;req.transaction.abort()};req.onsuccess=()=>{if(created){req.result.close();reject(error('IDB_NOT_FOUND',`IndexedDB ${name} finnes ikke`))}else resolve(req.result)};req.onerror=()=>reject(error('IDB_OPEN_ERROR',req.error?.message||'Kunne ikke åpne IndexedDB',{name:req.error?.name}))})}
+ function openExisting(idb,name,options={}){
+  const timeoutMs=Number(options.timeoutMs)||12000,onEvent=typeof options.onEvent==='function'?options.onEvent:()=>{};
+  return new Promise((resolve,reject)=>{let settled=false,created=false,blocked=false,req;const finish=(fn,value)=>{if(settled)return;settled=true;clearTimeout(timer);fn(value)},timer=setTimeout(()=>finish(reject,error(blocked?'IDB_OPEN_BLOCKED':'IDB_OPEN_TIMEOUT',blocked?'Databaseåpning blokkert av en annen fane.':'Tidsavbrudd ved versjonsløs databaseåpning.',{name,timeout_ms:timeoutMs})),timeoutMs);
+   try{req=idb.open(name)}catch(cause){finish(reject,error('IDB_OPEN_ERROR',cause.message,{name:cause.name}));return}
+   req.onblocked=()=>{blocked=true;onEvent({step:'open-existing',status:'BLOCKED'});finish(reject,error('IDB_OPEN_BLOCKED','Databaseåpning blokkert av en annen fane.',{name}))};
+   req.onupgradeneeded=()=>{created=true;try{req.transaction.abort()}catch(_){};finish(reject,error('IDB_NOT_FOUND',`IndexedDB ${name} finnes ikke; opprettelse ble abortert`))};
+   req.onsuccess=()=>{const db=req.result;if(settled){db.close();return}if(created){db.close();finish(reject,error('IDB_NOT_FOUND',`IndexedDB ${name} finnes ikke`));return}db.onversionchange=()=>{onEvent({step:'connection',status:'VERSION_CHANGE_CLOSE',from:db.version});db.close()};onEvent({step:'open-existing',status:'PASS',version:db.version,stores:[...db.objectStoreNames]});finish(resolve,db)};
+   req.onerror=()=>finish(reject,error('IDB_OPEN_ERROR',req.error?.message||'Kunne ikke åpne IndexedDB',{name:req.error?.name}));
+  })
+ }
  async function databaseInfo(idb,name){if(typeof idb.databases==='function'){const entry=(await idb.databases()).find(item=>item.name===name);if(!entry)throw error('IDB_NOT_FOUND',`IndexedDB ${name} finnes ikke`);return entry}const db=await openExisting(idb,name);try{return{name,version:db.version}}finally{db.close()}}
  function openForUpgrade(options={}){
   const idb=options.indexedDB||globalThis.indexedDB,name=options.name||'nvdb_tiles',version=options.version||4,timeoutMs=Number(options.timeoutMs)||12000,onEvent=typeof options.onEvent==='function'?options.onEvent:()=>{};

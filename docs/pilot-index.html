@@ -95,11 +95,11 @@ const FYLKER=[
 {id:'34',name:'Innlandet'},{id:'39',name:'Vestfold'},{id:'40',name:'Telemark'},{id:'42',name:'Agder'},
 {id:'11',name:'Rogaland'},{id:'46',name:'Vestland'},{id:'15',name:'Møre og Romsdal'},{id:'50',name:'Trøndelag'},
 {id:'18',name:'Nordland'},{id:'55',name:'Troms'},{id:'56',name:'Finnmark'}];
-const APP_VERSION='v2.0.100';
+const APP_VERSION='v2.0.101';
 let _pilotIDBModulePromise=null,_pilotBeforeInspection=null,_pilotAfterInspection=null;
 let _pilotConfigPromise=null;
 function loadFreshPilotConfig(){if(_pilotConfigPromise)return _pilotConfigPromise;_pilotConfigPromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./config.js?v=2.0.100';script.onload=()=>window.KJORELOGG_CONFIG?.SUPABASE_URL&&window.KJORELOGG_CONFIG?.SUPABASE_ANON_KEY?resolve(window.KJORELOGG_CONFIG):reject(new Error('Versjonert config.js mangler Supabase-konfigurasjon'));script.onerror=()=>reject(new Error('Kunne ikke laste config.js?v=2.0.100'));document.head.appendChild(script)});return _pilotConfigPromise}
-function loadPilotIDBModule(){if(window.KjoreloggPilotIDB)return Promise.resolve(window.KjoreloggPilotIDB);if(_pilotIDBModulePromise)return _pilotIDBModulePromise;_pilotIDBModulePromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./pilot-idb-recovery.js?v=2.0.100';script.onload=()=>window.KjoreloggPilotIDB?resolve(window.KjoreloggPilotIDB):reject(new Error('Pilot-IDB-modulen mangler'));script.onerror=()=>reject(new Error('Kunne ikke laste pilot-idb-recovery.js?v=2.0.100'));document.head.appendChild(script)});return _pilotIDBModulePromise}
+function loadPilotIDBModule(){if(window.KjoreloggPilotIDB)return Promise.resolve(window.KjoreloggPilotIDB);if(_pilotIDBModulePromise)return _pilotIDBModulePromise;_pilotIDBModulePromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./pilot-idb-recovery.js?v=2.0.101';script.onload=()=>window.KjoreloggPilotIDB?resolve(window.KjoreloggPilotIDB):reject(new Error('Pilot-IDB-modulen mangler'));script.onerror=()=>reject(new Error('Kunne ikke laste pilot-idb-recovery.js?v=2.0.101'));document.head.appendChild(script)});return _pilotIDBModulePromise}
 
 const FYLKE_BBOX={
 '31':[10.45,58.75,12.10,59.85],'32':[10.15,59.35,12.25,60.60],'3':[10.45,59.75,11.00,60.05],
@@ -424,7 +424,7 @@ async function loadPersistentAppState({persistAfterHydration=true,strict=false}=
  loadState();loadDirectionState();loadRouteLog();loadGeomCache();loadRoadComments();loadAsphaltPlan();
  await hydrateLargeStoresFromIDB({strict});
  await loadProgressSnapshotFromIDB({strict});
- syncAsphaltPlanToProgressCache();
+ if(persistAfterHydration)syncAsphaltPlanToProgressCache();
  rebuildStatusSetsFromDirections();
  if(!persistAfterHydration)return;
  // Migrer gamle store localStorage-data over til IndexedDB ved første oppstart i v2.0.4.
@@ -4720,9 +4720,9 @@ document.getElementById('btn-fit-plan')?.addEventListener('click',fitPlanLayer);
 document.getElementById('btn-clear-plan')?.addEventListener('click',()=>{planKeys.clear();savePlanKeys();updatePlanLayer();renderAll();setMessage('Dagsrute tømt.','success')});
 
 // v2.0.30: synkron flush ved app-bytte. Kanseller debouncere og skriv siste batch nå, ikke om 250 ms.
-window.addEventListener('pagehide',()=>{flushAllPendingWritesNow().catch(()=>{})});
+window.addEventListener('pagehide',()=>{if(!PHASE56_RECOVERY_ONLY)flushAllPendingWritesNow().catch(()=>{})});
 document.addEventListener('visibilitychange',()=>{
- if(document.visibilityState==='hidden')flushAllPendingWritesNow().catch(()=>{});
+ if(document.visibilityState==='hidden'&&!PHASE56_RECOVERY_ONLY)flushAllPendingWritesNow().catch(()=>{});
 });
 
 
@@ -4832,12 +4832,18 @@ window.addEventListener('online',()=>updateSyncUi());window.addEventListener('of
 /* ---------------- /FASE 3 ---------------- */
 
 /* ───────────────────── START ───────────────────── */
-function validatePilotHydration(){
+async function validatePilotHydration(){
  const source=_pilotAfterInspection?.critical_records||{},geomExpected=Number(source[GEOM_STORE]?.elements||0),progressExpected=Number(_pilotAfterInspection?.counts?.[IDB_SNAPSHOT_STORE]||0)>0||Number(source[STORE]?.elements||0)>0;
- const runtime={roads:roads.length,geom_cache:Object.keys(geomCache||{}).length,driven:drivenKeys.size,one_direction:oneWayKeys.size,skipped:skipKeys.size,direction_state:Object.keys(directionState||{}).length,asphalt:asphaltPlan.length};
+ const [rawState,rawDirection,rawRoute,rawGeom,rawComments,rawSnapshot]=await Promise.all([idbGetAppData(STORE),idbGetAppData(DIR_STORE),idbGetAppData(ROUTE_STORE),idbGetAppData(GEOM_STORE),idbGetAppData(COMMENT_STORE),idbGetAppData(PROGRESS_IDB_KEY)]),raw={driven:Array.isArray(rawState?.driven)?rawState.driven.length:0,skip:Array.isArray(rawState?.skip)?rawState.skip.length:0,deleted_geom:Array.isArray(rawState?.deletedGeom)?rawState.deletedGeom.length:Array.isArray(rawState?.deletedGeomKeys)?rawState.deletedGeomKeys.length:0,direction_state:Object.keys(rawDirection||{}).length,route_log:Object.keys(rawRoute||{}).length,geom_cache:Object.keys(rawGeom||{}).length,comments:Object.keys(rawComments||{}).length,snapshot_state:rawSnapshot?.state?1:0};
+ const expected={driven:327,skip:138,deleted_geom:91,direction_state:327,route_log:188,geom_cache:8005,comments:8,snapshot_state:1};
+ for(const[key,value]of Object.entries(expected))if(raw[key]!==value)throw Object.assign(new Error(`V4 record-count avvik for ${key}: forventet ${value}, fikk ${raw[key]}. Ingen data blir skrevet.`),{code:'PILOT_V4_COUNT_MISMATCH',details:{raw,expected}});
+ const runtime={roads:roads.length,geom_cache:Object.keys(geomCache||{}).length,driven:drivenKeys.size,one_direction:oneWayKeys.size,skipped:skipKeys.size,direction_state:Object.keys(directionState||{}).length,route_log:Object.keys(routeLog||{}).length,comments:Object.keys(roadComments||{}).length,asphalt:asphaltPlan.length};
  if(geomExpected>0&&runtime.geom_cache===0)throw Object.assign(new Error(`Hydrering ga tom geomCache selv om persistent ${GEOM_STORE} har ${geomExpected} elementer. Ingen data blir skrevet.`),{code:'PILOT_EMPTY_STATE_GUARD',details:{geom_expected:geomExpected,runtime}});
  if(progressExpected&&runtime.geom_cache===0&&runtime.driven===0&&runtime.one_direction===0&&runtime.skipped===0&&runtime.direction_state===0)throw Object.assign(new Error('Hydrering ga åpenbart tom fremdriftsstate selv om IndexedDB inneholder fremdriftsdata. Ingen data blir skrevet.'),{code:'PILOT_EMPTY_STATE_GUARD',details:{runtime}});
- return runtime;
+ for(const[key,value]of Object.entries({geom_cache:8005,driven:327,skipped:138,direction_state:327,route_log:188,comments:8}))if(runtime[key]!==value)throw Object.assign(new Error(`V4 runtime-count avvik for ${key}: forventet ${value}, fikk ${runtime[key]}. Ingen data blir skrevet.`),{code:'PILOT_V4_RUNTIME_MISMATCH',details:{raw,runtime}});
+ let totalKm=0,completedKm=0,oneDirectionKm=0,notDrivenKm=0;for(const[key,record]of Object.entries(geomCache||{})){if(isAsphaltProgressKey(key))continue;const km=Number(record?.len)>0?Number(record.len)/1000:calcPartsKm(getGeomParts(record));if(!Number.isFinite(km)||km<0)continue;const status=getRoadStatus(key);if(skipKeys.has(key))continue;totalKm+=km;if(status==='done')completedKm+=km;else if(status==='oneway')oneDirectionKm+=km;else notDrivenKm+=km}
+ const metrics={total_km:+totalKm.toFixed(1),completed_km:+completedKm.toFixed(1),one_direction_km:+oneDirectionKm.toFixed(1),not_driven_km:+notDrivenKm.toFixed(1),completed_pct:totalKm?+((completedKm/totalKm)*100).toFixed(1):0,geometry_loaded:runtime.geom_cache,status_counts:{completed:runtime.driven,one_direction:runtime.one_direction,skipped:runtime.skipped,not_started:Math.max(0,runtime.geom_cache-runtime.driven-runtime.one_direction-runtime.skipped)},record_fingerprint:Object.fromEntries([STORE,DIR_STORE,ROUTE_STORE,GEOM_STORE,COMMENT_STORE,PROGRESS_IDB_KEY].map(key=>[key,source[key]?.sha256||null]))};
+ return{...runtime,raw,metrics};
 }
 function showPilotBootFailure(error){
  console.error('PILOT BOOT STOPPET',error);const area=document.getElementById('message-area'),message=error?.code==='IDB_UPGRADE_BLOCKED'?'Databaseoppgradering blokkert. En annen Kjørelogg-fane bruker fortsatt den gamle databasen. Lukk alle andre Kjørelogg-faner og prøv igjen.':(error?.message||'Ukjent databasefeil');
@@ -4849,9 +4855,9 @@ async function bootApp(){
  loadSettings({allowWrites:false});
  updateAsphaltPlanBadge();
  try{
-  const recovery=await loadPilotIDBModule(),runtime=await recovery.runReadOnlyBoot({hydrate:async()=>{await loadPersistentAppState({persistAfterHydration:false,strict:true});loadPlanKeys();loadSelectedTableKeys();return true},validate:()=>validatePilotHydration(),render:()=>{applySettingsToUI();updateProgressReportUi();renderGPS();showSecureWarning();renderStats();renderRoads();renderTable();updateOfflineCacheInfo()}});
+  const recovery=await loadPilotIDBModule(),runtime=await recovery.runReadOnlyBoot({hydrate:async()=>{await loadPersistentAppState({persistAfterHydration:false,strict:true});loadPlanKeys();loadSelectedTableKeys();return true},validate:()=>validatePilotHydration(),render:validated=>{applySettingsToUI();updateProgressReportUi();renderGPS();showSecureWarning();renderStats();renderRoads();renderTable();updateOfflineCacheInfo();const m=validated.metrics;setMessage(`V4 lokal fremdrift lastet read-only: ${m.total_km.toFixed(1)} km · ${m.completed_pct.toFixed(1)} % ferdig · ${m.not_driven_km.toFixed(1)} km ikke kjørt · ${m.geometry_loaded} geometrier.`,'success')}});
   window.__PILOT_BOOT_DIAGNOSTICS__={status:'PASS',before:_pilotBeforeInspection,after:_pilotAfterInspection,runtime,writes:false};
-  await initializeSyncInfrastructure();
+  window.__PILOT_V4_RUNTIME__=runtime;document.getElementById('sync-header-status').textContent='⚪ Kun lokal v4 · sync deaktivert';document.getElementById('sync-status-label').textContent='⚪ Kun lokal v4 · sync deaktivert';
  }catch(error){showPilotBootFailure(error);return}
  const bootFylke=document.getElementById('fylke')?.value||document.getElementById('dl-fylke')?.value;
  if(bootFylke){getCountyCacheMeta(bootFylke).then(meta=>{if(meta?.ts&&Date.now()-meta.ts>COUNTY_CACHE_TTL_MS)maybeWarnCountyCacheUpdate(bootFylke,{stale:true,ts:meta.ts,meta})}).catch(()=>{})}
