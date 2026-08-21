@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="no"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kjørelogg – read-only IDB-diagnose</title>
+<style>body{margin:0;background:#11151b;color:#edf2f7;font:14px system-ui}main{max-width:980px;margin:auto;padding:20px}section{background:#1b222c;border:1px solid #344150;border-radius:14px;padding:18px}button{border:0;border-radius:10px;padding:12px 16px;background:#1769aa;color:white;font-weight:800}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0d1117;padding:14px;border-radius:10px}.warn{color:#ffd08a}</style></head>
+<body><main><h1>FASE 5.6C – read-only hydratiseringsdiagnose</h1><section>
+<p class="warn">Denne siden åpner bare eksisterende <code>nvdb_tiles</code> uten versjonsnummer og bruker kun readonly-transaksjoner. Den skriver, oppgraderer eller sletter ingenting.</p>
+<button id="run">Kjør read-only diagnose</button><pre id="out">Ikke kjørt.</pre>
+</section></main><script>
+(()=>{'use strict';
+const DB='nvdb_tiles';
+const KEYS={state:'kjorelogg_state_v2',direction:'kjorelogg_direction_v1',route:'kjorelogg_route_log_v1',geom:'kjorelogg_geom_cache_v1',comments:'kjorelogg_road_comments_v1',asphalt:'kjorelogg_asphalt_plan_v1',snapshot:'__kjorelogg_progress_state_v3'};
+const LEGACY=['kjorelogg_state_v2','kjorelogg_direction_v1','kjorelogg_route_log_v1','kjorelogg_geom_cache_v1','kjorelogg_geom_cache','kjorelogg_road_comments_v1','kjorelogg_asphalt_plan_v1'];
+const enc=new TextEncoder();
+const hex=buffer=>[...new Uint8Array(buffer)].map(v=>v.toString(16).padStart(2,'0')).join('');
+const hash=async bytes=>hex(await crypto.subtle.digest('SHA-256',bytes));
+function normalize(value,seen=new WeakSet()){
+ if(value===undefined)return{$type:'undefined'};if(value===null||typeof value==='string'||typeof value==='boolean')return value;
+ if(typeof value==='number')return Number.isFinite(value)?value:{$type:String(value)};
+ if(value instanceof Date)return{$type:'Date',value:value.toISOString()};
+ if(value instanceof ArrayBuffer)return{$type:'ArrayBuffer',bytes:[...new Uint8Array(value)]};
+ if(ArrayBuffer.isView(value))return{$type:value.constructor.name,bytes:[...new Uint8Array(value.buffer,value.byteOffset,value.byteLength)]};
+ if(value instanceof Blob)return{$type:'Blob',size:value.size,mime:value.type};
+ if(value instanceof Map)return{$type:'Map',entries:[...value.entries()].map(([k,v])=>[normalize(k,seen),normalize(v,seen)]).sort((a,b)=>JSON.stringify(a[0]).localeCompare(JSON.stringify(b[0])))};
+ if(value instanceof Set)return{$type:'Set',values:[...value].map(v=>normalize(v,seen)).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))};
+ if(Array.isArray(value))return value.map(v=>normalize(v,seen));
+ if(typeof value==='object'){if(seen.has(value))return{$type:'Circular'};seen.add(value);const out={};for(const key of Object.keys(value).sort())out[key]=normalize(value[key],seen);seen.delete(value);return out}
+ return{$type:typeof value};
+}
+const bytes=value=>enc.encode(JSON.stringify(normalize(value)));
+function tag(v){if(v===null)return'null';if(Array.isArray(v))return'array';if(v instanceof Date)return'Date';if(v instanceof Map)return'Map';if(v instanceof Set)return'Set';if(v instanceof Blob)return'Blob';if(v instanceof ArrayBuffer)return'ArrayBuffer';if(ArrayBuffer.isView(v))return v.constructor.name;return typeof v}
+function count(v){if(Array.isArray(v))return v.length;if(v&&typeof v==='object')return Object.keys(v).length;return v==null?0:1}
+const req=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+async function openExisting(){
+ if(typeof indexedDB.databases==='function'){const dbs=await indexedDB.databases();if(!dbs.some(x=>x.name===DB))throw new Error(`${DB} finnes ikke; åpning avbrytes uten å opprette database`)}
+ return new Promise((ok,no)=>{const r=indexedDB.open(DB);let upgrade=false;r.onupgradeneeded=()=>{upgrade=true;r.transaction.abort()};r.onsuccess=()=>{if(upgrade){r.result.close();no(new Error('onupgradeneeded ble utløst og ble abortert'))}else ok(r.result)};r.onerror=()=>no(r.error||new Error('IDB open feilet'));r.onblocked=()=>no(new Error('IDB open blocked'))})
+}
+async function storeRows(db,name){const tx=db.transaction(name,'readonly'),store=tx.objectStore(name),[keys,vals]=await Promise.all([req(store.getAllKeys()),req(store.getAll())]);return keys.map((key,i)=>({key:String(key),raw:vals[i]}))}
+async function describe(key,raw){const logical=raw&&typeof raw==='object'&&Object.hasOwn(raw,'value')?raw.value:raw,b=bytes(raw),lb=bytes(logical);return{key,raw_type:tag(raw),logical_type:tag(logical),logical_count:count(logical),serialized_bytes:b.length,sha256:await hash(b),logical_bytes:lb.length,logical_sha256:await hash(lb)}}
+function statusTransform(v){const d=v&&typeof v==='object'?v:{};return{driven:Array.isArray(d.driven)?d.driven.length:0,oneWay:Array.isArray(d.oneWay)?d.oneWay.length:0,skip:Array.isArray(d.skip)?d.skip.length:0,deletedGeom:Array.isArray(d.deletedGeom)?d.deletedGeom.length:Array.isArray(d.deletedGeomKeys)?d.deletedGeomKeys.length:0}}
+function geomTransform(v){let accepted=0,rejected=0;for(const val of Object.values(v&&typeof v==='object'?v:{})){if(Array.isArray(val)||(val&&typeof val==='object'&&Array.isArray(val.parts)))accepted++;else rejected++}return{input:count(v),accepted,rejected}}
+function snapshotTransform(v){const s=v&&typeof v==='object'?v:{},st=statusTransform(s.state);return{...st,direction:count(s.directionState),route:count(s.routeLog),geom:geomTransform(s.geomCache),comments:count(s.roadComments)}}
+async function localRows(){const out=[];for(const key of LEGACY){let raw=null;try{raw=localStorage.getItem(key)}catch(error){out.push({key,error:error.name});continue}if(raw===null)continue;const b=enc.encode(raw);let parsedType='invalid-json',parsedCount=0;try{const parsed=JSON.parse(raw);parsedType=tag(parsed);parsedCount=count(parsed)}catch(_){}out.push({key,type:'string',bytes:b.length,sha256:await hash(b),parsed_type:parsedType,parsed_count:parsedCount})}return out}
+async function run(){
+ const report={mode:'READ_ONLY',writes:false,generated_at:new Date().toISOString(),storage:{},database:null,stores:{},trace:{},localStorage:[]};
+ if(navigator.storage?.estimate)report.storage.estimate=await navigator.storage.estimate();
+ if(navigator.storage?.persisted)report.storage.persisted=await navigator.storage.persisted();
+ const db=await openExisting();try{
+  report.database={name:db.name,version:db.version,objectStoreNames:[...db.objectStoreNames]};
+  for(const name of db.objectStoreNames){const rows=await storeRows(db,name);const entry={count:rows.length};if(name==='appdata'||name==='progress_snapshots'){entry.records=[];for(const row of rows)entry.records.push(await describe(row.key,row.raw))}else if(name==='tiles'){let county=0,dataArrays=0,totalItems=0;for(const row of rows){const v=row.raw;if(String(row.key).startsWith('nvdb_county_'))county++;if(Array.isArray(v?.data)){dataArrays++;totalItems+=v.data.length}}entry.summary={county_records:county,data_array_records:dataArrays,data_items:totalItems}}report.stores[name]=entry}
+  const appRows=db.objectStoreNames.contains('appdata')?await storeRows(db,'appdata'):[],map=new Map(appRows.map(x=>[x.key,x.raw&&typeof x.raw==='object'&&Object.hasOwn(x.raw,'value')?x.raw.value:x.raw]));
+  const state=map.get(KEYS.state),direction=map.get(KEYS.direction),route=map.get(KEYS.route),geom=map.get(KEYS.geom),comments=map.get(KEYS.comments),asphalt=map.get(KEYS.asphalt),snap=map.get(KEYS.snapshot);
+  report.trace.production_v2093={appdata_lookup:{state:statusTransform(state),direction:count(direction),route:count(route),geom:geomTransform(geom),comments:count(comments),asphalt:count(asphalt),snapshot:snapshotTransform(snap)},transform_order:['localStorage fallback','appdata records','__kjorelogg_progress_state_v3 only fills empty runtime fields','rebuild direction status']};
+  report.trace.pilot_v20100=structuredClone(report.trace.production_v2093);
+  report.trace.pilot_v20100.safety_input={progress_snapshots_store_count:report.stores.progress_snapshots?.count||0,state_record_count:count(state),geom_record_count:count(geom)};
+ }finally{db.close()}
+ report.localStorage=await localRows();return report
+}
+document.getElementById('run').onclick=async()=>{const out=document.getElementById('out');out.textContent='Leser read-only …';try{const report=await run();out.textContent=JSON.stringify(report,null,2);window.__KJORELOGG_READONLY_DIAGNOSTIC__=report}catch(error){out.textContent=`FAIL ${error.name}: ${error.message}\nIngen writes ble utført.`}};
+})();
+</script></body></html>
