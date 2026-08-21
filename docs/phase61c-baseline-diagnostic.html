@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="no"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kjørelogg – FASE 6.1C baseline-diagnose</title>
+<style>body{margin:0;background:#10151b;color:#edf2f7;font:14px system-ui}main{max-width:1100px;margin:auto;padding:20px}section{background:#1b222c;border:1px solid #344150;border-radius:14px;padding:18px}button{border:0;border-radius:9px;padding:11px 15px;background:#1769aa;color:#fff;font-weight:800}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0d1117;padding:14px;border-radius:10px}.warn{color:#ffd08a}</style></head>
+<body><main><h1>FASE 6.1C – read-only baseline-diff</h1><section>
+<p class="warn">Siden åpner eksisterende <code>nvdb_tiles</code> uten versjonsnummer og bruker bare readonly-transaksjoner. Den initialiserer ikke app, Auth, sync, lease eller outbox.</p>
+<button id="run">Kjør read-only diff</button><pre id="out">Ikke kjørt.</pre>
+</section></main><script src="./pre-migration-snapshot.js?v=2"></script><script>
+(()=>{'use strict';
+const DB='nvdb_tiles',APP='appdata',SNAPS='progress_snapshots';
+const KEYS=['mr_veg_nvdb_state','mr_veg_dir_state_v1','mr_veg_route_log_v1','mr_veg_geom_v2','mr_veg_road_comments_v1','__kjorelogg_progress_state_v3','mr_veg_asphalt_plan_v1'];
+const ROAD_KEYS=KEYS.slice(0,6),enc=new TextEncoder();
+const req=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error||new Error('IndexedDB read feilet'))});
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+async function canonicalBytes(value){return window.KjoreloggPreMigrationSnapshot.canonicalSnapshotBytes(value)}
+async function digest(value){const bytes=await canonicalBytes(value);return{sha256:hex(await crypto.subtle.digest('SHA-256',bytes)),bytes:bytes.length}}
+function type(v){if(v===null)return'null';if(Array.isArray(v))return'array';if(v instanceof Map)return'Map';if(v instanceof Set)return'Set';if(v instanceof Date)return'Date';if(v instanceof ArrayBuffer)return'ArrayBuffer';if(ArrayBuffer.isView(v))return v.constructor.name;return typeof v}
+function count(v){if(Array.isArray(v))return v.length;if(v&&typeof v==='object'){if(v.state&&typeof v.state==='object')return['driven','oneWay','skip','deletedGeom','deletedGeomKeys'].reduce((n,k)=>n+(Array.isArray(v.state[k])?v.state[k].length:0),0);return Object.keys(v).length}return v==null?0:1}
+function summary(v){return{type:type(v),count:count(v)}}
+async function openExisting(){if(indexedDB.databases){const rows=await indexedDB.databases();if(!rows.some(x=>x.name===DB))throw new Error(`${DB} finnes ikke i denne nettleserprofilen`)}return new Promise((ok,no)=>{const r=indexedDB.open(DB);let upgrade=false;r.onupgradeneeded=()=>{upgrade=true;r.transaction.abort()};r.onsuccess=()=>upgrade?(r.result.close(),no(new Error('Opprettelse/upgrade ble abortert'))):ok(r.result);r.onerror=()=>no(r.error||new Error('IndexedDB open feilet'));r.onblocked=()=>no(new Error('IndexedDB open blocked'))})}
+async function readRows(db,store){if(!db.objectStoreNames.contains(store))return[];const s=db.transaction(store,'readonly').objectStore(store),[keys,values]=await Promise.all([req(s.getAllKeys()),req(s.getAll())]);return keys.map((key,i)=>({key:String(key),raw:values[i]}))}
+function logical(raw){return raw&&typeof raw==='object'&&Object.hasOwn(raw,'value')?raw.value:raw}
+function baselineFromAsphalt(value){if(!Array.isArray(value))return null;for(const row of value){const fp=row?.roadBaselineFingerprint;if(fp?.records&&ROAD_KEYS.every(k=>fp.records[k]))return fp}return null}
+function candidatesFromSnapshot(snap,key){const out=[],s=snap&&typeof snap==='object'?snap:{};const paths={
+  'mr_veg_nvdb_state':[['$.state',s.state],['$.sources.runtime_state.state',s.sources?.runtime_state?.state]],
+  'mr_veg_dir_state_v1':[['$.directionState',s.directionState],['$.sources.runtime_state.directionState',s.sources?.runtime_state?.directionState]],
+  'mr_veg_route_log_v1':[['$.routeLog',s.routeLog],['$.sources.runtime_state.routeLog',s.sources?.runtime_state?.routeLog]],
+  'mr_veg_geom_v2':[['$.geomCache',s.geomCache],['$.sources.runtime_state.geomCache',s.sources?.runtime_state?.geomCache]],
+  'mr_veg_road_comments_v1':[['$.roadComments',s.roadComments],['$.sources.runtime_state.roadComments',s.sources?.runtime_state?.roadComments]],
+  '__kjorelogg_progress_state_v3':[['$',s],['$.sources.runtime_state',s.sources?.runtime_state]]
+ };for(const [path,value]of paths[key]||[])if(value!==undefined)out.push({path,value});return out}
+function changedTopLevel(a,b){if(!a||!b||typeof a!=='object'||typeof b!=='object')return[];const keys=new Set([...Object.keys(a),...Object.keys(b)]),out=[];for(const key of [...keys].sort()){const av=a[key],bv=b[key];if(type(av)!==type(bv)||count(av)!==count(bv)||JSON.stringify(av)!==JSON.stringify(bv))out.push({path:`$.${key}`,before_type:type(av),after_type:type(bv),before_count:count(av),after_count:count(bv)})}return out}
+async function run(){const report={mode:'READ_ONLY',writes:false,database:null,baseline_source:'mr_veg_asphalt_plan_v1[*].roadBaselineFingerprint',records:[],limitations:[]},db=await openExisting();try{report.database={name:db.name,version:db.version,stores:[...db.objectStoreNames]};const app=await readRows(db,APP),map=new Map(app.map(x=>[x.key,x.raw])),asphalt=logical(map.get('mr_veg_asphalt_plan_v1')),baseline=baselineFromAsphalt(asphalt);if(!baseline)throw new Error('Lagret FASE 5.7-fingerprint ble ikke funnet i asfaltplan-recorden');report.baseline_sha256=baseline.baseline_sha256;const snapshots=await readRows(db,SNAPS);
+ for(const key of KEYS){const raw=map.get(key),value=logical(raw),logicalHash=await digest(value),wrapperHash=await digest(raw),expected=baseline.records?.[key]||null,row={record:key,baseline_logical_sha:expected?.sha256||null,current_logical_sha:logicalHash.sha256,logical_match:expected?expected.sha256===logicalHash.sha256:null,baseline_logical_count:expected?.count??null,current_logical_count:count(value),datatype:type(value),current_logical_bytes:logicalHash.bytes,wrapper_sha:wrapperHash.sha256,wrapper_bytes:wrapperHash.bytes,logical_data_changed:expected?expected.sha256!==logicalHash.sha256:null,baseline_bytes:'UNAVAILABLE_NOT_CAPTURED_IN_PHASE57',baseline_type:'UNAVAILABLE_NOT_CAPTURED_IN_PHASE57',first_differing_path:null,likely_writer:null};
+  if(row.logical_data_changed){let matched=null;for(const snap of snapshots){for(const candidate of candidatesFromSnapshot(snap.raw,key)){const h=await digest(candidate.value);if(h.sha256===expected.sha256){matched={snapshot:snap.key,path:candidate.path,value:candidate.value,hash:h};break}}if(matched)break}if(matched){const diffs=changedTopLevel(matched.value,value);row.baseline_payload_source={snapshot:matched.snapshot,path:matched.path};row.changed_top_level_paths=diffs;row.first_differing_path=diffs[0]?.path||'$ (nested/order difference)'}else{row.changed_top_level_paths='UNAVAILABLE_BASELINE_PAYLOAD_NOT_FOUND';row.first_differing_path='UNAVAILABLE_HASH_ONLY_BASELINE'}
+  }report.records.push(row)}
+ report.wrapper_timestamp_assessment='FASE 5.7 brukte idbGetAppData() og hashet logical value. Wrapper {value,ts} inngikk ikke i baseline-SHA.';report.changed=report.records.filter(x=>x.logical_data_changed===true).map(x=>x.record);report.matching=report.records.filter(x=>x.logical_match===true).map(x=>x.record);if(report.records.some(x=>x.baseline_bytes==='UNAVAILABLE_NOT_CAPTURED_IN_PHASE57'))report.limitations.push('FASE 5.7 lagret SHA/count, men ikke baseline byte-length/type/payload. Strukturdiff krever SHA-matchende recovery snapshot.');return report}finally{db.close()}}
+document.getElementById('run').onclick=async()=>{const out=document.getElementById('out');out.textContent='Leser read-only …';try{const report=await run();out.textContent=JSON.stringify(report,null,2);window.__PHASE61C_BASELINE_DIAGNOSTIC__=report}catch(error){out.textContent=`FAIL ${error.name}: ${error.message}\nIngen writes ble utført.`}};
+})();
+</script></body></html>
