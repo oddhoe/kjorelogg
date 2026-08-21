@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FASE 6.0 – backendverifikasjon</title>
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,sans-serif}body{max-width:900px;margin:2rem auto;padding:0 1rem;background:#111;color:#eee}section{border:1px solid #444;border-radius:.6rem;padding:1rem;margin:1rem 0}label{display:block;margin:.7rem 0 .25rem}input,button{font:inherit;padding:.65rem;border-radius:.35rem}input{width:min(100%,34rem);box-sizing:border-box}button{margin:.6rem .4rem 0 0;cursor:pointer}.warning{color:#ffd166}.pass{color:#73e2a7}.fail{color:#ff7477}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#080808;padding:1rem;border-radius:.4rem}.hidden{display:none}
+  </style>
+</head>
+<body>
+<h1>FASE 6.0 – isolert backendverifikasjon</h1>
+<p class="warning">Kun <code>TEST_PHASE60_*</code> opprettes. Ingen lokal Kjørelogg-database åpnes. Passord lagres eller logges ikke. Testen stopper ved første faktiske backendfeil.</p>
+<section>
+  <h2>1. Identifiser TEST_B</h2>
+  <label for="email-b">TEST_B e-post</label><input id="email-b" value="odderling@duck.com" autocomplete="username">
+  <label for="password-b">Passord</label><input id="password-b" type="password" autocomplete="current-password">
+  <button id="identify-b">Logg inn TEST_B, registrer UID, logg ut</button>
+</section>
+<section>
+  <h2>2. Schema og isolert testdatasett med TEST_A</h2>
+  <label for="email-a">TEST_A e-post</label><input id="email-a" value="odderling@gmail.com" autocomplete="username">
+  <label for="password-a">Passord</label><input id="password-a" type="password" autocomplete="current-password">
+  <button id="setup-a">Verifiser schema og opprett TEST_PHASE60_SHARED</button>
+</section>
+<section>
+  <h2>3. Non-member-test med TEST_B</h2>
+  <label for="password-b2">TEST_B-passord</label><input id="password-b2" type="password" autocomplete="current-password">
+  <button id="nonmember-b">Test at TEST_B ikke har tilgang før membership</button>
+</section>
+<section>
+  <h2>4. Membership og lease med TEST_A</h2>
+  <label for="password-a2">TEST_A-passord</label><input id="password-a2" type="password" autocomplete="current-password">
+  <button id="lease-a">Legg til TEST_B og test TEST_A lease/write</button>
+</section>
+<section>
+  <h2>5. Second-driver lock med TEST_B</h2>
+  <p>Dette steget kan også brukes som restart-sikker «Fortsett DEL B» etter at steg 1–4 allerede er PASS.</p>
+  <label for="password-b3">TEST_B-passord</label><input id="password-b3" type="password" autocomplete="current-password">
+  <button id="lock-b">Bekreft shared read og PT423</button>
+</section>
+<section>
+  <h2>6. Frigi TEST_A-lease</h2>
+  <label for="password-a3">TEST_A-passord</label><input id="password-a3" type="password" autocomplete="current-password">
+  <button id="release-a">Frigi lease kontrollert</button>
+</section>
+<section>
+  <h2>7. TEST_B generation 2, revision og idempotens</h2>
+  <label for="password-b4">TEST_B-passord</label><input id="password-b4" type="password" autocomplete="current-password">
+  <button id="write-b">Acquire og kjør write-barrierene</button>
+</section>
+<section>
+  <h2>8. Gammel TEST_A fencing-generation</h2>
+  <label for="password-a4">TEST_A-passord</label><input id="password-a4" type="password" autocomplete="current-password">
+  <label for="password-b5">TEST_B-passord for read-only-kontroll</label><input id="password-b5" type="password" autocomplete="current-password">
+  <button id="stale-a">Bekreft PT412 og rolle-policy</button>
+</section>
+<section>
+  <h2>Resultat</h2><pre id="result">Venter.</pre>
+</section>
+<script src="./config.js?v=2.0.105"></script>
+<script src="./vendor/supabase.min.js"></script>
+<script>
+(()=>{'use strict';
+const TEST_KEY='TEST_PHASE60_SHARED',STORE='kjorelogg_phase60_backend_state_v1',out=document.getElementById('result');
+let lines=[];const log=(msg,kind='INFO')=>{lines.push(`${kind} ${msg}`);out.textContent=lines.join('\n');out.className=kind==='FAIL'?'fail':kind==='PASS'?'pass':''};
+const fail=(where,error)=>{const e=error||new Error('ukjent feil'),code=e.code||e.status||'ERROR';log(`${where}: ${code} ${e.message||String(e)}`,'FAIL');document.querySelectorAll('button').forEach(b=>b.disabled=true);throw e};
+const state=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'{}')}catch{return{}}};
+const save=patch=>sessionStorage.setItem(STORE,JSON.stringify({...state(),...patch}));
+const cfg=window.KJORELOGG_CONFIG||{};
+if(!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY)fail('Konfigurasjon',new Error('Supabase URL/publishable key mangler'));
+const client=()=>window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+async function login(emailId,passwordId,label){const email=document.getElementById(emailId).value.trim(),field=document.getElementById(passwordId),password=field.value;field.value='';if(!password)throw new Error(`Skriv passord for ${label}`);const c=client(),r=await c.auth.signInWithPassword({email,password});if(r.error)fail(`${label} login`,r.error);log(`${label} real login`,'PASS');return{c,user:r.data.user}}
+async function logout(c,label){const r=await c.auth.signOut();if(r.error)fail(`${label} logout`,r.error);log(`${label} logout`,'PASS')}
+async function must(result,label){if(result.error)fail(label,result.error);log(label,'PASS');return result.data}
+async function expectCode(promise,code,label){const r=await promise;if(!r.error||r.error.code!==code)fail(label,r.error||new Error(`forventet ${code}, operasjonen lyktes`));log(`${label} (${code})`,'PASS');return r.error}
+const uuid=()=>crypto.randomUUID(),now=()=>new Date().toISOString();
+function road(userId,datasetId,lease,key='TEST_PHASE60_ROAD') {return {user_id:userId,dataset_id:datasetId,road_key:key,county_id:'15',road_category:'F',road_number:999,segment:'TEST_PHASE60',status:'ONE_DIRECTION',direction_fwd:true,direction_rev:false,manual_full:false,measured_at:now(),operator:'TEST_PHASE60',vehicle:'TEST_PHASE60',comment:'TEST_PHASE60',length_km:.1,client_updated_at:now(),device_id:lease.device_id,updated_device_id:lease.device_id,created_by:userId,updated_by:userId,work_session_id:lease.session_id,fencing_generation:lease.fencing_generation,client_version:'v2.0.105',last_mutation_id:uuid(),revision:1}}
+
+document.getElementById('identify-b').onclick=async()=>{try{const {c,user}=await login('email-b','password-b','TEST_B');save({bUid:user.id});log('TEST_B UID lagret kun i same-tab sessionStorage','PASS');await logout(c,'TEST_B')}catch(e){if(!out.classList.contains('fail'))fail('TEST_B-identifikasjon',e)}};
+
+document.getElementById('setup-a').onclick=async()=>{try{const s=state();if(!s.bUid)throw new Error('Kjør steg 1 først');const {c,user}=await login('email-a','password-a','TEST_A');
+ const tables=['datasets','dataset_members','work_leases','sync_runtime_config','sync_audit_log','road_progress','measurement_tracks','asphalt_plans','asphalt_progress','app_settings','day_plans'];
+ for(const table of tables){const r=await c.from(table).select('*',{head:true,count:'exact'});if(r.error)fail(`Schema/table ${table}`,r.error);log(`Schema/table ${table} tilgjengelig via Data API`,'PASS')}
+ const conf=await must(await c.from('sync_runtime_config').select('*').single(),'Runtime config readable');if(conf.minimum_write_client_version!=='v2.0.105')fail('Minimum client version',new Error(`forventet v2.0.105, fikk ${conf.minimum_write_client_version}`));log('Minimum client version = v2.0.105','PASS');
+ let existing=await c.from('datasets').select('*').eq('dataset_key',TEST_KEY);if(existing.error)fail('Testdataset lookup',existing.error);if(existing.data.length)fail('Fresh testdataset preflight',new Error('TEST_PHASE60_SHARED finnes allerede; rydd kontrollert før ny test'));
+ const created=await must(await c.rpc('create_dataset',{p_dataset_key:TEST_KEY,p_name:'TEST_PHASE60 shared dataset',p_county:'TEST',p_vehicle:'TEST'}),'create_dataset RPC');
+ const dataset=Array.isArray(created)?created[0]:created;if(!dataset?.id)fail('create_dataset response',new Error('mangler dataset UUID'));
+ save({aUid:user.id,datasetId:dataset.id});log('Fresh TEST_PHASE60_SHARED opprettet med TEST_A owner','PASS');await logout(c,'TEST_A')
+}catch(e){if(!out.classList.contains('fail'))fail('Schema/setup',e)}};
+
+document.getElementById('nonmember-b').onclick=async()=>{try{const s=state();if(!s.datasetId)throw new Error('Kjør steg 2 først');const {c}=await login('email-b','password-b2','TEST_B');let r=await c.from('datasets').select('id,dataset_key').eq('id',s.datasetId);if(r.error)fail('Non-member SELECT dataset',r.error);if(r.data.length!==0)fail('RLS non-member',new Error('TEST_B kunne lese datasettet før membership'));log('TEST_B non-member SELECT ga 0 rader','PASS');r=await c.from('road_progress').select('id').eq('dataset_id',s.datasetId);if(r.error)fail('Non-member SELECT road_progress',r.error);if(r.data.length!==0)fail('RLS non-member road_progress',new Error('TEST_B kunne lese fagdata'));log('TEST_B non-member kan ikke lese fagdata','PASS');await logout(c,'TEST_B');save({nonmemberPass:true})}catch(e){if(!out.classList.contains('fail'))fail('Non-member-test',e)}};
+
+document.getElementById('lease-a').onclick=async()=>{try{const s=state();if(!s.nonmemberPass||!s.datasetId||!s.bUid)throw new Error('Kjør steg 1–3 først');const {c,user}=await login('email-a','password-a2','TEST_A');
+ await must(await c.rpc('add_dataset_member',{p_dataset_id:s.datasetId,p_user_id:s.bUid,p_role:'driver'}),'TEST_B driver membership');
+ const deviceId='TEST_PHASE60_DEVICE_A',sessionId=uuid();await must(await c.from('devices').upsert({user_id:user.id,device_id:deviceId,device_name:'TEST_PHASE60 DEVICE A',platform:'browser-test',app_version:'v2.0.105'},{onConflict:'user_id,device_id'}).select().single(),'TEST_A device registration');
+ const leaseData=await must(await c.rpc('acquire_work_lease',{p_dataset_id:s.datasetId,p_device_id:deviceId,p_session_id:sessionId}),'TEST_A atomic acquire');const lease=Array.isArray(leaseData)?leaseData[0]:leaseData;if(!lease?.id||lease.fencing_generation<1)fail('Lease response',new Error('mangler lease/generation'));log(`TEST_A lease generation ${lease.fencing_generation}`,'PASS');
+ const tooOld=road(user.id,s.datasetId,{...lease,device_id:deviceId,session_id:sessionId},'TEST_PHASE60_MIN_VERSION');tooOld.client_version='v2.0.104';await expectCode(c.from('road_progress').insert(tooOld).select(),'PT426','v2.0.104 write denied');
+ const row=road(user.id,s.datasetId,{...lease,device_id:deviceId,session_id:sessionId});const inserted=await must(await c.from('road_progress').insert(row).select().single(),'v2.0.105 fenced road INSERT');if(inserted.revision!==1)fail('Road revision',new Error(`forventet 1, fikk ${inserted.revision}`));
+ const audit=await must(await c.from('sync_audit_log').select('*').eq('dataset_id',s.datasetId).eq('mutation_id',row.last_mutation_id).single(),'Audit readback');for(const k of ['dataset_id','user_id','device_id','session_id','mutation_id','new_revision','fencing_generation','client_version','server_created_at'])if(audit[k]===null||audit[k]===undefined)fail('Audit fields',new Error(`mangler ${k}`));log('Audit inneholder påkrevde metadata','PASS');
+ await expectCode(c.from('sync_audit_log').insert({...audit,id:undefined}).select(),'42501','Direkte audit INSERT denied');
+ const renewed=await must(await c.rpc('renew_work_lease',{p_lease_id:lease.id,p_session_id:sessionId,p_fencing_generation:lease.fencing_generation}),'Heartbeat/renew');const renewedLease=Array.isArray(renewed)?renewed[0]:renewed;if(Date.parse(renewedLease.last_heartbeat_at)<Date.parse(lease.last_heartbeat_at))fail('Heartbeat timestamp',new Error('heartbeat gikk bakover'));log('Heartbeat server timestamp oppdatert','PASS');
+ await expectCode(c.rpc('renew_work_lease',{p_lease_id:lease.id,p_session_id:uuid(),p_fencing_generation:lease.fencing_generation}),'PT412','Feil session renew denied');
+ save({leaseA:{id:lease.id,generation:lease.fencing_generation,sessionId,deviceId},roadId:inserted.id,roadRevision:inserted.revision});await logout(c,'TEST_A');log('FASE 6.0 DEL A klar for second-driver-test','PASS')
+}catch(e){if(!out.classList.contains('fail'))fail('Membership/lease A',e)}};
+
+document.getElementById('lock-b').onclick=async()=>{try{let s=state();const {c,user}=await login('email-b','password-b3','TEST_B');
+ let r=await c.from('datasets').select('id,dataset_key').eq('dataset_key',TEST_KEY);if(r.error||r.data.length!==1)fail('TEST_B shared dataset SELECT',r.error||new Error(`rows=${r.data?.length}`));const datasetId=r.data[0].id;log('TEST_B kan lese shared dataset som medlem','PASS');
+ r=await c.from('work_leases').select('*').eq('dataset_id',datasetId).is('released_at',null);if(r.error||r.data.length!==1)fail('Aktiv TEST_A lease recovery',r.error||new Error(`aktive leases=${r.data?.length}`));const active=r.data[0];if(active.user_id===user.id)fail('Aktiv lease eier',new Error('forventet aktiv TEST_A-lease, fant TEST_B'));const leaseA={id:active.id,generation:active.fencing_generation,sessionId:active.session_id,deviceId:active.device_id};log('Aktiv TEST_A-lease rekonstruert read-only','PASS');
+ r=await c.from('road_progress').select('id,road_key,status,revision').eq('dataset_id',datasetId).eq('road_key','TEST_PHASE60_ROAD');if(r.error||r.data.length!==1)fail('TEST_B shared road SELECT',r.error||new Error(`rows=${r.data?.length}`));const roadRow=r.data[0];log('TEST_B kan lese shared fagdata','PASS');
+ const deviceId='TEST_PHASE60_DEVICE_B',sessionId=uuid();await must(await c.from('devices').upsert({user_id:user.id,device_id:deviceId,device_name:'TEST_PHASE60 DEVICE B',platform:'browser-test',app_version:'v2.0.105'},{onConflict:'user_id,device_id'}).select().single(),'TEST_B device registration');
+ await expectCode(c.rpc('acquire_work_lease',{p_dataset_id:datasetId,p_device_id:deviceId,p_session_id:sessionId}),'PT423','Second-driver acquire rejected');
+ save({bUid:user.id,datasetId,leaseA,roadId:roadRow.id,roadRevision:roadRow.revision,deviceB:deviceId,sessionB:sessionId,secondDriverPass:true});await logout(c,'TEST_B')
+}catch(e){if(!out.classList.contains('fail'))fail('Second-driver lock',e)}};
+
+document.getElementById('release-a').onclick=async()=>{try{const s=state();if(!s.secondDriverPass||!s.leaseA)throw new Error('Kjør steg 5 først');const {c,user}=await login('email-a','password-a3','TEST_A');
+ await must(await c.rpc('release_work_lease',{p_lease_id:s.leaseA.id,p_session_id:s.leaseA.sessionId,p_fencing_generation:s.leaseA.generation}),'TEST_A controlled lease release');save({aUid:user.id,releasedA:true});await logout(c,'TEST_A')
+}catch(e){if(!out.classList.contains('fail'))fail('Release A',e)}};
+
+document.getElementById('write-b').onclick=async()=>{try{const s=state();if(!s.releasedA||!s.deviceB||!s.sessionB)throw new Error('Kjør steg 6 først');const {c}=await login('email-b','password-b4','TEST_B');
+ const leaseData=await must(await c.rpc('acquire_work_lease',{p_dataset_id:s.datasetId,p_device_id:s.deviceB,p_session_id:s.sessionB}),'TEST_B acquire after release');const lease=Array.isArray(leaseData)?leaseData[0]:leaseData;if(lease.fencing_generation<=s.leaseA.generation)fail('Fencing generation',new Error(`old=${s.leaseA.generation}, new=${lease.fencing_generation}`));log(`Fencing generation økte ${s.leaseA.generation} → ${lease.fencing_generation}`,'PASS');
+ let current=await must(await c.from('road_progress').select('*').eq('id',s.roadId).single(),'TEST_B fetch current revision');const mutation=uuid();const patch={status:'COMPLETED',direction_fwd:true,direction_rev:true,comment:'TEST_PHASE60_B',revision:current.revision,last_mutation_id:mutation,client_updated_at:now(),updated_by:state().bUid,updated_device_id:s.deviceB,work_session_id:s.sessionB,fencing_generation:lease.fencing_generation,client_version:'v2.0.105'};
+ let updated=await must(await c.from('road_progress').update(patch).eq('id',s.roadId).select().single(),'Correct revision + fencing update');if(updated.revision!==current.revision+1)fail('Revision increment',new Error(`${current.revision} → ${updated.revision}`));log(`Revision ${current.revision} → ${updated.revision}`,'PASS');
+ for(let i=0;i<10;i++){const retry=await must(await c.from('road_progress').update(patch).eq('id',s.roadId).select().single(),`Idempotent retry ${i+1}/10`);if(retry.revision!==updated.revision)fail('Idempotent retry revision',new Error(`retry ${i+1}: ${retry.revision} != ${updated.revision}`))}log('10 identiske mutation retries ga ingen ekstra revision','PASS');
+ const audits=await must(await c.from('sync_audit_log').select('id',{count:'exact'}).eq('dataset_id',s.datasetId).eq('mutation_id',mutation),'Idempotency audit lookup');if(audits.length!==1)fail('Idempotency audit',new Error(`forventet 1 audit, fikk ${audits.length}`));log('Identisk mutation ga nøyaktig én audit','PASS');
+ const stale={...patch,status:'ONE_DIRECTION',direction_rev:false,revision:current.revision,last_mutation_id:uuid(),client_updated_at:now()};await expectCode(c.from('road_progress').update(stale).eq('id',s.roadId).select(),'PT409','Stale revision rejected with correct fencing');
+ const soft={...patch,deleted_at:now(),revision:updated.revision,last_mutation_id:uuid(),client_updated_at:now()};updated=await must(await c.from('road_progress').update(soft).eq('id',s.roadId).select().single(),'Soft delete update');if(!updated.deleted_at||updated.deleted_by!==state().bUid||updated.revision!==current.revision+2)fail('Soft delete fields',new Error('deleted_at/deleted_by/revision avvik'));log('Soft delete satte deleted_at, deleted_by og revision','PASS');
+ const physical=await c.from('road_progress').delete().eq('id',s.roadId).select('id');if(physical.error)fail('Physical DELETE policy response',physical.error);if(physical.data.length!==0)fail('Physical DELETE blocked',new Error('fysisk delete returnerte rad'));const remains=await must(await c.from('road_progress').select('id').eq('id',s.roadId).single(),'Soft-deleted row still exists');if(!remains.id)fail('Soft delete persistence',new Error('rad mangler'));log('Fysisk DELETE blokkert; soft-deleted rad finnes','PASS');
+ save({leaseB:{id:lease.id,generation:lease.fencing_generation,sessionId:s.sessionB,deviceId:s.deviceB},roadRevision:updated.revision});await logout(c,'TEST_B')
+}catch(e){if(!out.classList.contains('fail'))fail('TEST_B revision/idempotency',e)}};
+
+document.getElementById('stale-a').onclick=async()=>{try{const s=state();if(!s.leaseB||!s.leaseA)throw new Error('Kjør steg 7 først');const {c}=await login('email-a','password-a4','TEST_A');
+ const staleFence={status:'COMPLETED',revision:s.roadRevision,last_mutation_id:uuid(),client_updated_at:now(),updated_by:s.aUid,updated_device_id:s.leaseA.deviceId,work_session_id:s.leaseA.sessionId,fencing_generation:s.leaseA.generation,client_version:'v2.0.105'};await expectCode(c.from('road_progress').update(staleFence).eq('id',s.roadId).select(),'PT412','Old fencing generation rejected');
+ await must(await c.rpc('add_dataset_member',{p_dataset_id:s.datasetId,p_user_id:s.bUid,p_role:'read_only'}),'TEST_B changed to read_only');await logout(c,'TEST_A');
+ const b=await login('email-b','password-b5','TEST_B');const read=await b.c.from('road_progress').select('id,status').eq('id',s.roadId);if(read.error||read.data.length!==1)fail('read_only SELECT',read.error||new Error(`rows=${read.data?.length}`));log('read_only SELECT allowed','PASS');
+ const denied=await b.c.from('road_progress').update({comment:'TEST_PHASE60_READONLY_FORBIDDEN',revision:s.roadRevision,last_mutation_id:uuid(),client_updated_at:now(),updated_by:s.bUid,updated_device_id:s.leaseB.deviceId,work_session_id:s.leaseB.sessionId,fencing_generation:s.leaseB.generation,client_version:'v2.0.105'}).eq('id',s.roadId).select();if(denied.error)fail('read_only UPDATE response',denied.error);if(denied.data.length!==0)fail('read_only write denied',new Error('read_only oppdaterte rad'));log('read_only write denied av RLS','PASS');await logout(b.c,'TEST_B');save({coreRuntimePass:true});log('FASE 6.0 KJERNEBACKEND FERDIG','PASS')
+}catch(e){if(!out.classList.contains('fail'))fail('Old fencing/read_only',e)}};
+})();
+  </script>
+</body>
+</html>
