@@ -4,8 +4,8 @@
 <style>body{margin:0;background:#11151b;color:#edf2f7;font:14px system-ui}main{max-width:980px;margin:auto;padding:20px}section{background:#1b222c;border:1px solid #344150;border-radius:14px;padding:18px}button{border:0;border-radius:10px;padding:12px 16px;background:#1769aa;color:white;font-weight:800}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0d1117;padding:14px;border-radius:10px}.warn{color:#ffd08a}</style></head>
 <body><main><h1>FASE 5.6C – read-only hydratiseringsdiagnose</h1><section>
 <p class="warn">Denne siden åpner bare eksisterende <code>nvdb_tiles</code> uten versjonsnummer og bruker kun readonly-transaksjoner. Den skriver, oppgraderer eller sletter ingenting.</p>
-<button id="run">Kjør read-only diagnose</button><pre id="out">Ikke kjørt.</pre>
-</section></main><script>
+<button id="run">Kjør read-only diagnose</button> <label>Valgfri pre-migration JSON: <input id="backup" type="file" accept="application/json,.json"></label><pre id="out">Ikke kjørt.</pre>
+</section></main><script src="./canonical-model.js"></script><script>
 (()=>{'use strict';
 const DB='nvdb_tiles';
 const KEYS={state:'kjorelogg_state_v2',direction:'kjorelogg_direction_v1',route:'kjorelogg_route_log_v1',geom:'kjorelogg_geom_cache_v1',comments:'kjorelogg_road_comments_v1',asphalt:'kjorelogg_asphalt_plan_v1',snapshot:'__kjorelogg_progress_state_v3'};
@@ -39,6 +39,27 @@ async function describe(key,raw){const logical=raw&&typeof raw==='object'&&Objec
 function statusTransform(v){const d=v&&typeof v==='object'?v:{};return{driven:Array.isArray(d.driven)?d.driven.length:0,oneWay:Array.isArray(d.oneWay)?d.oneWay.length:0,skip:Array.isArray(d.skip)?d.skip.length:0,deletedGeom:Array.isArray(d.deletedGeom)?d.deletedGeom.length:Array.isArray(d.deletedGeomKeys)?d.deletedGeomKeys.length:0}}
 function geomTransform(v){let accepted=0,rejected=0;for(const val of Object.values(v&&typeof v==='object'?v:{})){if(Array.isArray(val)||(val&&typeof val==='object'&&Array.isArray(val.parts)))accepted++;else rejected++}return{input:count(v),accepted,rejected}}
 function snapshotTransform(v){const s=v&&typeof v==='object'?v:{},st=statusTransform(s.state);return{...st,direction:count(s.directionState),route:count(s.routeLog),geom:geomTransform(s.geomCache),comments:count(s.roadComments)}}
+async function dataset(path,value){const b=bytes(value);return{path,type:tag(value),elements:count(value),serialized_bytes:b.length,sha256:await hash(b)}}
+async function snapshotDatasets(snapshot){
+ const out=[],wanted=['state','drivenKeys','oneWayKeys','skipKeys','deletedGeomKeys','directionState','routeLog','geomCache','roadComments','asphaltPlan','planKeys','roads','canonical','progress'];
+ for(const key of Object.keys(snapshot||{}).sort())out.push(await dataset(`$.${key}`,snapshot[key]));
+ for(const key of wanted)if(snapshot&&Object.hasOwn(snapshot,key))out.push(await dataset(`$.${key}`,snapshot[key]));
+ if(snapshot?.state&&typeof snapshot.state==='object')for(const key of Object.keys(snapshot.state).sort())out.push(await dataset(`$.state.${key}`,snapshot.state[key]));
+ return [...new Map(out.map(x=>[x.path,x])).values()]
+}
+function isGsvKey(key){return /GSV|(?:^|[_:-])G(?:[_:-]|$)/i.test(String(key))}
+function snapshotResolver(snapshot){
+ const s=snapshot&&typeof snapshot==='object'?snapshot:{},state=s.state&&typeof s.state==='object'?s.state:{},direction=s.directionState&&typeof s.directionState==='object'?s.directionState:{},geom=s.geomCache&&typeof s.geomCache==='object'?s.geomCache:{},skip=new Set(Array.isArray(state.skip)?state.skip:[]),done=new Set(Array.isArray(state.driven)?state.driven:[]),one=new Set(Array.isArray(state.oneWay)?state.oneWay:[]),deleted=new Set(Array.isArray(state.deletedGeom)?state.deletedGeom:Array.isArray(state.deletedGeomKeys)?state.deletedGeomKeys:[]);
+ for(const [key,st] of Object.entries(direction)){const f=!!st?.fwd,r=!!st?.rev;if(f&&r)done.add(key);else if(f||r){if(isGsvKey(key))done.add(key);else if(!done.has(key))one.add(key)}}
+ for(const key of skip){done.delete(key);one.delete(key)}for(const key of deleted){skip.add(key);done.delete(key);one.delete(key)}
+ const geometry=geomTransform(geom),keys=new Set([...done,...one,...skip]),lengthOf=value=>{const n=Number(value?.len);return Number.isFinite(n)&&n>0?n:0};let lengthM=0,knownLength=0;for(const key of keys){const n=lengthOf(geom[key]);if(n){lengthM+=n;knownLength++}}
+ const canonicalState={drivenKeys:done,oneWayKeys:one,skipKeys:skip,deletedGeomKeys:deleted,directionState:direction,routeLog:s.routeLog||{},geomCache:geom,roadComments:s.roadComments||{},asphaltPlan:s.asphaltPlan||[]},canonical=globalThis.KjoreloggCanonical?.resolveCanonicalRoadProgress?.(canonicalState,{isOneWay:isGsvKey})||[];
+ const statuses={COMPLETED:0,ONE_DIRECTION:0,SKIPPED:0,NOT_STARTED:0};for(const row of canonical)statuses[row.status]=(statuses[row.status]||0)+1;
+ return{recoverable:canonical.length>0||geometry.accepted>0,road_progress_count:canonical.length,completed:statuses.COMPLETED,one_direction:statuses.ONE_DIRECTION,skipped:statuses.SKIPPED,not_started:statuses.NOT_STARTED,geometry_count:geometry.accepted,geometry_rejected:geometry.rejected,total_length_km_if_stored:Number((lengthM/1000).toFixed(3)),length_records:knownLength,asphalt_plan_count:count(s.asphaltPlan),comment_count:count(s.roadComments),route_log_count:count(s.routeLog),direction_state_count:count(direction),resolver:'KjoreloggCanonical.resolveCanonicalRoadProgress'}
+}
+async function inspectSnapshot(key,snapshot){const b=bytes(snapshot);return{key,serialized_bytes:b.length,sha256:await hash(b),top_level_keys:Object.keys(snapshot||{}).sort(),datasets:await snapshotDatasets(snapshot),resolver:snapshotResolver(snapshot)}}
+async function compareSnapshots(a,b){const paths=new Set([...a.datasets.map(x=>x.path),...b.datasets.map(x=>x.path)]),differences=[];for(const path of [...paths].sort()){const av=a.datasets.find(x=>x.path===path),bv=b.datasets.find(x=>x.path===path);if(!av||!bv||av.sha256!==bv.sha256||av.elements!==bv.elements)differences.push({path,a_sha256:av?.sha256||null,b_sha256:bv?.sha256||null,a_count:av?.elements??null,b_count:bv?.elements??null,a_type:av?.type||null,b_type:bv?.type||null})}return{same_serialized_bytes:a.serialized_bytes===b.serialized_bytes,same_sha256:a.sha256===b.sha256,differing_paths:differences,professional_state_changed:differences.some(x=>/^\$\.(state|directionState|routeLog|geomCache|roadComments|asphaltPlan|planKeys|roads)/.test(x.path))}}
+async function inspectBackup(file){if(!file)return null;const text=await file.text(),fileBytes=enc.encode(text),parsed=JSON.parse(text),result={filename:file.name,bytes:fileBytes.length,sha256:await hash(fileBytes),top_level_keys:Object.keys(parsed||{}).sort(),snapshots:[],runtime_state:null};if(parsed?.sources?.runtime_state)result.runtime_state=await inspectSnapshot('$.sources.runtime_state',parsed.sources.runtime_state);for(const row of parsed?.sources?.indexeddb?.progress_snapshots||[])result.snapshots.push(await inspectSnapshot(String(row.key),row.value));return result}
 async function localRows(){const out=[];for(const key of LEGACY){let raw=null;try{raw=localStorage.getItem(key)}catch(error){out.push({key,error:error.name});continue}if(raw===null)continue;const b=enc.encode(raw);let parsedType='invalid-json',parsedCount=0;try{const parsed=JSON.parse(raw);parsedType=tag(parsed);parsedCount=count(parsed)}catch(_){}out.push({key,type:'string',bytes:b.length,sha256:await hash(b),parsed_type:parsedType,parsed_count:parsedCount})}return out}
 async function run(){
  const report={mode:'READ_ONLY',writes:false,generated_at:new Date().toISOString(),storage:{},database:null,stores:{},trace:{},localStorage:[]};
@@ -46,14 +67,14 @@ async function run(){
  if(navigator.storage?.persisted)report.storage.persisted=await navigator.storage.persisted();
  const db=await openExisting();try{
   report.database={name:db.name,version:db.version,objectStoreNames:[...db.objectStoreNames]};
-  for(const name of db.objectStoreNames){const rows=await storeRows(db,name);const entry={count:rows.length};if(name==='appdata'||name==='progress_snapshots'){entry.records=[];for(const row of rows)entry.records.push(await describe(row.key,row.raw))}else if(name==='tiles'){let county=0,dataArrays=0,totalItems=0;for(const row of rows){const v=row.raw;if(String(row.key).startsWith('nvdb_county_'))county++;if(Array.isArray(v?.data)){dataArrays++;totalItems+=v.data.length}}entry.summary={county_records:county,data_array_records:dataArrays,data_items:totalItems}}report.stores[name]=entry}
+  for(const name of db.objectStoreNames){const rows=await storeRows(db,name);const entry={count:rows.length};if(name==='appdata'||name==='progress_snapshots'){entry.records=[];for(const row of rows)entry.records.push(await describe(row.key,row.raw));if(name==='progress_snapshots'){entry.snapshot_inspection=[];for(const row of rows)entry.snapshot_inspection.push(await inspectSnapshot(row.key,row.raw));if(entry.snapshot_inspection.length===2)entry.comparison=await compareSnapshots(entry.snapshot_inspection[0],entry.snapshot_inspection[1])}}else if(name==='tiles'){let county=0,dataArrays=0,totalItems=0;for(const row of rows){const v=row.raw;if(String(row.key).startsWith('nvdb_county_'))county++;if(Array.isArray(v?.data)){dataArrays++;totalItems+=v.data.length}}entry.summary={county_records:county,data_array_records:dataArrays,data_items:totalItems}}report.stores[name]=entry}
   const appRows=db.objectStoreNames.contains('appdata')?await storeRows(db,'appdata'):[],map=new Map(appRows.map(x=>[x.key,x.raw&&typeof x.raw==='object'&&Object.hasOwn(x.raw,'value')?x.raw.value:x.raw]));
   const state=map.get(KEYS.state),direction=map.get(KEYS.direction),route=map.get(KEYS.route),geom=map.get(KEYS.geom),comments=map.get(KEYS.comments),asphalt=map.get(KEYS.asphalt),snap=map.get(KEYS.snapshot);
   report.trace.production_v2093={appdata_lookup:{state:statusTransform(state),direction:count(direction),route:count(route),geom:geomTransform(geom),comments:count(comments),asphalt:count(asphalt),snapshot:snapshotTransform(snap)},transform_order:['localStorage fallback','appdata records','__kjorelogg_progress_state_v3 only fills empty runtime fields','rebuild direction status']};
   report.trace.pilot_v20100=structuredClone(report.trace.production_v2093);
   report.trace.pilot_v20100.safety_input={progress_snapshots_store_count:report.stores.progress_snapshots?.count||0,state_record_count:count(state),geom_record_count:count(geom)};
  }finally{db.close()}
- report.localStorage=await localRows();return report
+ report.localStorage=await localRows();report.selected_backup=await inspectBackup(document.getElementById('backup').files?.[0]);return report
 }
 document.getElementById('run').onclick=async()=>{const out=document.getElementById('out');out.textContent='Leser read-only …';try{const report=await run();out.textContent=JSON.stringify(report,null,2);window.__KJORELOGG_READONLY_DIAGNOSTIC__=report}catch(error){out.textContent=`FAIL ${error.name}: ${error.message}\nIngen writes ble utført.`}};
 })();
