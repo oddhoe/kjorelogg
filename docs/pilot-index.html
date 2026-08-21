@@ -83,7 +83,7 @@ let lastRenderTime=0,lastRenderPos=null,_countyCacheMem=new Map(),_mapOverlayTim
 const RENDER_INTERVAL_MS=5000,RENDER_MOVE_M=10;
 const MAP_PAN_INTERVAL_MS=5000,MAP_OVERLAY_ACTIVE_THROTTLE_MS=7000,PROGRESS_MAP_ACTIVE_THROTTLE_MS=10000;
 const MAP_VIEW_PAD_RATIO=0.45,MAP_GPS_MAX_ROADS=550;
-const IDB_NAME='nvdb_tiles',IDB_STORE='tiles',IDB_META_STORE='appdata',IDB_SNAPSHOT_STORE='progress_snapshots',IDB_SYNC_OUTBOX='sync_outbox',IDB_SYNC_META='sync_meta',IDB_VER=4;let _idb=null;
+const IDB_NAME='nvdb_tiles',IDB_STORE='tiles',IDB_META_STORE='appdata',IDB_SNAPSHOT_STORE='progress_snapshots',IDB_SYNC_OUTBOX='sync_outbox',IDB_SYNC_META='sync_meta',IDB_VER=4;let _idb=null,_idbOpenPromise=null;
 const PROGRESS_IDB_KEY='__kjorelogg_progress_state_v3';
 const PROGRESS_META_STORE='mr_veg_progress_meta_v3';
 const PROGRESS_SNAPSHOT_DEBOUNCE_MS=5000;
@@ -95,7 +95,9 @@ const FYLKER=[
 {id:'34',name:'Innlandet'},{id:'39',name:'Vestfold'},{id:'40',name:'Telemark'},{id:'42',name:'Agder'},
 {id:'11',name:'Rogaland'},{id:'46',name:'Vestland'},{id:'15',name:'Møre og Romsdal'},{id:'50',name:'Trøndelag'},
 {id:'18',name:'Nordland'},{id:'55',name:'Troms'},{id:'56',name:'Finnmark'}];
-const APP_VERSION='v2.0.99';
+const APP_VERSION='v2.0.100';
+let _pilotIDBModulePromise=null,_pilotBeforeInspection=null,_pilotAfterInspection=null;
+function loadPilotIDBModule(){if(window.KjoreloggPilotIDB)return Promise.resolve(window.KjoreloggPilotIDB);if(_pilotIDBModulePromise)return _pilotIDBModulePromise;_pilotIDBModulePromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./pilot-idb-recovery.js';script.onload=()=>window.KjoreloggPilotIDB?resolve(window.KjoreloggPilotIDB):reject(new Error('Pilot-IDB-modulen mangler'));script.onerror=()=>reject(new Error('Kunne ikke laste pilot-idb-recovery.js'));document.head.appendChild(script)});return _pilotIDBModulePromise}
 
 const FYLKE_BBOX={
 '31':[10.45,58.75,12.10,59.85],'32':[10.15,59.35,12.25,60.60],'3':[10.45,59.75,11.00,60.05],
@@ -348,7 +350,7 @@ async function saveProgressSnapshotToIDB(){
  try{await idbSetAppData(PROGRESS_IDB_KEY,progressSnapshot());return true}
  catch(e){console.warn('Kunne ikke lagre samlet fremdrift i IndexedDB',e);return false}
 }
-async function loadProgressSnapshotFromIDB(){
+async function loadProgressSnapshotFromIDB({strict=false}={}){
  if(!HAS_INDEXED_DB)return false;
  try{
   const snap=await idbGetAppData(PROGRESS_IDB_KEY);
@@ -366,7 +368,7 @@ async function loadProgressSnapshotFromIDB(){
   rebuildStatusSetsFromDirections();
   enforceSkipWins();
   return loaded>0;
- }catch(e){console.warn('Kunne ikke hente samlet fremdrift fra IndexedDB',e);return false}
+ }catch(e){console.error('Kunne ikke hente samlet fremdrift fra IndexedDB',e);if(strict)throw e;return false}
 }
 async function flushProgressPersistence(){
  try{saveState();saveDirectionState();saveRouteLog();saveGeomCache();saveRoadComments()}catch(e){}
@@ -399,7 +401,7 @@ async function flushAllPendingWritesNow(){
  await flushPendingIdbWrites();
  try{await saveProgressSnapshotToIDB()}catch(e){console.warn('Snapshot-flush feilet',e)}
 }
-async function hydrateLargeStoresFromIDB(){
+async function hydrateLargeStoresFromIDB({strict=false}={}){
  if(!HAS_INDEXED_DB)return;
  try{
   const [stateObj,dirObj,routeObj,geomObj,planObj,commentObj,asphaltObj]=await Promise.all([
@@ -414,14 +416,15 @@ async function hydrateLargeStoresFromIDB(){
   if(Array.isArray(asphaltObj))asphaltPlan=normalizeAsphaltPlan(asphaltObj);
   applyProgressTombstones();
   enforceSkipWins();
- }catch(e){console.warn('Kunne ikke lese store appdata fra IndexedDB',e)}
+ }catch(e){console.error('Kunne ikke lese store appdata fra IndexedDB',e);if(strict)throw e}
 }
-async function loadPersistentAppState(){
+async function loadPersistentAppState({persistAfterHydration=true,strict=false}={}){
  loadState();loadDirectionState();loadRouteLog();loadGeomCache();loadRoadComments();loadAsphaltPlan();
- await hydrateLargeStoresFromIDB();
- await loadProgressSnapshotFromIDB();
+ await hydrateLargeStoresFromIDB({strict});
+ await loadProgressSnapshotFromIDB({strict});
  syncAsphaltPlanToProgressCache();
  rebuildStatusSetsFromDirections();
+ if(!persistAfterHydration)return;
  // Migrer gamle store localStorage-data over til IndexedDB ved første oppstart i v2.0.4.
  saveState();saveDirectionState();saveRouteLog();saveGeomCache();saveRoadComments();savePlanKeys();
  safeLocalRemove(LEGACY_GEOM);
@@ -429,7 +432,7 @@ async function loadPersistentAppState(){
 
 /* ───────────────────── SETTINGS / STATE ───────────────────── */
 function saveSettings(){try{localStorage.setItem(SETTINGS_STORE,JSON.stringify(settings))}catch(e){}}
-function loadSettings(){
+function loadSettings({allowWrites=true}={}){
  try{
   const raw=localStorage.getItem(SETTINGS_STORE);
   if(raw){
@@ -452,7 +455,7 @@ function loadSettings(){
     if(!d?.settingsVersion||d.settingsVersion<4){
      settings.categoryFilter={...DEFAULT_CATEGORY_FILTER};
      settings.settingsVersion=4;
-     saveSettings();
+     if(allowWrites)saveSettings();
     }else if(typeof d?.settingsVersion==='number'){
     settings.settingsVersion=d.settingsVersion;
    }
@@ -461,7 +464,7 @@ function loadSettings(){
    if(!settings.settingsVersion||settings.settingsVersion<5){
     settings.backgroundGps=true;
     settings.settingsVersion=5;
-    saveSettings();
+    if(allowWrites)saveSettings();
    }
    // v2.0.32: ny default — sideanlegg filtreres bort. Eksisterende brukere får filteret slått PÅ
    // (dvs. settings.includeSideanlegg=false), men bevarer historikken sin. Bruk "Rens sideanlegg"
@@ -470,14 +473,13 @@ function loadSettings(){
     if(typeof settings.includeSideanlegg!=='boolean')settings.includeSideanlegg=false;
     if(typeof settings.includeRamper!=='boolean')settings.includeRamper=false;
     settings.settingsVersion=6;
-    saveSettings();
+    if(allowWrites)saveSettings();
    }
    // v2.0.46: migrer bort store localStorage-nøkler. IDB er nå sannhetskilden.
    if(!settings.settingsVersion||settings.settingsVersion<7){
-    [STORE,GEOM_STORE,LEGACY_GEOM,DIR_STORE,ROUTE_STORE,PLAN_STORE,COMMENT_STORE,PROGRESS_META_STORE].forEach(safeLocalRemove);
+    if(allowWrites)[STORE,GEOM_STORE,LEGACY_GEOM,DIR_STORE,ROUTE_STORE,PLAN_STORE,COMMENT_STORE,PROGRESS_META_STORE].forEach(safeLocalRemove);
     settings.settingsVersion=7;
-    saveSettings();
-    console.log('v2.0.46: store data flyttet helt til IndexedDB');
+    if(allowWrites){saveSettings();console.log('v2.0.46: store data flyttet helt til IndexedDB')}
    }
   }
  }catch(e){}
@@ -1362,7 +1364,23 @@ function cacheGeomForTrackedRoads(list){
 }
 
 /* ───────────────────── IDB CACHE ───────────────────── */
-function openIDB(){if(!HAS_INDEXED_DB)return Promise.reject(new Error('IndexedDB er ikke tilgjengelig'));if(_idb)return Promise.resolve(_idb);return new Promise((res,rej)=>{const req=indexedDB.open(IDB_NAME,IDB_VER);req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE);if(!db.objectStoreNames.contains(IDB_META_STORE))db.createObjectStore(IDB_META_STORE);if(!db.objectStoreNames.contains(IDB_SNAPSHOT_STORE))db.createObjectStore(IDB_SNAPSHOT_STORE);if(!db.objectStoreNames.contains(IDB_SYNC_OUTBOX)){const s=db.createObjectStore(IDB_SYNC_OUTBOX,{keyPath:'id'});s.createIndex('entity',['entity_type','entity_key'],{unique:false});s.createIndex('state_created',['state','created_at'],{unique:false})}if(!db.objectStoreNames.contains(IDB_SYNC_META))db.createObjectStore(IDB_SYNC_META,{keyPath:'key'})};req.onsuccess=e=>{_idb=e.target.result;res(_idb)};req.onerror=()=>rej(req.error)})}
+async function openPilotIDBSafely(){
+ const api=await loadPilotIDBModule(),info=await api.databaseInfo(indexedDB,IDB_NAME),proof=phase5PilotProof();
+ if(Number(info.version)<IDB_VER){
+  if(!proof)throw api.error('PILOT_SNAPSHOT_REQUIRED','Pre-migration snapshot må tas og verifiseres før databaseoppgradering. Åpne pilot-migration.html først.');
+  if(Number(proof.source_idb_version)!==Number(info.version))throw api.error('PILOT_SNAPSHOT_STALE',`Snapshot gjelder databaseversjon ${proof.source_idb_version}, men databasen er nå versjon ${info.version}. Ta et nytt read-only snapshot.`);
+  if(!proof.before?.critical_records)throw api.error('PILOT_SNAPSHOT_INCOMPLETE','Snapshotbeviset mangler read-only fingerprints. Ta snapshot på nytt før upgrade.');
+ }
+ let db;
+ if(Number(info.version)===IDB_VER)db=await api.openExisting(indexedDB,IDB_NAME);
+ else db=await api.openForUpgrade({indexedDB,name:IDB_NAME,version:IDB_VER,timeoutMs:12000,onEvent:event=>console.info('Pilot IDB',event)});
+ db.onversionchange=()=>{console.warn('Kjørelogg-databasen endret versjon i en annen fane; lukker denne forbindelsen.');db.close();if(_idb===db)_idb=null;_idbOpenPromise=null};
+ _pilotBeforeInspection=proof?.before||null;
+ _pilotAfterInspection=await api.inspect(db,window.KjoreloggPreMigrationSnapshot.canonicalSnapshotBytes);
+ if(_pilotBeforeInspection){const comparison=api.compare(_pilotBeforeInspection,_pilotAfterInspection);if(!comparison.valid){db.close();throw api.error('IDB_UPGRADE_VERIFY_MISMATCH','Databaseinnholdet stemmer ikke etter v4-upgrade. Ingen appdata blir skrevet.',{mismatches:comparison.mismatches})}}
+ return db;
+}
+function openIDB(){if(!HAS_INDEXED_DB)return Promise.reject(new Error('IndexedDB er ikke tilgjengelig'));if(_idb)return Promise.resolve(_idb);if(_idbOpenPromise)return _idbOpenPromise;_idbOpenPromise=openPilotIDBSafely().then(db=>(_idb=db)).catch(error=>{_idbOpenPromise=null;throw error});return _idbOpenPromise}
 function tileKey(lat,lon,r,f){const dLat=TILE_SIZE_KM/111.32,cos=Math.cos(lat*Math.PI/180)||1,dLon=TILE_SIZE_KM/(111.32*Math.max(0.2,Math.abs(cos))),cat=activeRoadCacheSignature().replace(/[^A-Z0-9-]/gi,'');const sa=settings.includeSideanlegg?'s':'';const rm=settings.includeRamper?'r':'';return`nvdb_t${ROAD_TILE_SCHEMA}_${Math.round(lat/dLat)}_${Math.round(lon/dLon)}_r${Math.round(r)}_f${f||'0'}_c${cat}${sa}${rm}`}
 async function saveTile(lat,lon,r,f,data){if(!HAS_INDEXED_DB)return;try{const db=await openIDB();db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).put({data,ts:Date.now()},tileKey(lat,lon,r,f))}catch(e){}}
 async function loadTile(lat,lon,r,f){if(!HAS_INDEXED_DB)return null;try{const db=await openIDB();return await new Promise(res=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get(tileKey(lat,lon,r,f));req.onsuccess=()=>{const o=req.result;if(!o||!Array.isArray(o.data))return res(null);if(Date.now()-o.ts>30*24*3600*1000)return res(null);res(o.data)};req.onerror=()=>res(null)})}catch(e){return null}}
@@ -4752,6 +4770,7 @@ async function syncPushAck(mutation,ack){await syncLocalRepository.setMeta(`revi
 const PHASE5_PRODUCTION_MIGRATION_ENABLED=false;
 const PHASE54_INSPECTION_ONLY=true;
 const PHASE54_PILOT_UPLOAD_ENABLED=false;
+const PHASE56_RECOVERY_ONLY=true;
 function phase5PilotProof(){try{const proof=JSON.parse(sessionStorage.getItem('kjorelogg_phase5_pilot_proof')||'null'),requested=new URLSearchParams(location.search).get('phase5-pilot')==='1';return requested&&proof?.content_hash&&Date.now()-Date.parse(proof.created_at)<60*60*1000?proof:null}catch(_){return null}}
 const PHASE5_PILOT_MIGRATION_ENABLED=!!phase5PilotProof();let migrationManager=null,snapshotManager=null,lastMigrationPreview=null,phase54PostBootSnapshotVerified=false,phase54LoginZeroWrites=null,phase54SessionPersistence=null,phase54OfflineReload=null,lastServerPreflight=null;
 async function getMigrationManager(){if(!migrationManager){if(!syncLocalRepository||!syncRemoteRepository)throw new Error('Sync-infrastruktur mangler');migrationManager=window.KjoreloggMigration.create({canonical:window.KjoreloggCanonical,local:syncLocalRepository,remote:syncRemoteRepository,deviceId:await syncLocalRepository.getDeviceId(),appVersion:APP_VERSION,resolverOptions:{getRoadStatus,isOneWay:_isOneWayKey}})}return migrationManager}
@@ -4789,7 +4808,7 @@ async function initializeSyncInfrastructure(){
   if(syncAuth.getUser()&&!navigator.onLine){phase54OfflineReload=true;sessionStorage.setItem('kjorelogg_phase54_offline_reload','1')}
   // Direkte query-param gir aldri rett til å åpne/oppgradere sync-IDB.
   // Først en fersk, verifisert same-tab snapshot-proof tillater additiv init.
-  if(!PHASE5_PILOT_MIGRATION_ENABLED){updateSyncUi();return}
+  if(PHASE56_RECOVERY_ONLY||!PHASE5_PILOT_MIGRATION_ENABLED){updateSyncUi();return}
   syncLocalRepository=window.KjoreloggSyncLocal.create();await syncLocalRepository.initialize();
   syncEngine=window.KjoreloggSync.create({local:syncLocalRepository,remote:syncRemoteRepository,auth:syncAuth,adapter:{appVersion:()=>APP_VERSION,deviceName:()=>navigator.userAgentData?.platform||navigator.platform||'Kjørelogg-klient',platform:()=>navigator.userAgentData?.platform||navigator.platform||'web',onPushAck:syncPushAck,applyRemote:applyRemoteSyncEntity,remoteEntityKey:remoteSyncEntityKey}});
   syncEngine.onStatus(updateSyncUi);_syncInfrastructureReady=true;await syncEngine.refreshStatus();updateSyncUi();
@@ -4810,22 +4829,27 @@ window.addEventListener('online',()=>updateSyncUi());window.addEventListener('of
 /* ---------------- /FASE 3 ---------------- */
 
 /* ───────────────────── START ───────────────────── */
+function validatePilotHydration(){
+ const source=_pilotAfterInspection?.critical_records||{},geomExpected=Number(source[GEOM_STORE]?.elements||0),progressExpected=Number(_pilotAfterInspection?.counts?.[IDB_SNAPSHOT_STORE]||0)>0||Number(source[STORE]?.elements||0)>0;
+ const runtime={roads:roads.length,geom_cache:Object.keys(geomCache||{}).length,driven:drivenKeys.size,one_direction:oneWayKeys.size,skipped:skipKeys.size,direction_state:Object.keys(directionState||{}).length,asphalt:asphaltPlan.length};
+ if(geomExpected>0&&runtime.geom_cache===0)throw Object.assign(new Error(`Hydrering ga tom geomCache selv om persistent ${GEOM_STORE} har ${geomExpected} elementer. Ingen data blir skrevet.`),{code:'PILOT_EMPTY_STATE_GUARD',details:{geom_expected:geomExpected,runtime}});
+ if(progressExpected&&runtime.geom_cache===0&&runtime.driven===0&&runtime.one_direction===0&&runtime.skipped===0&&runtime.direction_state===0)throw Object.assign(new Error('Hydrering ga åpenbart tom fremdriftsstate selv om IndexedDB inneholder fremdriftsdata. Ingen data blir skrevet.'),{code:'PILOT_EMPTY_STATE_GUARD',details:{runtime}});
+ return runtime;
+}
+function showPilotBootFailure(error){
+ console.error('PILOT BOOT STOPPET',error);const area=document.getElementById('message-area'),message=error?.code==='IDB_UPGRADE_BLOCKED'?'Databaseoppgradering blokkert. En annen Kjørelogg-fane bruker fortsatt den gamle databasen. Lukk alle andre Kjørelogg-faner og prøv igjen.':(error?.message||'Ukjent databasefeil');
+ if(area)area.innerHTML=`<div class="error"><strong>Pilotoppstart stoppet</strong><br>${esc(message)}<br><br>Ingen tom state er lagret. Produksjonsappen og lokale data er ikke endret.</div>`;
+ const header=document.getElementById('hdr-sub');if(header)header.textContent='Databasekontroll feilet – ingen writes';
+ window.__PILOT_BOOT_DIAGNOSTICS__={status:'FAIL',code:error?.code||'BOOT_ERROR',message,details:error?.details||null,before:_pilotBeforeInspection,after:_pilotAfterInspection};
+}
 async function bootApp(){
- loadSettings();
+ loadSettings({allowWrites:false});
  updateAsphaltPlanBadge();
- // v2.0.46: be iOS/nettleser om persistent storage.
- if(navigator.storage?.persist){
-  navigator.storage.persist().then(granted=>{
-   console.log('Persistent storage:',granted?'GRANTED':'DENIED');
-  }).catch(e=>console.warn('persist() feilet',e));
- }
- await loadPersistentAppState();
- await initializeSyncInfrastructure();
- if(PHASE5_PILOT_MIGRATION_ENABLED){const completed=await syncLocalRepository.getMeta('migration_manifest_v1');if(!completed?.migration_server_verified)document.getElementById('btn-create-migration-snapshot').style.display='flex'}
- loadPlanKeys();
- loadSelectedTableKeys();
- repairGeomCacheFromRoads();
- applySettingsToUI();updateProgressReportUi();renderGPS();showSecureWarning();renderStats();renderRoads();renderTable();updateOfflineCacheInfo();
+ try{
+  const recovery=await loadPilotIDBModule(),runtime=await recovery.runReadOnlyBoot({hydrate:async()=>{await loadPersistentAppState({persistAfterHydration:false,strict:true});loadPlanKeys();loadSelectedTableKeys();return true},validate:()=>validatePilotHydration(),render:()=>{applySettingsToUI();updateProgressReportUi();renderGPS();showSecureWarning();renderStats();renderRoads();renderTable();updateOfflineCacheInfo()}});
+  window.__PILOT_BOOT_DIAGNOSTICS__={status:'PASS',before:_pilotBeforeInspection,after:_pilotAfterInspection,runtime,writes:false};
+  await initializeSyncInfrastructure();
+ }catch(error){showPilotBootFailure(error);return}
  const bootFylke=document.getElementById('fylke')?.value||document.getElementById('dl-fylke')?.value;
  if(bootFylke){getCountyCacheMeta(bootFylke).then(meta=>{if(meta?.ts&&Date.now()-meta.ts>COUNTY_CACHE_TTL_MS)maybeWarnCountyCacheUpdate(bootFylke,{stale:true,ts:meta.ts,meta})}).catch(()=>{})}
  if(isNativeApp()){
