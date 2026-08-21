@@ -97,7 +97,9 @@ const FYLKER=[
 {id:'18',name:'Nordland'},{id:'55',name:'Troms'},{id:'56',name:'Finnmark'}];
 const APP_VERSION='v2.0.100';
 let _pilotIDBModulePromise=null,_pilotBeforeInspection=null,_pilotAfterInspection=null;
-function loadPilotIDBModule(){if(window.KjoreloggPilotIDB)return Promise.resolve(window.KjoreloggPilotIDB);if(_pilotIDBModulePromise)return _pilotIDBModulePromise;_pilotIDBModulePromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./pilot-idb-recovery.js';script.onload=()=>window.KjoreloggPilotIDB?resolve(window.KjoreloggPilotIDB):reject(new Error('Pilot-IDB-modulen mangler'));script.onerror=()=>reject(new Error('Kunne ikke laste pilot-idb-recovery.js'));document.head.appendChild(script)});return _pilotIDBModulePromise}
+let _pilotConfigPromise=null;
+function loadFreshPilotConfig(){if(_pilotConfigPromise)return _pilotConfigPromise;_pilotConfigPromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./config.js?v=2.0.100';script.onload=()=>window.KJORELOGG_CONFIG?.SUPABASE_URL&&window.KJORELOGG_CONFIG?.SUPABASE_ANON_KEY?resolve(window.KJORELOGG_CONFIG):reject(new Error('Versjonert config.js mangler Supabase-konfigurasjon'));script.onerror=()=>reject(new Error('Kunne ikke laste config.js?v=2.0.100'));document.head.appendChild(script)});return _pilotConfigPromise}
+function loadPilotIDBModule(){if(window.KjoreloggPilotIDB)return Promise.resolve(window.KjoreloggPilotIDB);if(_pilotIDBModulePromise)return _pilotIDBModulePromise;_pilotIDBModulePromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./pilot-idb-recovery.js?v=2.0.100';script.onload=()=>window.KjoreloggPilotIDB?resolve(window.KjoreloggPilotIDB):reject(new Error('Pilot-IDB-modulen mangler'));script.onerror=()=>reject(new Error('Kunne ikke laste pilot-idb-recovery.js?v=2.0.100'));document.head.appendChild(script)});return _pilotIDBModulePromise}
 
 const FYLKE_BBOX={
 '31':[10.45,58.75,12.10,59.85],'32':[10.15,59.35,12.25,60.60],'3':[10.45,59.75,11.00,60.05],
@@ -4801,6 +4803,7 @@ function openAuthModal(){if(!syncAuth?.isConfigured()){setMessage('Supabase er i
 function closeAuthModal(){document.getElementById('auth-modal').style.display='none';document.getElementById('auth-password').value=''}
 async function initializeSyncInfrastructure(){
  try{
+  await loadFreshPilotConfig();
   syncAuth=window.KjoreloggAuth.create({config:window.KJORELOGG_CONFIG,library:window.supabase});
   syncRemoteRepository=window.KjoreloggRemote.create({auth:syncAuth});
   syncAuth.onChange(()=>updateSyncUi());await syncAuth.initialize();
