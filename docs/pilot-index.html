@@ -95,11 +95,11 @@ const FYLKER=[
 {id:'34',name:'Innlandet'},{id:'39',name:'Vestfold'},{id:'40',name:'Telemark'},{id:'42',name:'Agder'},
 {id:'11',name:'Rogaland'},{id:'46',name:'Vestland'},{id:'15',name:'Møre og Romsdal'},{id:'50',name:'Trøndelag'},
 {id:'18',name:'Nordland'},{id:'55',name:'Troms'},{id:'56',name:'Finnmark'}];
-const APP_VERSION='v2.0.102';
+const APP_VERSION='v2.0.103';
 let _pilotIDBModulePromise=null,_pilotBeforeInspection=null,_pilotAfterInspection=null;
 let _pilotConfigPromise=null;
 function loadFreshPilotConfig(){if(_pilotConfigPromise)return _pilotConfigPromise;_pilotConfigPromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./config.js?v=2.0.100';script.onload=()=>window.KJORELOGG_CONFIG?.SUPABASE_URL&&window.KJORELOGG_CONFIG?.SUPABASE_ANON_KEY?resolve(window.KJORELOGG_CONFIG):reject(new Error('Versjonert config.js mangler Supabase-konfigurasjon'));script.onerror=()=>reject(new Error('Kunne ikke laste config.js?v=2.0.100'));document.head.appendChild(script)});return _pilotConfigPromise}
-function loadPilotIDBModule(){if(window.KjoreloggPilotIDB)return Promise.resolve(window.KjoreloggPilotIDB);if(_pilotIDBModulePromise)return _pilotIDBModulePromise;_pilotIDBModulePromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./pilot-idb-recovery.js?v=2.0.102';script.onload=()=>window.KjoreloggPilotIDB?resolve(window.KjoreloggPilotIDB):reject(new Error('Pilot-IDB-modulen mangler'));script.onerror=()=>reject(new Error('Kunne ikke laste pilot-idb-recovery.js?v=2.0.102'));document.head.appendChild(script)});return _pilotIDBModulePromise}
+function loadPilotIDBModule(){if(window.KjoreloggPilotIDB)return Promise.resolve(window.KjoreloggPilotIDB);if(_pilotIDBModulePromise)return _pilotIDBModulePromise;_pilotIDBModulePromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./pilot-idb-recovery.js?v=2.0.103';script.onload=()=>window.KjoreloggPilotIDB?resolve(window.KjoreloggPilotIDB):reject(new Error('Pilot-IDB-modulen mangler'));script.onerror=()=>reject(new Error('Kunne ikke laste pilot-idb-recovery.js?v=2.0.103'));document.head.appendChild(script)});return _pilotIDBModulePromise}
 
 const FYLKE_BBOX={
 '31':[10.45,58.75,12.10,59.85],'32':[10.15,59.35,12.25,60.60],'3':[10.45,59.75,11.00,60.05],
@@ -3581,11 +3581,11 @@ function openProgressMissingPopup(key,latlng){
 
 function openAsphaltProgressPopup(r,latlng){
  if(!progressMap||!r)return;
- const key=asphaltProgressKey(r),safeKey=encodedKeyArg(key),status=asphaltStatus(r);
+ const safeKey=encodedKeyArg(r.planKey),status=asphaltStatus(r);
  const statusTxt=status==='done'?'FERDIG':status==='oneway'?'KJØRT 1 RETNING':status==='skip'?'KJØRES IKKE':'PLANLAGT / IKKE FERDIG';
  const statusColor=status==='done'?'#42a5f5':status==='oneway'?'#f9a825':status==='skip'?'#aaa':'#ff9800';
- const doneBtn=status!=='done'?`<button onclick="window._progressMarkDone('${safeKey}')" style="background:#0d4775;color:#d7efff;border:1px solid #1976d2;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🔵 Sett ferdig</button>`:'';
- const oneWayBtn=status!=='oneway'?`<button onclick="window._progressMarkOneWay('${safeKey}')" style="background:#3a3000;color:#f9a825;border:1px solid #7a6500;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🟠 Kjørt 1 retning</button>`:'';
+ const doneBtn=status!=='done'?`<button onclick="window._phase57AsphaltStatus('${safeKey}','COMPLETED')" style="background:#0d4775;color:#d7efff;border:1px solid #1976d2;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🔵 Sett ferdig</button>`:'';
+ const oneWayBtn=status!=='oneway'?`<button onclick="window._phase57AsphaltStatus('${safeKey}','ONE_DIRECTION')" style="background:#3a3000;color:#f9a825;border:1px solid #7a6500;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🟠 Kjørt 1 retning</button>`:'';
  const date=r.asfaltDato?new Date(r.asfaltDato).toLocaleDateString('nb-NO'):'–';
  const dateTo=r.asfaltDatoTil?new Date(r.asfaltDatoTil).toLocaleDateString('nb-NO'):'';
  const html=`<div style="font-family:-apple-system,sans-serif;min-width:255px">
@@ -3597,13 +3597,13 @@ function openAsphaltProgressPopup(r,latlng){
    Asfalt: ${esc(date+(dateTo&&dateTo!==date?' – '+dateTo:''))}<br>
    Kontrakt: ${esc(r.kontrakt??'–')} · Punkt: ${esc(r.punkt??'–')}
   </div>
-  ${progressCommentFieldHtml(key)}
+  <textarea id="progress-popup-comment" rows="2" placeholder="Kommentar (valgfritt)" style="width:100%;margin-bottom:8px;background:#15151a;color:#fff;border:1px solid #444;border-radius:7px;padding:7px">${esc(r.localComment||'')}</textarea>
   <div style="display:flex;flex-direction:column;gap:6px">
-   <button onclick="window._progressSaveComment('${safeKey}')" style="background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">💾 Lagre kommentar</button>
+   <button onclick="window._phase57AsphaltStatus('${safeKey}','COMMENT')" style="background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">💾 Lagre kommentar</button>
    ${doneBtn}
    ${oneWayBtn}
-   <button onclick="window._progressClearRoad('${safeKey}')" style="background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">↩ Nullstill status</button>
-   <button onclick="window._progressSkipMissing('${safeKey}')" style="background:#1a1a1a;color:#ddd;border:1px solid #555;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">⛔ Kjøres ikke</button>
+   <button onclick="window._phase57AsphaltStatus('${safeKey}','RESET')" style="background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">↩ Nullstill status</button>
+   <button onclick="window._phase57AsphaltStatus('${safeKey}','SKIPPED')" style="background:#1a1a1a;color:#ddd;border:1px solid #555;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">⛔ Kjøres ikke</button>
   </div>
  </div>`;
  L.popup({closeButton:true,className:'road-action-popup'}).setLatLng(latlng).setContent(html).openOn(progressMap);
@@ -4244,9 +4244,8 @@ function syncAsphaltPlanToProgressCache(){
  return changed;
 }
 function asphaltStatus(r){
- const key=asphaltProgressKey(r);
- if(skipKeys.has(key))return 'skip';
- return getRoadStatus(key);
+ const status=String(r?.operationalStatus||r?.initialCanonicalStatus||'').toUpperCase();
+ if(status==='SKIPPED')return'skip';if(status==='COMPLETED')return'done';if(status==='ONE_DIRECTION')return'oneway';return'';
 }
 
 function normalizeAsphaltPlan(raw){
@@ -4275,6 +4274,10 @@ function normalizeAsphaltPlan(raw){
   sourceImportedAt:r?.sourceImportedAt||null,
   sourceStatusConflict:r?.sourceStatusConflict||null,
   initialCanonicalStatus:r?.initialCanonicalStatus||null,
+  operationalStatus:['NOT_STARTED','ONE_DIRECTION','COMPLETED','SKIPPED'].includes(String(r?.operationalStatus||'').toUpperCase())?String(r.operationalStatus).toUpperCase():null,
+  statusUpdatedAt:r?.statusUpdatedAt||null,
+  localComment:String(r?.localComment||''),
+  roadBaselineFingerprint:r?.roadBaselineFingerprint&&typeof r.roadBaselineFingerprint==='object'?r.roadBaselineFingerprint:null,
   statusMigrationConflict:r?.statusMigrationConflict||null,
   legacyProgressKey:r?.legacyProgressKey||null,
   vegref:String(r?.vegref||''),
@@ -4297,6 +4300,13 @@ function loadAsphaltPlan(){
 function saveAsphaltPlan(){
  asphaltPlan=normalizeAsphaltPlan(asphaltPlan);
  persistJsonStore(ASPHALT_PLAN_STORE,asphaltPlan,{localLimit:300000});
+}
+async function savePhase57AsphaltPlan(){
+ asphaltPlan=normalizeAsphaltPlan(asphaltPlan);
+ await idbSetAppData(ASPHALT_PLAN_STORE,asphaltPlan);
+ const readback=normalizeAsphaltPlan(await idbGetAppData(ASPHALT_PLAN_STORE));
+ if(readback.length!==asphaltPlan.length||readback.some((row,index)=>row.planKey!==asphaltPlan[index].planKey))throw new Error('Asfaltplan readback avviker; videre behandling stoppet.');
+ asphaltPlan=readback;return true;
 }
 function clearAsphaltPlan(){
  asphaltPlan=[];
@@ -4570,38 +4580,52 @@ async function importAsphaltExcelFile(file){
 }
 function asphaltStatusCounts(){
  const out={COMPLETED:0,ONE_DIRECTION:0,SKIPPED:0,NOT_STARTED:0};
- for(const record of asphaltPlan){const key=asphaltProgressKey(record),status=skipKeys.has(key)?'SKIPPED':getRoadStatus(key)==='done'?'COMPLETED':getRoadStatus(key)==='oneway'?'ONE_DIRECTION':'NOT_STARTED';out[status]++}
+ for(const record of asphaltPlan){const status=asphaltStatus(record);out[status==='done'?'COMPLETED':status==='oneway'?'ONE_DIRECTION':status==='skip'?'SKIPPED':'NOT_STARTED']++}
  return out;
 }
+const PHASE57_ROAD_KEYS=[STORE,DIR_STORE,ROUTE_STORE,GEOM_STORE,COMMENT_STORE,PROGRESS_IDB_KEY];
+let phase57Baseline=null,phase57LastReport=null;
+async function phase57Sha(value){const bytes=await window.KjoreloggPreMigrationSnapshot.canonicalSnapshotBytes(value),digest=await crypto.subtle.digest('SHA-256',bytes);return[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,'0')).join('')}
+function phase57LogicalCount(value){if(Array.isArray(value))return value.length;if(value&&typeof value==='object'){if(value.state&&typeof value.state==='object')return['driven','oneWay','skip','deletedGeom','deletedGeomKeys'].reduce((sum,key)=>sum+(Array.isArray(value.state[key])?value.state[key].length:0),0);return Object.keys(value).length}return 0}
+async function phase57RoadFingerprint(){
+ const records={};for(const key of PHASE57_ROAD_KEYS){const value=await idbGetAppData(key);if(value===null||value===undefined)throw new Error(`Baseline mangler kritisk record ${key}`);records[key]={count:phase57LogicalCount(value),sha256:await phase57Sha(value)}}
+ return{records,baseline_sha256:await phase57Sha(records)};
+}
+function phase57SameBaseline(a,b){return!!a&&!!b&&a.baseline_sha256===b.baseline_sha256&&PHASE57_ROAD_KEYS.every(key=>a.records[key]?.sha256===b.records[key]?.sha256&&a.records[key]?.count===b.records[key]?.count)}
+function phase57Status(existing,sourceCompleted){
+ const status=['NOT_STARTED','ONE_DIRECTION','COMPLETED','SKIPPED'].includes(String(existing||'').toUpperCase())?String(existing).toUpperCase():null;
+ if(status==='SKIPPED'&&sourceCompleted)return{status,conflict:'SKIPPED_VS_EXCEL_COMPLETED'};
+ if(sourceCompleted&&(status===null||status==='NOT_STARTED'||status==='ONE_DIRECTION'))return{status:'COMPLETED',conflict:null};
+ return{status:status||(sourceCompleted?'COMPLETED':'NOT_STARTED'),conflict:null};
+}
 async function reimportAsphaltProvenance(files){
- if(!PHASE54_INSPECTION_ONLY)throw new Error('FASE 5.4 inspeksjonsgate mangler');
- if(!PHASE5_PILOT_MIGRATION_ENABLED)throw new Error('Pre-upgrade snapshot-proof mangler');
- const snapshot=await (await getSnapshotManager()).getLatest();
- if(!snapshot?.content_hash)throw new Error('Verifisert post-boot snapshot mangler. Ingen data er endret.');
+ if(!PHASE56_RECOVERY_ONLY||!PHASE54_INSPECTION_ONLY)throw new Error('Lokal read-only pilotgate mangler');
+ phase57Baseline=await phase57RoadFingerprint();
  await ensureXlsxReady();
  if(files.length!==2)throw new Error('Velg begge de to Excel-planene samtidig.');
- const imported=[];
- for(const file of files){const rows=parseAsphaltWorkbook(await file.arrayBuffer(),file.name);imported.push(...rows)}
- const excelCounts=new Map(),localByKey=new Map();
- for(const row of imported)excelCounts.set(row.planKey,(excelCounts.get(row.planKey)||0)+1);
- for(const row of asphaltPlan){const key=row.planKey||_canonicalAsphaltPlanKey(row);if(!localByKey.has(key))localByKey.set(key,[]);localByKey.get(key).push(row)}
- const collisions=[...excelCounts].filter(([,count])=>count>1),matches=imported.filter(row=>localByKey.get(row.planKey)?.length===1),noMatch=imported.filter(row=>!localByKey.has(row.planKey)),multiple=imported.filter(row=>(localByKey.get(row.planKey)?.length||0)>1),green=imported.filter(row=>row.sourceCompleted).length;
- const dryRun={excel_rows:imported.length,existing_local_plans:asphaltPlan.length,stable_key_matches:matches.length,no_match:noMatch.length,multiple_matches:multiple.length,plan_key_collisions:collisions.length,source_completed_true:green,source_completed_false:imported.length-green};
- alert(`ASFALTPROVENANCE DRY-RUN (ingen writes)\n\nExcel rows totalt: ${dryRun.excel_rows}\nExisting local plans: ${dryRun.existing_local_plans}\nStable-key matches: ${dryRun.stable_key_matches}\nNo match: ${dryRun.no_match}\nMultiple matches: ${dryRun.multiple_matches}\nPlan-key collisions: ${dryRun.plan_key_collisions}\nGrønne: ${dryRun.source_completed_true}\nIkke grønne: ${dryRun.source_completed_false}`);
- if(dryRun.excel_rows!==102||dryRun.existing_local_plans!==102||dryRun.stable_key_matches!==102||dryRun.no_match||dryRun.multiple_matches||dryRun.plan_key_collisions||green!==45)throw new Error('Dry-run oppfyller ikke 102/102/0/0/0 og 45 grønne. Ingen data er endret.');
- if(!confirm('Dry-run er godkjent. Skrive provenance og lokal asfaltstatus?\n\nIngen data sendes til Supabase.'))throw new Error('Avbrutt av bruker før write.');
- const before=asphaltStatusCounts(),outboxBefore=await syncLocalRepository.countPending();
- for(const source of imported){const target=localByKey.get(source.planKey)[0];target.sourceCompletedKnown=true;target.sourceCompleted=!!source.sourceCompleted;target.sourceCompletedReason=source.sourceCompleted?'excel_green':null;target.sourceImportedAt=source.sourceImportedAt;target.initialCanonicalStatus=source.initialCanonicalStatus||target.initialCanonicalStatus;}
- const summary=applyImportedAsphaltSourceStatus(imported);saveAsphaltPlan();
- const after=asphaltStatusCounts(),outboxAfter=await syncLocalRepository.countPending(),inspection=localPilotInspection();
- if(outboxAfter!==outboxBefore)throw new Error(`Sikkerhetsstopp: sync_outbox endret ${outboxBefore} → ${outboxAfter}`);
- if(inspection.total!==102||inspection.source_true!==45||inspection.source_false!==57||inspection.source_missing!==0)throw new Error('Provenance readback avviker fra 102/45/57/0');
- await syncLocalRepository.setMeta('phase54_asphalt_provenance_reimport',{snapshot_id:snapshot.snapshot_id,snapshot_hash:snapshot.content_hash,completed_at:new Date().toISOString(),dry_run:dryRun,before,after,outbox_delta:0,conflicts:summary.conflicts});
+ const imported=[],perFile={};for(const file of files){const rows=parseAsphaltWorkbook(await file.arrayBuffer(),file.name);perFile[file.name]=rows.length;imported.push(...rows)}
+ const keyCounts=new Map();for(const row of imported)keyCounts.set(row.planKey,(keyCounts.get(row.planKey)||0)+1);
+ const collisions=[...keyCounts].filter(([,count])=>count>1),green=imported.filter(row=>row.sourceCompleted).length,north=Object.entries(perFile).filter(([name])=>name.includes('Nordmøre og Romsdal')).reduce((sum,[,count])=>sum+count,0),south=Object.entries(perFile).filter(([name])=>name.includes('Sunnmøre')).reduce((sum,[,count])=>sum+count,0);
+ const resolved=await resolveAsphaltPlan(imported),validVsr=resolved.filter(row=>row.parts.length).length;
+ const dryRun={excel_rows:resolved.length,north_rows:north,south_rows:south,source_completed_true:green,source_completed_false:resolved.length-green,valid_vsr:validVsr,stable_plan_keys:keyCounts.size,plan_key_collisions:collisions.length,baseline_fingerprint:phase57Baseline.baseline_sha256};
+ alert(`FASE 5.7 ASFALT DRY-RUN (ingen writes)\n\nExcel rows: ${dryRun.excel_rows}\nNordmøre/Romsdal: ${north}\nSunnmøre: ${south}\nExcel green: ${green}\nExcel not green: ${dryRun.source_completed_false}\nValid VSR/NVDB: ${validVsr}\nStable plan keys: ${keyCounts.size}\nPlan-key collisions: ${collisions.length}\n\nBASELINE_FINGERPRINT\n${phase57Baseline.baseline_sha256}`);
+ if(resolved.length!==102||north!==37||south!==65||green!==45||resolved.length-green!==57||validVsr!==102||keyCounts.size!==102||collisions.length)throw new Error('Dry-run avviker fra 102/37/65/45/57/102/102/0. Ingen data er endret.');
+ if(!confirm('Dry-run er godkjent. Lagre kun lokal asfaltplan?\n\nDe seks vegrecordene, Supabase, sync og outbox berøres ikke.'))throw new Error('Avbrutt av bruker før write.');
+ const existing=new Map(asphaltPlan.map(row=>[row.planKey,row])),next=[];let conflicts=0;
+ for(const source of resolved){const prior=existing.get(source.planKey),decision=phase57Status(prior?.operationalStatus||prior?.initialCanonicalStatus,source.sourceCompleted);if(decision.conflict)conflicts++;next.push({...source,sourceCompletedKnown:true,sourceCompleted:!!source.sourceCompleted,sourceCompletedReason:source.sourceCompleted?'excel_green':null,operationalStatus:decision.status,initialCanonicalStatus:decision.status,sourceStatusConflict:decision.conflict,statusUpdatedAt:prior?.statusUpdatedAt||null,localComment:prior?.localComment||''})}
+ if(next.length)next[0].roadBaselineFingerprint=phase57Baseline;
+ asphaltPlan=normalizeAsphaltPlan(next.sort((a,b)=>a.planKey.localeCompare(b.planKey)));await savePhase57AsphaltPlan();
+ const after=asphaltStatusCounts(),inspection=localPilotInspection(),roadAfter=await phase57RoadFingerprint();
+ if(!phase57SameBaseline(phase57Baseline,roadAfter))throw Object.assign(new Error('Kritisk vegbaseline endret etter asfaltwrite. Videre behandling stoppet.'),{details:{before:phase57Baseline,after:roadAfter}});
+ if(inspection.total!==102||inspection.source_true!==45||inspection.source_false!==57||inspection.source_missing!==0)throw new Error('Asfalt readback avviker fra 102/45/57/0');
+ settings.progressShowAsphalt=true;applySettingsToUI();updateAsphaltPlanBadge();
  renderAllViews();if(typeof updateProgressMap==='function')updateProgressMap({fit:false,force:true});
- alert(`ASFALTPROVENANCE PASS\n\nCOMPLETED ${before.COMPLETED} → ${after.COMPLETED}\nONE_DIRECTION ${before.ONE_DIRECTION} → ${after.ONE_DIRECTION}\nSKIPPED ${before.SKIPPED} → ${after.SKIPPED}\nNOT_STARTED ${before.NOT_STARTED} → ${after.NOT_STARTED}\nKonflikter: ${summary.conflicts}\nsync_outbox delta: 0`);
- return{dryRun,before,after,outbox_delta:0,conflicts:summary.conflicts};
+ phase57LastReport={dryRun,after,conflicts,baseline_before:phase57Baseline,baseline_after:roadAfter,baseline_unchanged:true,sync:false,outbox:false};window.__PHASE57_REPORT__=phase57LastReport;
+ alert(`FASE 5.7 LOKAL ASFALT PASS\n\nTOTAL 102\nsource_completed=true 45\nsource_completed=false 57\nCOMPLETED ${after.COMPLETED}\nONE_DIRECTION ${after.ONE_DIRECTION}\nSKIPPED ${after.SKIPPED}\nNOT_STARTED ${after.NOT_STARTED}\nKonflikter ${conflicts}\n\nVegbaseline SHA uendret:\n${roadAfter.baseline_sha256}`);
+ return phase57LastReport;
 }
 window.reimportAsphaltProvenance=reimportAsphaltProvenance;
+window._phase57AsphaltStatus=async(encoded,status)=>{try{const roadBefore=await phase57RoadFingerprint(),key=decodeURIComponent(encoded||''),record=asphaltPlan.find(row=>row.planKey===key);if(!record)throw new Error('Fant ikke asfaltplanpost');const note=readProgressPopupComment();if(status!=='COMMENT')record.operationalStatus=status==='RESET'?(record.sourceCompleted?'COMPLETED':'NOT_STARTED'):status;record.initialCanonicalStatus=record.operationalStatus;record.localComment=note;record.statusUpdatedAt=new Date().toISOString();await savePhase57AsphaltPlan();const roadAfter=await phase57RoadFingerprint();if(!phase57SameBaseline(roadBefore,roadAfter))throw new Error('Vegbaseline endret under asfaltstatus-write; videre behandling stoppet.');progressMap?.closePopup();renderAllViews();if(typeof updateProgressMap==='function')updateProgressMap({fit:false,force:true});setMessage('Lokal asfaltstatus lagret separat fra vegfremdrift.','success')}catch(error){setMessage('Asfaltstatus feilet: '+error.message,'error')}};
 function asphaltPopupHtml(r){
  const date=r.asfaltDato?new Date(r.asfaltDato).toLocaleDateString('nb-NO'):'–';
  const dateTo=r.asfaltDatoTil?new Date(r.asfaltDatoTil).toLocaleDateString('nb-NO'):'';
@@ -4713,7 +4737,7 @@ document.getElementById('asphalt-file')?.addEventListener('change',async e=>{
  catch(err){console.error('Asfaltplan-import feilet',err);setMessage('Asfaltplan-import feilet: '+(err?.message||err),'error')}
  finally{e.target.value=''}
 });
-document.getElementById('btn-clear-asphalt')?.addEventListener('click',()=>{closeMenu();if(!asphaltPlan.length||confirm(`Fjerne ${asphaltPlan.length} importerte asfaltplan-rader?`))clearAsphaltPlan()});
+document.getElementById('btn-clear-asphalt')?.addEventListener('click',()=>{closeMenu();setMessage('Sletting av asfaltplan er deaktivert i FASE 5.7 for å beskytte stabil v4-baseline.','notice')});
 
 document.getElementById('btn-clear-plan-menu')?.addEventListener('click',()=>{planKeys.clear();savePlanKeys();closeMenu();updatePlanLayer();renderAll();setMessage('Dagsrute tømt.','success')});
 document.getElementById('btn-fit-plan')?.addEventListener('click',fitPlanLayer);
@@ -4785,7 +4809,7 @@ function localPilotInspection(){
  const counts={total:asphaltPlan.length,source_true:0,source_false:0,source_missing:0,completed:0,not_started:0,one_direction:0,skipped:0,legacy_key:0,stable_key:0};
  for(const record of asphaltPlan){
   if(!record.sourceCompletedKnown)counts.source_missing++;else if(record.sourceCompleted)counts.source_true++;else counts.source_false++;
-  const key=asphaltProgressKey(record),status=skipKeys.has(key)?'skip':getRoadStatus(key);
+  const status=asphaltStatus(record);
   if(status==='done')counts.completed++;else if(status==='oneway')counts.one_direction++;else if(status==='skip')counts.skipped++;else counts.not_started++;
   if(String(record.planKey||'').startsWith('asphalt:v1:'))counts.stable_key++;else counts.legacy_key++;
  }
@@ -4845,6 +4869,7 @@ async function validatePilotHydration(){
  if(progressExpected&&runtime.geom_cache===0&&runtime.driven===0&&runtime.one_direction===0&&runtime.skipped===0&&runtime.direction_state===0)throw Object.assign(new Error('Hydrering ga åpenbart tom fremdriftsstate selv om IndexedDB inneholder fremdriftsdata. Ingen data blir skrevet.'),{code:'PILOT_EMPTY_STATE_GUARD',details:{runtime}});
  if(runtime.geom_cache!==Object.keys(normalizedRawGeom).length)throw Object.assign(new Error(`Geometri-count endret under hydrering: persistent ${Object.keys(normalizedRawGeom).length}, runtime ${runtime.geom_cache}. Ingen data blir skrevet.`),{code:'PILOT_V4_HYDRATION_MISMATCH',details:{raw,runtime}});
  const persistentProgress=raw.driven+raw.one_way+raw.skip+raw.deleted_geom+raw.direction_state+raw.route_log;if(persistentProgress>0&&runtime.driven+runtime.one_direction+runtime.skipped+runtime.direction_state+runtime.route_log===0)throw Object.assign(new Error('Ikke-tom persistent fremdrift ble tom under hydrering. Ingen data blir skrevet.'),{code:'PILOT_EMPTY_STATE_GUARD',details:{raw,runtime}});
+ const asphaltBaseline=asphaltPlan.find(row=>row.roadBaselineFingerprint)?.roadBaselineFingerprint;if(asphaltBaseline){const currentRoadBaseline=await phase57RoadFingerprint();if(!phase57SameBaseline(asphaltBaseline,currentRoadBaseline))throw Object.assign(new Error('Vegbaseline avviker fra FASE 5.7-fingerprint etter reload. Ingen data blir skrevet.'),{code:'PHASE57_BASELINE_MISMATCH',details:{expected:asphaltBaseline,actual:currentRoadBaseline}});window.__PHASE57_BASELINE__={status:'PASS',expected:asphaltBaseline,actual:currentRoadBaseline}}
  let totalKm=0,completedKm=0,oneDirectionKm=0,notDrivenKm=0;for(const[key,record]of Object.entries(geomCache||{})){if(isAsphaltProgressKey(key))continue;const km=Number(record?.len)>0?Number(record.len)/1000:calcPartsKm(getGeomParts(record));if(!Number.isFinite(km)||km<0)continue;const status=getRoadStatus(key);if(skipKeys.has(key))continue;totalKm+=km;if(status==='done')completedKm+=km;else if(status==='oneway')oneDirectionKm+=km;else notDrivenKm+=km}
  const metrics={total_km:+totalKm.toFixed(1),completed_km:+completedKm.toFixed(1),one_direction_km:+oneDirectionKm.toFixed(1),not_driven_km:+notDrivenKm.toFixed(1),completed_pct:totalKm?+((completedKm/totalKm)*100).toFixed(1):0,geometry_loaded:runtime.geom_cache,status_counts:{completed:runtime.driven,one_direction:runtime.one_direction,skipped:runtime.skipped,not_started:Math.max(0,runtime.geom_cache-runtime.driven-runtime.one_direction-runtime.skipped)},record_fingerprint:Object.fromEntries([STORE,DIR_STORE,ROUTE_STORE,GEOM_STORE,COMMENT_STORE,PROGRESS_IDB_KEY].map(key=>[key,source[key]?.sha256||null]))};
  return{...runtime,raw,metrics};
