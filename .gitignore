@@ -1,0 +1,5 @@
+# Lokale arbeids- og importfiler. Disse er datakilder/testgrunnlag,
+# ikke del av den offentlige applikasjonskoden.
+*.xlsx
+kjorelogg-fremdrift-backup-*.geojson
+index_asfaltplan_v*.html
