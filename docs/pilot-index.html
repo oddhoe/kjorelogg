@@ -4829,6 +4829,17 @@ let phase58Baseline=null,phase58LastVerification=null;
 async function phase58Fingerprint(){const rows={};for(const key of PHASE58_RECORD_KEYS){const value=await idbGetAppData(key);rows[key]={sha256:await phase57Sha(value),type:Array.isArray(value)?'array':value===null?'null':typeof value,count:Array.isArray(value)?value.length:value&&typeof value==='object'?Object.keys(value).length:value==null?0:1}}return rows}
 function phase58SameFingerprint(before,after){return PHASE58_RECORD_KEYS.every(key=>before?.[key]?.sha256&&before[key].sha256===after?.[key]?.sha256)}
 async function phase58AssertUnchanged(action){if(!phase58Baseline)throw new Error('Auth-baseline er ikke etablert');const actual=await phase58Fingerprint(),ok=phase58SameFingerprint(phase58Baseline,actual);phase58LastVerification={action,ok,checked_at:new Date().toISOString(),baseline:phase58Baseline,actual};window.__PHASE58_AUTH_DIAGNOSTICS__={baseline:phase58Baseline,last_verification:phase58LastVerification,client_readiness:PHASE58_CLIENT_READINESS,sync_initialized:false,remote_repository_initialized:false};if(!ok){const changed=PHASE58_RECORD_KEYS.filter(key=>phase58Baseline[key]?.sha256!==actual[key]?.sha256);throw Object.assign(new Error(`Auth endret lokale fagrecords: ${changed.join(', ')}`),{code:'PHASE58_FAGDATA_CHANGED',details:{changed}})}return actual}
+async function phase58AuthObservation(action){
+ try{return await phase58AssertUnchanged(action)}
+ catch(error){
+  if(error?.code==='PHASE58_FAGDATA_CHANGED'){
+   console.warn('Auth-kontroll observerte lokal fingerprint-endring; auth blokkeres ikke.',error.details);
+   if(window.__PHASE58_AUTH_DIAGNOSTICS__)window.__PHASE58_AUTH_DIAGNOSTICS__.auth_observation='LOCAL_FINGERPRINT_CHANGED_AUTH_CONTINUES';
+   return window.__PHASE58_AUTH_DIAGNOSTICS__?.last_verification?.actual||null;
+  }
+  throw error;
+ }
+}
 function installHeaderAuthControls(){const actions=document.querySelector('.top-actions'),status=document.getElementById('sync-header-status');if(!actions||!status||document.getElementById('header-auth-login'))return;const wrap=document.createElement('div');wrap.id='pilot-auth-header';wrap.style.cssText='display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end';status.parentNode.insertBefore(wrap,status);wrap.appendChild(status);for(const[id,label]of[['header-auth-login','Logg inn'],['header-auth-logout','Logg ut']]){const button=document.createElement('button');button.id=id;button.type='button';button.textContent=label;button.style.cssText='border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:7px 9px;background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:900;cursor:pointer';wrap.appendChild(button)}document.getElementById('header-auth-login').addEventListener('click',openAuthModal);document.getElementById('header-auth-logout').addEventListener('click',handlePilotLogout)}
 let phase61Sync=null,phase61ModulePromise=null,phase61Status={phase:'local',pending:0,conflicts:0,dataset:null};
 function loadPhase61Module(){if(window.KjoreloggPilotSyncV105)return Promise.resolve(window.KjoreloggPilotSyncV105);if(phase61ModulePromise)return phase61ModulePromise;phase61ModulePromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./pilot-sync-v105.js?v=2.0.105';script.onload=()=>window.KjoreloggPilotSyncV105?resolve(window.KjoreloggPilotSyncV105):reject(new Error('Pilot sync v2.0.105 mangler'));script.onerror=()=>reject(new Error('Kunne ikke laste pilot-sync-v105.js'));document.head.appendChild(script)});return phase61ModulePromise}
@@ -4847,14 +4858,14 @@ async function initializePilotAuthOnly(){
  try{
   await loadFreshPilotConfig();
   syncAuth=window.KjoreloggAuth.create({config:window.KJORELOGG_CONFIG,library:window.supabase});
-  syncAuth.onChange(()=>{updateSyncUi();phase58AssertUnchanged('auth-state-change').catch(showPhase58AuthFailure)});await syncAuth.initialize();
-  await phase58AssertUnchanged('auth-initialize');await initializePhase61Sync();updateSyncUi();
+  syncAuth.onChange(()=>{updateSyncUi();phase58AuthObservation('auth-state-change').catch(showPhase58AuthFailure)});await syncAuth.initialize();
+  await phase58AuthObservation('auth-initialize');await initializePhase61Sync();updateSyncUi();
  }catch(error){showPhase58AuthFailure(error);updateSyncUi()}
 }
 function showPhase58AuthFailure(error){console.error('Auth-kontroll feilet; lokal app fortsetter.',error);setMessage(`Auth-kontroll feilet: ${error.message}. Lokal drift fortsetter; sync er deaktivert.`,'error')}
 document.getElementById('btn-auth-login')?.addEventListener('click',openAuthModal);
 document.getElementById('auth-cancel')?.addEventListener('click',closeAuthModal);
-document.getElementById('auth-form')?.addEventListener('submit',async event=>{event.preventDefault();const errorEl=document.getElementById('auth-error');errorEl.textContent='Logger inn …';try{await phase58AssertUnchanged('before-login');await syncAuth.signIn(document.getElementById('auth-email').value,document.getElementById('auth-password').value);await phase58AssertUnchanged('after-login');closeAuthModal();updateSyncUi();setMessage('Innlogget. Lokal v4 er uendret; kun eksplisitt TEST_PHASE61-sync er tilgjengelig.','success')}catch(error){errorEl.textContent=error.message||'Innlogging feilet'}});
+document.getElementById('auth-form')?.addEventListener('submit',async event=>{event.preventDefault();const errorEl=document.getElementById('auth-error');errorEl.textContent='Logger inn …';try{await phase58AuthObservation('before-login');await syncAuth.signIn(document.getElementById('auth-email').value,document.getElementById('auth-password').value);await phase58AuthObservation('after-login');closeAuthModal();updateSyncUi();setMessage('Innlogget. Lokal state-diff er kun diagnostisk; kun eksplisitt TEST_PHASE61-sync er tilgjengelig.','success')}catch(error){errorEl.textContent=error.message||'Innlogging feilet'}});
 async function handlePilotLogout(){closeMenu();try{await phase58AssertUnchanged('before-logout');if(phase61Sync&&navigator.onLine){await phase61Sync.syncNow();await phase61Sync.release().catch(()=>{})}await syncAuth.signOut();await phase58AssertUnchanged('after-logout');updateSyncUi();setMessage('Logget ut. Lokal Kjørelogg og eventuell usendt test-outbox er beholdt.','success')}catch(error){showPhase58AuthFailure(error)}}
 document.getElementById('btn-auth-logout')?.addEventListener('click',handlePilotLogout);
 document.getElementById('btn-sync-now')?.addEventListener('click',()=>{closeMenu();setMessage('Sync deaktivert i pilot. Auth overfører ingen fagdata.','notice')});
@@ -4920,3 +4931,4 @@ function kgsvV9IsKvGsv(r){if(!r||String(r.kat||'').toUpperCase()!=='K')return fa
 function roadFilterKey(r){const kat=String(r?.kat||'').toUpperCase();if(kat==='K'){return kgsvV9IsKvGsv(r)?'KGSV':'K';}return kat+(!!r?.gsv?'GSV':'')}
 /* === /KV-GSV v9 === */
 </script></body></html>
+
