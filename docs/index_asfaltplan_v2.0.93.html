@@ -3555,14 +3555,16 @@ function openProgressMissingPopup(key,latlng){
 function openAsphaltProgressPopup(r,latlng){
  if(!progressMap||!r)return;
  const key=asphaltProgressKey(r),safeKey=encodedKeyArg(key),status=asphaltStatus(r);
- const statusTxt=status==='done'?'FERDIG':status==='oneway'?'KJØRT 1 RETNING':status==='skip'?'KJØRES IKKE':'PLANLAGT / IKKE FERDIG';
- const statusColor=status==='done'?ASPHALT_DONE_COLOR:status==='skip'?'#aaa':ASPHALT_PENDING_COLOR;
+ const nordland=r.sourceFormat==='NORDLAND';
+ const nordlandStatus={COMPLETED:'FERDIG',IN_PROGRESS:'PÅBEGYNT',DEFERRED_NEXT_YEAR:'UTSATT / TRUKKET TILBAKE – NESTE ÅR',PLANNED:'IKKE FERDIG'};
+ const statusTxt=nordland?(nordlandStatus[r.sourcePlanState]||'IKKE FERDIG'):(status==='done'?'FERDIG':status==='oneway'?'KJØRT 1 RETNING':status==='skip'?'KJØRES IKKE':'PLANLAGT / IKKE FERDIG');
+ const statusColor=asphaltPlanColor(r,status);
  const doneBtn=status!=='done'?`<button onclick="window._progressMarkDone('${safeKey}')" style="background:#0d4775;color:#d7efff;border:1px solid #1976d2;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🔵 Sett ferdig</button>`:'';
  const oneWayBtn=status!=='oneway'?`<button onclick="window._progressMarkOneWay('${safeKey}')" style="background:#3a3000;color:#f9a825;border:1px solid #7a6500;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🟠 Kjørt 1 retning</button>`:'';
  const date=r.asfaltDato?new Date(r.asfaltDato).toLocaleDateString('nb-NO'):'–';
  const dateTo=r.asfaltDatoTil?new Date(r.asfaltDatoTil).toLocaleDateString('nb-NO'):'';
- const nordland=r.sourceFormat==='NORDLAND';
- const nlMeta=nordland?`Kommune: ${esc(r.kommune||'–')}<br>Seksjon: ${esc(r.sourceSection||'–')}<br>Status fra Excel: ${esc(r.statusText||'–')}<br>Oppstart: ${esc(r.oppstart||'–')}<br>Merknad: ${esc(r.merknad||'–')}<br>Vegmerking: ${esc(r.vegmerking||'–')}<br>Målebil: ${esc(r.maalebil||'–')}<br>`:'';
+ const sourceLabel={nordland_fill_red:'rød Excel-markering',nordland_fill_yellow:'gul Excel-markering',nordland_fill_dark_green:'mørk grønn Excel-markering',nordland_fill_light_green_col_a:'lys grønn Excel-markering i kolonne A',nordland_status_ferdig:'Status-felt',nordland_default_not_finished:'ingen ferdigmarkering'};
+ const nlMeta=nordland?`Kommune: ${esc(r.kommune||'–')}<br>Seksjon: ${esc(r.sourceSection||'–')}<br>Status i Excel: ${esc(r.statusText||'–')}<br>Planstatus: <b>${esc(statusTxt)}</b><br>Kilde: ${esc(sourceLabel[r.sourcePlanStateReason]||'Excel')}<br>Oppstart: ${esc(r.oppstart||'–')}<br>Merknad: ${esc(r.merknad||'–')}<br>Vegmerking: ${esc(r.vegmerking||'–')}<br>Målebil: ${esc(r.maalebil||'–')}<br>`:'';
  const html=`<div style="font-family:-apple-system,sans-serif;min-width:255px">
   <div style="font-weight:900;font-size:14px;margin-bottom:3px">FV${esc(r.nr)} · ${esc(r.navn||'Asfaltplan')}</div>
   <div style="font-size:12px;color:#bbb;margin-bottom:4px">${esc(r.vegref)}</div>
@@ -3702,7 +3704,7 @@ function updateProgressMap(opts={}){
   _lastProgressMapRenderTs=now;
  }
  progressMap.eachLayer(layer=>{if(layer instanceof L.Polyline)progressMap.removeLayer(layer)});
- const bounds=[];let green=0,orange=0,red=0,missing=0,partialSnap=0,asphaltBlue=0,asphaltOrange=0,asphaltSkipped=0,asphaltCount=0;
+ const bounds=[];let green=0,orange=0,red=0,missing=0,partialSnap=0,asphaltBlue=0,asphaltYellow=0,asphaltRed=0,asphaltOrange=0,asphaltSkipped=0,asphaltCount=0;
  const historyStyle={weight:6,opacity:.82};
  const drawFallbackGeom=(key,col,status)=>{const parts=getGeomParts(geomCache[key]);if(!parts.length){missing++;return 0}drawPartsWithGapBridge(progressMap,parts,col,historyStyle.weight,historyStyle.opacity,bounds,250,{interactiveKey:key,popup:'progress',status});return calcPartsKm(parts)};
  const drawKeyCoverage=(key,fallbackCol)=>{
@@ -3742,16 +3744,17 @@ function updateProgressMap(opts={}){
  }
 
  // Dekke-/asfaltplan tegnes KUN i Fremdrift.
- // Asfaltplan: blå = ferdig, oransje = ikke ferdig. Kjøres ikke = skjult.
+ // Asfaltplan: blå = ferdig, gul = påbegynt, rød = utsatt, oransje = planlagt.
  if(settings.progressShowAsphalt&&asphaltPlan.length){
   for(const r of asphaltPlan){
    if(!r?.parts?.length)continue;
    const key=asphaltProgressKey(r);
    if(!keyPassesProgressFylke(key))continue;
-   const st=asphaltStatus(r);
-   if(st==='skip'){asphaltSkipped++;continue}
+   const progressStatus=asphaltStatus(r);
+   if(progressStatus==='skip'){asphaltSkipped++;continue}
+   const st=r.sourceFormat==='NORDLAND'?(r.sourcePlanState==='COMPLETED'?'done':'planned'):progressStatus;
    asphaltCount++;
-   const col=st==='done'?ASPHALT_DONE_COLOR:ASPHALT_PENDING_COLOR;
+   const col=asphaltPlanColor(r,progressStatus);
    const weight=st==='done'?9:8,opacity=st==='done'?.98:.90;
    for(const part of r.parts){
     const lls=(part||[]).filter(isVLL).map(c=>[c[1],c[0]]);
@@ -3763,7 +3766,12 @@ function updateProgressMap(opts={}){
     bounds.push(...lls);
    }
    const km=Number(r.matchKm)||calcPartsKm(r.parts);
-   if(st==='done')asphaltBlue+=km; else asphaltOrange+=km;
+   if(r.sourceFormat==='NORDLAND'){
+    if(r.sourcePlanState==='COMPLETED')asphaltBlue+=km;
+    else if(r.sourcePlanState==='IN_PROGRESS')asphaltYellow+=km;
+    else if(r.sourcePlanState==='DEFERRED_NEXT_YEAR')asphaltRed+=km;
+    else asphaltOrange+=km;
+   }else if(st==='done')asphaltBlue+=km;else asphaltOrange+=km;
   }
  }
 
@@ -3778,7 +3786,7 @@ function updateProgressMap(opts={}){
  const missingPct=settings.progressShowMissing?progressPct(red,pctTotal):'skjult';
  const pctChip='<button type="button" onclick="window._progressPercentInfo&&window._progressPercentInfo()" title="Prosent av synlig/valgt vegnett" style="background:#172433;border:1px solid #355371;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#bfe1ff;cursor:pointer;flex:0 0 auto;white-space:nowrap">📊 Ferdig '+donePct+' · 1 rt '+onePct+' · ikke kjørt '+missingPct+'</button>';
  window._progressPercentInfo=()=>setMessage(`Prosent av synlig/valgt vegnett: Ferdig ${donePct} (${green.toFixed(1)} km), kjørt 1 retning ${onePct} (${orange.toFixed(1)} km), ikke kjørt ${missingPct} (${red.toFixed(1)} km). Grunnlag: ${pctTotal.toFixed(1)} km.`,'notice');
- document.getElementById('progress-stats').innerHTML='<div style="background:#1a3a1a;border:1px solid #2a5a2a;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🟢 '+doneTxt+'</div><div style="background:#3a2a00;border:1px solid #7a5500;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#f9a825">🟠 '+oneTxt+'</div>'+missingChip+pctChip+'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#d7d7db">Σ '+(green+orange).toFixed(1)+' km</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">'+activeCategoryText()+'</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">Snappet GPS-spor</div>'+(partialSnap?'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🧭 '+partialSnap+' delstrekninger</div>':'')+(missing?'<div style="background:#55282b;border:1px solid #8f4f56;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#ffd7d7">⚠ '+missing+' mangler spor/geometri</div>':'')+(settings.progressShowAsphalt?'<div style="background:#12283a;border:1px solid #1976d2;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#90caf9">🛣 Asfaltplan '+asphaltCount+' stk · Blå – ferdig '+asphaltBlue.toFixed(1)+' km · <span style="color:#ffb74d">Oransje – ikke ferdig '+asphaltOrange.toFixed(1)+' km</span>'+(asphaltSkipped?' · '+asphaltSkipped+' kjøres ikke':'')+'</div>':'');
+ document.getElementById('progress-stats').innerHTML='<div style="background:#1a3a1a;border:1px solid #2a5a2a;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🟢 '+doneTxt+'</div><div style="background:#3a2a00;border:1px solid #7a5500;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#f9a825">🟠 '+oneTxt+'</div>'+missingChip+pctChip+'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#d7d7db">Σ '+(green+orange).toFixed(1)+' km</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">'+activeCategoryText()+'</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">Snappet GPS-spor</div>'+(partialSnap?'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🧭 '+partialSnap+' delstrekninger</div>':'')+(missing?'<div style="background:#55282b;border:1px solid #8f4f56;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#ffd7d7">⚠ '+missing+' mangler spor/geometri</div>':'')+(settings.progressShowAsphalt?'<div style="background:#12283a;border:1px solid #1976d2;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#90caf9">🛣 Asfaltplan '+asphaltCount+' stk · Blå – ferdig '+asphaltBlue.toFixed(1)+' km · <span style="color:#fff176">Gul – påbegynt '+asphaltYellow.toFixed(1)+' km</span> · <span style="color:#ff5252">Rød – utsatt '+asphaltRed.toFixed(1)+' km</span> · <span style="color:#ffb74d">Oransje – planlagt '+asphaltOrange.toFixed(1)+' km</span>'+(asphaltSkipped?' · '+asphaltSkipped+' kjøres ikke':'')+'</div>':'');
  if(bounds.length>0){
   const shouldFit=opts.fit===true||(opts.fit!==false&&!_progressAutoFitDone);
   if(shouldFit){
@@ -4190,6 +4198,24 @@ function asphaltStatus(r){
 
 const ASPHALT_DONE_COLOR='#1976d2';
 const ASPHALT_PENDING_COLOR='#f57c00';
+const ASPHALT_IN_PROGRESS_COLOR='#ffff00';
+const ASPHALT_DEFERRED_COLOR='#ff0000';
+function asphaltPlanColor(r,effectiveStatus=''){
+ if(r?.sourceFormat==='NORDLAND'){
+  if(r.sourcePlanState==='COMPLETED')return ASPHALT_DONE_COLOR;
+  if(r.sourcePlanState==='IN_PROGRESS')return ASPHALT_IN_PROGRESS_COLOR;
+  if(r.sourcePlanState==='DEFERRED_NEXT_YEAR')return ASPHALT_DEFERRED_COLOR;
+  return ASPHALT_PENDING_COLOR;
+ }
+ if(effectiveStatus==='skip')return'#aaa';
+ return effectiveStatus==='done'?ASPHALT_DONE_COLOR:ASPHALT_PENDING_COLOR;
+}
+const NORDLAND_FILL_RED='FF0000';
+const NORDLAND_FILL_YELLOW='FFFF00';
+const NORDLAND_FILL_GREEN_DONE='92D050';
+const NORDLAND_FILL_LIGHT_GREEN_DONE='B4E5A2';
+const NORDLAND_LIGHT_GREEN_THEME=9;
+const NORDLAND_LIGHT_GREEN_TINT=0.5999938962981048;
 
 function normalizeAsphaltPlan(raw){
  return (Array.isArray(raw)?raw:[]).map((r,i)=>({
@@ -4202,6 +4228,10 @@ function normalizeAsphaltPlan(raw){
   countyId:String(r?.countyId||'15'),
   roadCategory:String(r?.roadCategory||'F'),
   sourceCompleted:!!r?.sourceCompleted,
+  sourcePlanState:String(r?.sourcePlanState||((r?.sourceCompleted)?'COMPLETED':'PLANNED')),
+  sourceCompletedReason:String(r?.sourceCompletedReason||''),
+  sourcePlanStateReason:String(r?.sourcePlanStateReason||''),
+  fillEvidence:r?.fillEvidence&&typeof r.fillEvidence==='object'?r.fillEvidence:{},
   punkt:r?.punkt??null,
   kontrakt:r?.kontrakt??null,
   kommune:String(r?.kommune||''),
@@ -4356,11 +4386,44 @@ function parseNordlandSD(value){
  return Number.isInteger(s)&&s>0&&Number.isInteger(d)&&d>0?{s,d,normalized:`S${s} D${d}`,numericCandidate:false}:null;
 }
 function _nordlandCell(row,idx){return idx>=0?row[idx]:null}
+function _nordlandRgb(cell){
+ const fg=cell?.s?.fgColor||cell?.s?.fill?.fgColor||{};
+ return String(fg.rgb||'').trim().toUpperCase().replace(/^FF(?=[0-9A-F]{6}$)/,'');
+}
+function _nordlandFillKind(cell,isColumnA=false){
+ const fg=cell?.s?.fgColor||cell?.s?.fill?.fgColor||{},rgb=_nordlandRgb(cell);
+ if(rgb===NORDLAND_FILL_RED)return'red';
+ if(rgb===NORDLAND_FILL_YELLOW)return'yellow';
+ if(rgb===NORDLAND_FILL_GREEN_DONE)return'darkGreen';
+ const theme=Number(fg.theme),tint=Number(fg.tint);
+ if(isColumnA&&(rgb===NORDLAND_FILL_LIGHT_GREEN_DONE||(theme===NORDLAND_LIGHT_GREEN_THEME&&Math.abs(tint-NORDLAND_LIGHT_GREEN_TINT)<1e-6)))return'lightGreenColumnA';
+ return'';
+}
+function getNordlandRowFillEvidence(ws,rowIndex,map,row){
+ const excelRow=rowIndex+1,columns={red:[],yellow:[],darkGreen:[],lightGreenColumnA:[]},fills={};
+ for(let col=0;col<15;col++){
+  const address=window.XLSX.utils.encode_cell({r:rowIndex,c:col}),cell=ws[address],kind=_nordlandFillKind(cell,col===0);
+  const fg=cell?.s?.fgColor||cell?.s?.fill?.fgColor||{};
+  if(Object.keys(fg).length)fills[address]={...fg};
+  if(kind)columns[kind].push(address.replace(String(excelRow),''));
+ }
+ return {red:columns.red.length>0,yellow:columns.yellow.length>0,darkGreen:columns.darkGreen.length>0,lightGreenColumnA:columns.lightGreenColumnA.length>0,columns,fills};
+}
+function resolveNordlandSourceState(ws,rowIndex,map,row){
+ const statusText=String(_nordlandCell(row,map.status)??''),fillEvidence=getNordlandRowFillEvidence(ws,rowIndex,map,row);
+ let state='PLANNED',completed=false,reason='nordland_default_not_finished';
+ if(fillEvidence.red){state='DEFERRED_NEXT_YEAR';reason='nordland_fill_red'}
+ else if(fillEvidence.darkGreen){state='COMPLETED';completed=true;reason='nordland_fill_dark_green'}
+ else if(fillEvidence.lightGreenColumnA){state='COMPLETED';completed=true;reason='nordland_fill_light_green_col_a'}
+ else if(fillEvidence.yellow){state='IN_PROGRESS';reason='nordland_fill_yellow'}
+ else if(/^ferdig\b/i.test(statusText.trim())){state='COMPLETED';completed=true;reason='nordland_status_ferdig'}
+ return {state,completed,reason,statusText,fillEvidence};
+}
 function parseNordlandAsphaltWorkbook(wb,fileName){
  const sheetName=wb.SheetNames[0],ws=wb.Sheets[sheetName];
  const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
  const records=[],issues=[];let map=null,sourceSection='';
- const summary={rowsScanned:rows.length,planRowsWithRoadNumber:0,completeVsr:0,incompleteVsr:0,missingRoadNumber:0,finished:0,unfinished:0};
+ const summary={rowsScanned:rows.length,planRowsWithRoadNumber:0,completeVsr:0,incompleteVsr:0,missingRoadNumber:0,finished:0,unfinished:0,completed:0,completedDarkGreen:0,completedLightGreenA:0,completedStatus:0,inProgress:0,deferredNextYear:0,planned:0,visualConflicts:0};
  for(let i=0;i<rows.length;i++){
   const row=rows[i]||[],nextMap=_nordlandHeaderColumns(row);
   if(nextMap){map=nextMap;continue}
@@ -4377,8 +4440,17 @@ function parseNordlandAsphaltWorkbook(wb,fileName){
    continue;
   }
   summary.planRowsWithRoadNumber++;
-  const statusText=String(_nordlandCell(row,map.status)??'').trim(),sourceCompleted=/^ferdig\b/i.test(statusText);
+  const sourceState=resolveNordlandSourceState(ws,i,map,row),statusText=sourceState.statusText,sourceCompleted=sourceState.completed;
   if(sourceCompleted)summary.finished++;else summary.unfinished++;
+  if(sourceState.state==='COMPLETED')summary.completed++;
+  else if(sourceState.state==='IN_PROGRESS')summary.inProgress++;
+  else if(sourceState.state==='DEFERRED_NEXT_YEAR')summary.deferredNextYear++;
+  else summary.planned++;
+  if(sourceState.reason==='nordland_fill_dark_green')summary.completedDarkGreen++;
+  else if(sourceState.reason==='nordland_fill_light_green_col_a')summary.completedLightGreenA++;
+  else if(sourceState.reason==='nordland_status_ferdig')summary.completedStatus++;
+  const detected=['red','darkGreen','lightGreenColumnA','yellow'].filter(k=>sourceState.fillEvidence[k]);
+  if(detected.length>1){summary.visualConflicts++;issues.push({code:'VISUAL_STATUS_CONFLICT',road:`FV${Math.trunc(nr)}`,punkt,row:i+1,detectedFills:detected,chosenState:sourceState.state})}
   const fraSd=parseNordlandSD(_nordlandCell(row,map.fraSd)),tilSd=parseNordlandSD(_nordlandCell(row,map.tilSd));
   const fraM=_asphaltNum(_nordlandCell(row,map.fraM)),tilM=_asphaltNum(_nordlandCell(row,map.tilM));
   if(!fraSd||!tilSd||fraM===null||tilM===null){
@@ -4390,6 +4462,7 @@ function parseNordlandAsphaltWorkbook(wb,fileName){
   const raw={};for(const [name,idx] of Object.entries(map))if(idx>=0&&row[idx]!==null&&row[idx]!==undefined)raw[name]=row[idx];
   records.push({id:`${fileName}:${i+1}:FV${Math.trunc(nr)}:${fraSd.s}:${fraSd.d}:${fraM}:${tilSd.s}:${tilSd.d}:${tilM}`,source:fileName,row:i+1,
    sourceFormat:'NORDLAND',sourceSection,planYear:_asphaltPlanYear(fileName),countyId:'18',roadCategory:'F',sourceCompleted,
+   sourcePlanState:sourceState.state,sourceCompletedReason:sourceState.reason,sourcePlanStateReason:sourceState.reason,fillEvidence:sourceState.fillEvidence,
    punkt,kommune:String(kommune??''),kontrakt:null,nr:Math.trunc(nr),vegklasse:'F',navn:String(navn??''),
    fraS:fraSd.s,fraD:fraSd.d,fraM,tilS:tilSd.s,tilD:tilSd.d,tilM,excelLengde,usedLengthFallback:false,
    statusText,oppstart:_nordlandCell(row,map.oppstart)??'',merknad:_nordlandCell(row,map.merknad)??'',sluttbefaring:_nordlandCell(row,map.sluttbefaring)??'',vegmerking:_nordlandCell(row,map.vegmerking)??'',maalebil:_nordlandCell(row,map.maalebil)??'',
@@ -4399,7 +4472,7 @@ function parseNordlandAsphaltWorkbook(wb,fileName){
  return {format:'NORDLAND',sheet:sheetName,records,issues,summary};
 }
 function parseAsphaltWorkbook(buffer,fileName){
- const wb=window.XLSX.read(buffer,{type:'array',cellDates:true});
+ const wb=window.XLSX.read(buffer,{type:'array',cellDates:true,cellStyles:true});
  let hasMrfk=false,hasNordland=false;
  for(const sheetName of wb.SheetNames){
   const rows=window.XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,raw:true,defval:null});
@@ -4518,8 +4591,9 @@ function nordlandDryRunText(parsed,resolved){
  const s=parsed.summary,matched=resolved.filter(r=>r.parts.length).length,noMatch=resolved.length-matched;
  const noMatchIssues=resolved.filter(r=>!r.parts.length).map(r=>({code:'NO_NVDB_MATCH',road:`FV${r.nr}`,punkt:r.punkt,row:r.row}));
  parsed.issues.push(...noMatchIssues);s.nvdbMatched=matched;s.nvdbNoMatch=noMatch;
- const lines=[`Format: NORDLAND`,`Ark: ${parsed.sheet}`,`Rader skannet: ${s.rowsScanned}`,`Planrader med Fv.nr: ${s.planRowsWithRoadNumber}`,`Komplett VSR: ${s.completeVsr}`,`Ufullstendig VSR: ${s.incompleteVsr}`,`Mangler vegnummer: ${s.missingRoadNumber}`,`Ferdig: ${s.finished}`,`Ikke ferdig: ${s.unfinished}`,`NVDB-treff: ${matched}`,`NVDB uten treff: ${noMatch}`];
- for(const code of ['INCOMPLETE_VSR','MISSING_ROAD_NUMBER','NO_NVDB_MATCH']){
+ const classified=s.completed+s.inProgress+s.deferredNextYear+s.planned;
+ const lines=[`Format: NORDLAND`,`Ark: ${parsed.sheet}`,`Rader skannet: ${s.rowsScanned}`,`Planrader med Fv.nr: ${s.planRowsWithRoadNumber}`,`Komplett VSR: ${s.completeVsr}`,`Ufullstendig VSR: ${s.incompleteVsr}`,`Mangler vegnummer: ${s.missingRoadNumber}`,`NVDB-treff: ${matched}`,`NVDB uten treff: ${noMatch}`,'',`Completed total: ${s.completed}`,`- via mørk grønn: ${s.completedDarkGreen}`,`- via lys grønn kolonne A: ${s.completedLightGreenA}`,`- via Status "Ferdig": ${s.completedStatus}`,`In progress via gul: ${s.inProgress}`,`Deferred next year via rød: ${s.deferredNextYear}`,`Planned/not finished: ${s.planned}`,`Klassifisert kontroll: ${classified}/${s.planRowsWithRoadNumber}`,`Visuelle konflikter: ${s.visualConflicts}`];
+ for(const code of ['INCOMPLETE_VSR','MISSING_ROAD_NUMBER','NO_NVDB_MATCH','VISUAL_STATUS_CONFLICT']){
   const found=parsed.issues.filter(x=>x.code===code);lines.push('',`${code} (${found.length}):`,...(found.length?found.map(_asphaltIssueLine):['Ingen']));
  }
  return lines.join('\n');
