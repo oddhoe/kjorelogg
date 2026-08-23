@@ -3555,18 +3555,24 @@ function openProgressMissingPopup(key,latlng){
 function openAsphaltProgressPopup(r,latlng){
  if(!progressMap||!r)return;
  const key=asphaltProgressKey(r),safeKey=encodedKeyArg(key),status=asphaltStatus(r);
- const statusTxt=status==='done'?'FERDIG':status==='oneway'?'KJØRT 1 RETNING':status==='skip'?'KJØRES IKKE':'PLANLAGT / IKKE FERDIG';
- const statusColor=status==='done'?'#42a5f5':status==='oneway'?'#f9a825':status==='skip'?'#aaa':'#ff9800';
+ const asphaltSource=!!r.sourcePlanState,nordland=r.sourceFormat==='NORDLAND';
+ const sourceStatus={COMPLETED:'🔵 FERDIG',IN_PROGRESS:'🟡 PÅBEGYNT',DEFERRED:'🔴 UTSATT',PLANNED:'🟠 IKKE STARTET'};
+ const statusTxt=asphaltSource?(sourceStatus[r.sourcePlanState]||'🟠 IKKE STARTET'):(status==='done'?'FERDIG':status==='oneway'?'KJØRT 1 RETNING':status==='skip'?'KJØRES IKKE':'PLANLAGT / IKKE FERDIG');
+ const statusColor=asphaltPlanColor(r,status);
  const doneBtn=status!=='done'?`<button onclick="window._progressMarkDone('${safeKey}')" style="background:#0d4775;color:#d7efff;border:1px solid #1976d2;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🔵 Sett ferdig</button>`:'';
  const oneWayBtn=status!=='oneway'?`<button onclick="window._progressMarkOneWay('${safeKey}')" style="background:#3a3000;color:#f9a825;border:1px solid #7a6500;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🟠 Kjørt 1 retning</button>`:'';
  const date=r.asfaltDato?new Date(r.asfaltDato).toLocaleDateString('nb-NO'):'–';
  const dateTo=r.asfaltDatoTil?new Date(r.asfaltDatoTil).toLocaleDateString('nb-NO'):'';
+ const knownColumnAColors=new Set(['LIGHT_GREEN','DARK_GREEN','YELLOW','RED','ORANGE']);
+ const sourceText=r.sourcePlanStateReason==='nordland_status_fallback'?'Status-felt i Excel':knownColumnAColors.has(r.sourceColumnAColor?.type)?'Farge i kolonne A':'Ingen kjent statusfarge i kolonne A';
+ const sourceMeta=asphaltSource?`${nordland?'Kommune: '+esc(r.kommune||'–')+'<br>':''}Strekning: ${esc(r.navn||'–')}<br>VSR: ${esc(r.vegref||'–')}<br>${nordland?'Status i Excel: '+esc(r.statusText||'–')+'<br>':''}Planstatus: <b>${esc(statusTxt)}</b><br>Kildestatus: ${esc(sourceText)}<br>${nordland?'Merknad: '+esc(r.merknad||'–')+'<br>Vegmerking: '+esc(r.vegmerking||'–')+'<br>Målebil: '+esc(r.maalebil||'–')+'<br>':''}`:'';
  const html=`<div style="font-family:-apple-system,sans-serif;min-width:255px">
   <div style="font-weight:900;font-size:14px;margin-bottom:3px">FV${esc(r.nr)} · ${esc(r.navn||'Asfaltplan')}</div>
   <div style="font-size:12px;color:#bbb;margin-bottom:4px">${esc(r.vegref)}</div>
   <div style="font-size:12px;color:${statusColor};font-weight:900;margin-bottom:8px">${statusTxt}</div>
   <div style="font-size:12px;color:#bbb;line-height:1.35;margin-bottom:8px">
    Plan: ${r.excelLengde?`${(r.excelLengde/1000).toFixed(3)} km`:'–'} · NVDB: ${(Number(r.matchKm)||0).toFixed(3)} km<br>
+   ${sourceMeta}
    Asfalt: ${esc(date+(dateTo&&dateTo!==date?' – '+dateTo:''))}<br>
    Kontrakt: ${esc(r.kontrakt??'–')} · Punkt: ${esc(r.punkt??'–')}
   </div>
@@ -3699,7 +3705,7 @@ function updateProgressMap(opts={}){
   _lastProgressMapRenderTs=now;
  }
  progressMap.eachLayer(layer=>{if(layer instanceof L.Polyline)progressMap.removeLayer(layer)});
- const bounds=[];let green=0,orange=0,red=0,missing=0,partialSnap=0,asphaltBlue=0,asphaltOrange=0,asphaltSkipped=0,asphaltCount=0;
+ const bounds=[];let green=0,orange=0,red=0,missing=0,partialSnap=0,asphaltBlue=0,asphaltYellow=0,asphaltRed=0,asphaltOrange=0,asphaltSkipped=0,asphaltCount=0;
  const historyStyle={weight:6,opacity:.82};
  const drawFallbackGeom=(key,col,status)=>{const parts=getGeomParts(geomCache[key]);if(!parts.length){missing++;return 0}drawPartsWithGapBridge(progressMap,parts,col,historyStyle.weight,historyStyle.opacity,bounds,250,{interactiveKey:key,popup:'progress',status});return calcPartsKm(parts)};
  const drawKeyCoverage=(key,fallbackCol)=>{
@@ -3739,16 +3745,17 @@ function updateProgressMap(opts={}){
  }
 
  // Dekke-/asfaltplan tegnes KUN i Fremdrift.
- // Ferdig = blå, 1 retning = gul/oransje, planlagt = oransje, Kjøres ikke = skjult.
+ // Asfaltplan: blå = ferdig, gul = påbegynt, rød = utsatt, oransje = planlagt.
  if(settings.progressShowAsphalt&&asphaltPlan.length){
   for(const r of asphaltPlan){
    if(!r?.parts?.length)continue;
    const key=asphaltProgressKey(r);
    if(!keyPassesProgressFylke(key))continue;
-   const st=asphaltStatus(r);
-   if(st==='skip'){asphaltSkipped++;continue}
+   const progressStatus=asphaltStatus(r);
+   if(progressStatus==='skip'){asphaltSkipped++;continue}
+   const st=r.sourcePlanState==='COMPLETED'?'done':'planned';
    asphaltCount++;
-   const col=st==='done'?'#2196f3':(st==='oneway'?'#f9a825':'#ff9800');
+   const col=asphaltPlanColor(r,progressStatus);
    const weight=st==='done'?9:8,opacity=st==='done'?.98:.90;
    for(const part of r.parts){
     const lls=(part||[]).filter(isVLL).map(c=>[c[1],c[0]]);
@@ -3760,7 +3767,10 @@ function updateProgressMap(opts={}){
     bounds.push(...lls);
    }
    const km=Number(r.matchKm)||calcPartsKm(r.parts);
-   if(st==='done')asphaltBlue+=km; else asphaltOrange+=km;
+   if(r.sourcePlanState==='COMPLETED')asphaltBlue+=km;
+   else if(r.sourcePlanState==='IN_PROGRESS')asphaltYellow+=km;
+   else if(r.sourcePlanState==='DEFERRED')asphaltRed+=km;
+   else asphaltOrange+=km;
   }
  }
 
@@ -3775,7 +3785,7 @@ function updateProgressMap(opts={}){
  const missingPct=settings.progressShowMissing?progressPct(red,pctTotal):'skjult';
  const pctChip='<button type="button" onclick="window._progressPercentInfo&&window._progressPercentInfo()" title="Prosent av synlig/valgt vegnett" style="background:#172433;border:1px solid #355371;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#bfe1ff;cursor:pointer;flex:0 0 auto;white-space:nowrap">📊 Ferdig '+donePct+' · 1 rt '+onePct+' · ikke kjørt '+missingPct+'</button>';
  window._progressPercentInfo=()=>setMessage(`Prosent av synlig/valgt vegnett: Ferdig ${donePct} (${green.toFixed(1)} km), kjørt 1 retning ${onePct} (${orange.toFixed(1)} km), ikke kjørt ${missingPct} (${red.toFixed(1)} km). Grunnlag: ${pctTotal.toFixed(1)} km.`,'notice');
- document.getElementById('progress-stats').innerHTML='<div style="background:#1a3a1a;border:1px solid #2a5a2a;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🟢 '+doneTxt+'</div><div style="background:#3a2a00;border:1px solid #7a5500;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#f9a825">🟠 '+oneTxt+'</div>'+missingChip+pctChip+'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#d7d7db">Σ '+(green+orange).toFixed(1)+' km</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">'+activeCategoryText()+'</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">Snappet GPS-spor</div>'+(partialSnap?'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🧭 '+partialSnap+' delstrekninger</div>':'')+(missing?'<div style="background:#55282b;border:1px solid #8f4f56;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#ffd7d7">⚠ '+missing+' mangler spor/geometri</div>':'')+(settings.progressShowAsphalt?'<div style="background:#12283a;border:1px solid #1976d2;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#90caf9">🛣 Asfaltplan '+asphaltCount+' stk · 🔵 '+asphaltBlue.toFixed(1)+' km ferdig · 🟠 '+asphaltOrange.toFixed(1)+' km gjenstår'+(asphaltSkipped?' · '+asphaltSkipped+' kjøres ikke':'')+'</div>':'');
+ document.getElementById('progress-stats').innerHTML='<div style="background:#1a3a1a;border:1px solid #2a5a2a;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🟢 '+doneTxt+'</div><div style="background:#3a2a00;border:1px solid #7a5500;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#f9a825">🟠 '+oneTxt+'</div>'+missingChip+pctChip+'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#d7d7db">Σ '+(green+orange).toFixed(1)+' km</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">'+activeCategoryText()+'</div><div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#7bc1ff">Snappet GPS-spor</div>'+(partialSnap?'<div style="background:#1f1f24;border:1px solid #444;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#8fca8f">🧭 '+partialSnap+' delstrekninger</div>':'')+(missing?'<div style="background:#55282b;border:1px solid #8f4f56;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#ffd7d7">⚠ '+missing+' mangler spor/geometri</div>':'')+(settings.progressShowAsphalt?'<div style="background:#12283a;border:1px solid #1976d2;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:900;color:#90caf9">🛣 Asfaltplan '+asphaltCount+' stk · 🔵 Ferdig '+asphaltBlue.toFixed(1)+' km · <span style="color:#7">🟡 Påbegynt '+asphaltYellow.toFixed(1)+' km</span> · <span style="color:#e53935">🔴 Utsatt '+asphaltRed.toFixed(1)+' km</span> · <span style="color:#f57c00">🟠 Ikke startet '+asphaltOrange.toFixed(1)+' km</span>'+(asphaltSkipped?' · '+asphaltSkipped+' kjøres ikke':'')+'</div>':'');
  if(bounds.length>0){
   const shouldFit=opts.fit===true||(opts.fit!==false&&!_progressAutoFitDone);
   if(shouldFit){
@@ -4139,8 +4149,8 @@ function syncAsphaltPlanToProgressCache(){
    gsv:false,
    kat:'F',
    len:Math.round((Number(r.matchKm)||calcPartsKm(r.parts))*1000),
-   fylke:'15',
-   kommune:'',
+   fylke:String(r.countyId||'15'),
+   kommune:String(r.kommune||''),
    trafikantgruppe:'K',
    kortform:r.vegref||'',
    typeVeg:'Asfaltplan',
@@ -4180,16 +4190,59 @@ function syncAsphaltPlanToProgressCache(){
 function asphaltStatus(r){
  const key=asphaltProgressKey(r);
  if(skipKeys.has(key))return 'skip';
- return getRoadStatus(key);
+ const status=getRoadStatus(key);
+ if(status==='done'||r?.sourceCompleted)return 'done';
+ return status;
 }
+
+const ASPHALT_DONE_COLOR='#1976d2';
+const ASPHALT_PENDING_COLOR='#f57c00';
+const ASPHALT_IN_PROGRESS_COLOR='#f9a825';
+const ASPHALT_DEFERRED_COLOR='#e53935';
+function asphaltPlanColor(r,effectiveStatus=''){
+ if(r?.sourcePlanState){
+  if(r.sourcePlanState==='COMPLETED')return ASPHALT_DONE_COLOR;
+  if(r.sourcePlanState==='IN_PROGRESS')return ASPHALT_IN_PROGRESS_COLOR;
+  if(r.sourcePlanState==='DEFERRED')return ASPHALT_DEFERRED_COLOR;
+  return ASPHALT_PENDING_COLOR;
+ }
+ if(effectiveStatus==='skip')return'#aaa';
+ return effectiveStatus==='done'?ASPHALT_DONE_COLOR:ASPHALT_PENDING_COLOR;
+}
+const NORDLAND_FILL_RED='FF0000';
+const NORDLAND_FILL_YELLOW='FFFF00';
+const NORDLAND_FILL_GREEN_DONE='92D050';
+const NORDLAND_FILL_LIGHT_GREEN_DONE='B4E5A2';
+const NORDLAND_LIGHT_GREEN_THEME=9;
+const NORDLAND_LIGHT_GREEN_TINT=0.5999938962981048;
+const ASPHALT_FILL_ORANGE='FFC000';
 
 function normalizeAsphaltPlan(raw){
  return (Array.isArray(raw)?raw:[]).map((r,i)=>({
   id:String(r?.id||`asfalt-${i}`),
   source:String(r?.source||''),
   row:Number(r?.row)||0,
+  sourceFormat:String(r?.sourceFormat||'MRFK'),
+  sourceSection:String(r?.sourceSection||''),
+  planYear:Number(r?.planYear)||0,
+  countyId:String(r?.countyId||'15'),
+  roadCategory:String(r?.roadCategory||'F'),
+  sourceCompleted:!!r?.sourceCompleted,
+  sourcePlanState:String(r?.sourcePlanState||((r?.sourceCompleted)?'COMPLETED':'PLANNED')),
+  sourceCompletedReason:String(r?.sourceCompletedReason||''),
+  sourcePlanStateReason:String(r?.sourcePlanStateReason||''),
+  sourceColumnAColor:r?.sourceColumnAColor&&typeof r.sourceColumnAColor==='object'?r.sourceColumnAColor:{type:'UNKNOWN',rgb:null,theme:null,tint:null,fill:{}},
+  fillEvidence:r?.fillEvidence&&typeof r.fillEvidence==='object'?r.fillEvidence:{},
+  sourceFillEvidence:r?.sourceFillEvidence&&typeof r.sourceFillEvidence==='object'?r.sourceFillEvidence:(r?.fillEvidence&&typeof r.fillEvidence==='object'?r.fillEvidence:{}),
   punkt:r?.punkt??null,
   kontrakt:r?.kontrakt??null,
+  kommune:String(r?.kommune||''),
+  statusText:String(r?.statusText||''),
+  oppstart:r?.oppstart??'',
+  merknad:r?.merknad??'',
+  sluttbefaring:r?.sluttbefaring??'',
+  vegmerking:r?.vegmerking??'',
+  maalebil:r?.maalebil??'',
   nr:Number(r?.nr),
   vegklasse:String(r?.vegklasse||''),
   navn:String(r?.navn||''),
@@ -4255,6 +4308,10 @@ function _asphaltCell(row,map,...keys){
  for(const k of keys){const idx=map[_asphaltHeaderKey(k)];if(idx!==undefined)return row[idx]}
  return null;
 }
+function _asphaltPhysicalRowIndex(ws,jsonRowIndex){
+ const start=window.XLSX.utils.decode_range(ws['!ref']||'A1').s.r;
+ return start+jsonRowIndex;
+}
 async function ensureXlsxReady(){
  if(window.XLSX?.read)return true;
  const urls=['./vendor/xlsx.full.min.js','https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'];
@@ -4268,8 +4325,7 @@ async function ensureXlsxReady(){
  }
  throw new Error('Excel-biblioteket SheetJS mangler. Legg xlsx.full.min.js i vendor-mappen eller bruk nettilgang.');
 }
-function parseAsphaltWorkbook(buffer,fileName){
- const wb=window.XLSX.read(buffer,{type:'array',cellDates:true});
+function parseMrfkAsphaltWorkbook(wb,fileName){
  const sheetName=wb.SheetNames[0],ws=wb.Sheets[sheetName];
  const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
  let headerRow=-1,map=null;
@@ -4278,7 +4334,7 @@ function parseAsphaltWorkbook(buffer,fileName){
   if(['nr','fras','frads','fram','tils','tilds','tilm'].every(k=>m[k]!==undefined)){headerRow=i;map=m;break}
  }
  if(headerRow<0)throw new Error('Fant ikke Excel-header med Nr, FraS, FraDs, FraM, TilS, TilDs og TilM.');
- const out=[];
+ const out=[],summary={rowsScanned:rows.length,planRowsWithRoadNumber:0,completeVsr:0,incompleteVsr:0,missingRoadNumber:0,completed:0,inProgress:0,deferred:0,planned:0,columnA:{LIGHT_GREEN:0,DARK_GREEN:0,YELLOW:0,RED:0,ORANGE:0,UNKNOWN:0},statusDiagnostics:[]};
  for(let i=headerRow+1;i<rows.length;i++){
   const row=rows[i]||[],nr=_asphaltNum(_asphaltCell(row,map,'Nr'));
   if(!nr)continue;
@@ -4286,6 +4342,10 @@ function parseAsphaltWorkbook(buffer,fileName){
         fraM=_asphaltNum(_asphaltCell(row,map,'FraM')),tilS=_asphaltNum(_asphaltCell(row,map,'TilS')),
         tilD=_asphaltNum(_asphaltCell(row,map,'TilDs')),tilM=_asphaltNum(_asphaltCell(row,map,'TilM'));
   if([fraS,fraD,fraM,tilS,tilD,tilM].some(v=>v===null))continue;
+  summary.planRowsWithRoadNumber++;summary.completeVsr++;
+  const physicalRowIndex=_asphaltPhysicalRowIndex(ws,i),sourceState=classifyAsphaltStatusFromColumnA(ws,physicalRowIndex,{format:'MRFK'}),sourceCompleted=sourceState.state==='COMPLETED';
+  summary.columnA[sourceState.colorClass]++;
+  if(sourceState.state==='COMPLETED')summary.completed++;else if(sourceState.state==='IN_PROGRESS')summary.inProgress++;else if(sourceState.state==='DEFERRED')summary.deferred++;else summary.planned++;
   const excelLengde=_asphaltNum(_asphaltCell(row,map,'Lengde'))||0;
   let eS=tilS,eD=tilD,eM=tilM,usedLengthFallback=false;
   // Enkelte planrader bruker 0/0/0 som sluttreferanse (f.eks. rundkjøring).
@@ -4298,7 +4358,8 @@ function parseAsphaltWorkbook(buffer,fileName){
   const vegref=`FV${Math.trunc(nr)} S${Math.trunc(fraS)}D${Math.trunc(fraD)} m${Math.round(fraM)} - S${Math.trunc(eS)}D${Math.trunc(eD)} m${Math.round(eM)}`;
   out.push({
    id:`${fileName}:${i+1}:FV${Math.trunc(nr)}:${fraS}:${fraD}:${fraM}:${eS}:${eD}:${eM}`,
-   source:fileName,row:i+1,
+   source:fileName,row:i+1,sourceFormat:'MRFK',sourceSection:'',planYear:_asphaltPlanYear(fileName),
+   countyId:'15',roadCategory:'F',sourceCompleted,sourcePlanState:sourceState.state,sourceCompletedReason:sourceState.reason,sourcePlanStateReason:sourceState.reason,sourceColumnAColor:sourceState.sourceColumnAColor,
    punkt:_asphaltCell(row,map,'Punktnummer'),
    kontrakt:_asphaltCell(row,map,'Kontrakt'),
    nr:Math.trunc(nr),vegklasse:String(_asphaltCell(row,map,'Vegklasse')||''),
@@ -4310,9 +4371,140 @@ function parseAsphaltWorkbook(buffer,fileName){
    asfaltDatoTil:_asphaltDateIso(_asphaltCell(row,map,'Asfalt dato til')),
    vegref,parts:[],matchCount:0,matchKm:0,matchStatus:'VENTER',raw
   });
+  summary.statusDiagnostics.push({file:fileName,row:physicalRowIndex+1,punkt:_asphaltCell(row,map,'Punktnummer'),FV:Math.trunc(nr),columnAColor:sourceState.sourceColumnAColor,resultingSourcePlanState:sourceState.state});
  }
  if(!out.length)throw new Error('Excel-filen inneholder ingen gyldige vegreferanser.');
- return out;
+ return {format:'MRFK',sheet:sheetName,records:out,issues:[],summary};
+}
+function _asphaltPlanYear(fileName){
+ const m=String(fileName||'').match(/(?:19|20)\d{2}/);return m?Number(m[0]):0;
+}
+function _nordlandHeaderColumns(row){
+ const keys=(row||[]).map(_asphaltHeaderKey),p=keys.indexOf('punktnr'),k=keys.indexOf('kommune'),fv=keys.indexOf('fvnr');
+ if(p<0||k<0||fv<0)return null;
+ const fraSd=fv+1,fraM=fv+2,tilSd=fv+3,tilM=fv+4;
+ if(keys[fraSd]!=='sd'||keys[fraM]!=='frameter'||keys[tilSd]!=='sd'||keys[tilM]!=='tilmeter')return null;
+ const find=name=>keys.indexOf(_asphaltHeaderKey(name));
+ return {punkt:p,kommune:k,nr:fv,fraSd,fraM,tilSd,tilM,lengde:find('Lengde,m'),navn:find('Sted/strekning fra-til'),oppstart:find('Oppstart'),status:find('Status'),merknad:find('Merknad'),sluttbefaring:find('Sluttbefaring'),vegmerking:find('Vegmerking'),maalebil:find('Målebil')};
+}
+function parseNordlandSD(value){
+ if(value===null||value===undefined||String(value).trim()==='')return null;
+ if(typeof value==='number'&&Number.isFinite(value)&&Number.isInteger(value)&&value>0)return {s:value,d:1,normalized:`S${value} D1`,numericCandidate:true};
+ const v=String(value).trim().toUpperCase().replace(/\s+/g,'');
+ let m=v.match(/^(\d+)\/(\d+)$/);if(!m)m=v.match(/^S(\d+)D(\d+)$/);
+ if(!m)return null;
+ const s=Number(m[1]),d=Number(m[2]);
+ return Number.isInteger(s)&&s>0&&Number.isInteger(d)&&d>0?{s,d,normalized:`S${s} D${d}`,numericCandidate:false}:null;
+}
+function _nordlandCell(row,idx){return idx>=0?row[idx]:null}
+function _asphaltFillRgb(cell){
+ const fg=cell?.s?.fgColor||cell?.s?.fill?.fgColor||{};
+ return String(fg.rgb||'').trim().toUpperCase().replace(/^FF(?=[0-9A-F]{6}$)/,'');
+}
+function asphaltColumnAColorClass(cell){
+ const fg=cell?.s?.fgColor||cell?.s?.fill?.fgColor||{},rgb=_asphaltFillRgb(cell);
+ if(rgb===NORDLAND_FILL_GREEN_DONE)return'DARK_GREEN';
+ const theme=Number(fg.theme),tint=Number(fg.tint);
+ if(rgb===NORDLAND_FILL_LIGHT_GREEN_DONE||(theme===NORDLAND_LIGHT_GREEN_THEME&&Math.abs(tint-NORDLAND_LIGHT_GREEN_TINT)<.001))return'LIGHT_GREEN';
+ if(rgb===NORDLAND_FILL_RED)return'RED';
+ if(rgb===NORDLAND_FILL_YELLOW)return'YELLOW';
+ if(rgb===ASPHALT_FILL_ORANGE)return'ORANGE';
+ return'UNKNOWN';
+}
+function classifyAsphaltStatusFromColumnA(ws,rowIndex,options={}){
+ // Felles fagregel: KUN fysisk Excel-kolonne A er statuskilde. Andre fills er aldri fallback.
+ // Dette inkluderer Nordland Vegmerking (N) og MRFK-identitets-/VSR-cellene.
+ const address=`A${rowIndex+1}`,cell=ws[address],colorClass=asphaltColumnAColorClass(cell),fg=cell?.s?.fgColor||cell?.s?.fill?.fgColor||{},fill=cell?.s?.fill||cell?.s||{};
+ const sourceColumnAColor={type:colorClass,rgb:_asphaltFillRgb(cell)||null,theme:Number.isFinite(Number(fg.theme))?Number(fg.theme):null,tint:Number.isFinite(Number(fg.tint))?Number(fg.tint):null,fill:{...fill}};
+ let state='PLANNED',reason='default_planned';
+ if(colorClass==='LIGHT_GREEN'||colorClass==='DARK_GREEN'){state='COMPLETED';reason=`column_a_${colorClass.toLowerCase()}`}
+ else if(colorClass==='YELLOW'){state='IN_PROGRESS';reason='column_a_yellow'}
+ else if(colorClass==='RED'){state='DEFERRED';reason='column_a_red'}
+ else if(colorClass==='ORANGE'){reason='column_a_orange'}
+ else if(options.format==='NORDLAND'&&/^ferdig\b/i.test(String(options.statusText||'').trim())){state='COMPLETED';reason='nordland_status_fallback'}
+ else reason=options.format==='NORDLAND'?'nordland_default_planned':'mrfk_default_planned';
+ return {state,completed:state==='COMPLETED',reason,colorClass,fill:sourceColumnAColor.fill,sourceColumnAColor};
+}
+function resolveNordlandSourceState(ws,rowIndex,map,row){
+ const statusText=String(_nordlandCell(row,map.status)??''),classified=classifyAsphaltStatusFromColumnA(ws,rowIndex,{format:'NORDLAND',statusText});
+ return {...classified,statusText};
+}
+function assertNordlandColumnARegression(){
+ // Regresjon for gammel feil: grønn Vegmerking (N) må ikke gjøre en oransje Punkt.Nr (A) ferdig.
+ const ws={A1:{s:{fgColor:{rgb:'FFFFC000'}}},N1:{s:{fgColor:{rgb:'FF92D050'}}}};
+ const result=classifyAsphaltStatusFromColumnA(ws,0,{format:'NORDLAND'});
+ if(result.state!=='PLANNED'||result.completed)throw new Error('Nordland-status brukte annen kolonne enn A.');
+ return result;
+}
+function parseNordlandAsphaltWorkbook(wb,fileName){
+ assertNordlandColumnARegression();
+ const sheetName=wb.SheetNames[0],ws=wb.Sheets[sheetName];
+ const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+ const records=[],issues=[];let map=null,sourceSection='';
+ const summary={rowsScanned:rows.length,planRowsWithRoadNumber:0,completeVsr:0,incompleteVsr:0,missingRoadNumber:0,finished:0,unfinished:0,completed:0,completedLightGreen:0,completedDarkGreen:0,inProgress:0,deferred:0,planned:0,unknownNoKnownFill:0,statusFallback:0,columnA:{LIGHT_GREEN:0,DARK_GREEN:0,YELLOW:0,RED:0,ORANGE:0,UNKNOWN:0},statusDiagnostics:[]};
+ for(let i=0;i<rows.length;i++){
+  const row=rows[i]||[],nextMap=_nordlandHeaderColumns(row);
+  if(nextMap){map=nextMap;continue}
+  const nonEmpty=row.map((v,j)=>({v,j})).filter(x=>x.v!==null&&x.v!==undefined&&String(x.v).trim()!=='');
+  const sectionCell=nonEmpty.find(x=>/^(?:helgeland\b|nord\s*-)/i.test(String(x.v).trim()));
+  if(sectionCell){sourceSection=String(sectionCell.v).trim();continue}
+  if(!map){if(nonEmpty.length===1)sourceSection=String(nonEmpty[0].v).trim();continue}
+  const nr=_asphaltNum(_nordlandCell(row,map.nr));
+  const punkt=_nordlandCell(row,map.punkt),kommune=_nordlandCell(row,map.kommune),navn=_nordlandCell(row,map.navn);
+  const looksLikePlan=punkt!==null||String(kommune??'').trim()||String(navn??'').trim();
+  if(!nr){
+   if(nonEmpty.length===1&&nonEmpty[0].j<=map.nr){sourceSection=String(nonEmpty[0].v).trim();continue}
+   if(looksLikePlan){summary.missingRoadNumber++;issues.push({code:'MISSING_ROAD_NUMBER',road:null,punkt,kommune:String(kommune??''),navn:String(navn??''),sourceSection,row:i+1})}
+   continue;
+  }
+  summary.planRowsWithRoadNumber++;
+  const sourceState=resolveNordlandSourceState(ws,_asphaltPhysicalRowIndex(ws,i),map,row),statusText=sourceState.statusText,sourceCompleted=sourceState.state==='COMPLETED';
+  if(sourceCompleted)summary.finished++;else summary.unfinished++;
+  if(sourceState.state==='COMPLETED')summary.completed++;
+  else if(sourceState.state==='IN_PROGRESS')summary.inProgress++;
+  else if(sourceState.state==='DEFERRED')summary.deferred++;
+  else summary.planned++;
+  summary.columnA[sourceState.colorClass]++;
+  if(sourceState.sourceColumnAColor.type==='LIGHT_GREEN')summary.completedLightGreen++;
+  else if(sourceState.sourceColumnAColor.type==='DARK_GREEN')summary.completedDarkGreen++;
+  else if(sourceState.sourceColumnAColor.type==='UNKNOWN')summary.unknownNoKnownFill++;
+  if(sourceState.reason==='nordland_status_fallback')summary.statusFallback++;
+  summary.statusDiagnostics.push({row:i+1,punkt,FV:Math.trunc(nr),kommune:String(kommune??''),columnAColor:sourceState.sourceColumnAColor,statusText,resultingSourcePlanState:sourceState.state});
+  const fraSd=parseNordlandSD(_nordlandCell(row,map.fraSd)),tilSd=parseNordlandSD(_nordlandCell(row,map.tilSd));
+  const fraM=_asphaltNum(_nordlandCell(row,map.fraM)),tilM=_asphaltNum(_nordlandCell(row,map.tilM));
+  if(!fraSd||!tilSd||fraM===null||tilM===null){
+   summary.incompleteVsr++;issues.push({code:'INCOMPLETE_VSR',road:`FV${Math.trunc(nr)}`,punkt,sourceSection,row:i+1,sourcePlanState:sourceState.state,sourceCompleted,sourcePlanStateReason:sourceState.reason,statusText,sourceColumnAColor:sourceState.sourceColumnAColor});continue;
+  }
+  summary.completeVsr++;
+  const excelLengde=_asphaltNum(_nordlandCell(row,map.lengde))||0;
+  const vegref=`FV${Math.trunc(nr)} S${fraSd.s}D${fraSd.d} m${Math.round(fraM)} - S${tilSd.s}D${tilSd.d} m${Math.round(tilM)}`;
+  const raw={};for(const [name,idx] of Object.entries(map))if(idx>=0&&row[idx]!==null&&row[idx]!==undefined)raw[name]=row[idx];
+  records.push({id:`${fileName}:${i+1}:FV${Math.trunc(nr)}:${fraSd.s}:${fraSd.d}:${fraM}:${tilSd.s}:${tilSd.d}:${tilM}`,source:fileName,row:i+1,
+   sourceFormat:'NORDLAND',sourceSection,planYear:_asphaltPlanYear(fileName),countyId:'18',roadCategory:'F',sourceCompleted,
+   sourcePlanState:sourceState.state,sourceCompletedReason:sourceState.reason,sourcePlanStateReason:sourceState.reason,sourceColumnAColor:sourceState.sourceColumnAColor,
+   punkt,kommune:String(kommune??''),kontrakt:null,nr:Math.trunc(nr),vegklasse:'F',navn:String(navn??''),
+   fraS:fraSd.s,fraD:fraSd.d,fraM,tilS:tilSd.s,tilD:tilSd.d,tilM,excelLengde,usedLengthFallback:false,
+   statusText,oppstart:_nordlandCell(row,map.oppstart)??'',merknad:_nordlandCell(row,map.merknad)??'',sluttbefaring:_nordlandCell(row,map.sluttbefaring)??'',vegmerking:_nordlandCell(row,map.vegmerking)??'',maalebil:_nordlandCell(row,map.maalebil)??'',
+   asfaltDato:null,asfaltDatoTil:null,vegref,parts:[],matchCount:0,matchKm:0,matchStatus:'VENTER',raw});
+ }
+ if(!summary.planRowsWithRoadNumber&&!summary.missingRoadNumber)throw new Error('Nordland-filen inneholder ingen planrader.');
+ if(summary.completed+summary.inProgress+summary.deferred+summary.planned!==summary.planRowsWithRoadNumber)throw new Error('Nordland-statuskontroll summerer ikke til antall Fv-planrader.');
+ return {format:'NORDLAND',sheet:sheetName,records,issues,summary};
+}
+function parseAsphaltWorkbook(buffer,fileName){
+ const wb=window.XLSX.read(buffer,{type:'array',cellDates:true,cellStyles:true});
+ let hasMrfk=false,hasNordland=false;
+ for(const sheetName of wb.SheetNames){
+  const rows=window.XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,raw:true,defval:null});
+  for(const row of rows){
+   const m=_asphaltHeaderMap(row);
+   if(['nr','fras','frads','fram','tils','tilds','tilm'].every(k=>m[k]!==undefined))hasMrfk=true;
+   if(_nordlandHeaderColumns(row))hasNordland=true;
+  }
+ }
+ if(hasMrfk)return parseMrfkAsphaltWorkbook(wb,fileName);
+ if(hasNordland)return parseNordlandAsphaltWorkbook(wb,fileName);
+ throw new Error('Ukjent asfaltplan-format. Fant verken MRFK- eller Nordland-header.');
 }
 function _cmpSD(aS,aD,bS,bD){
  if(Number(aS)!==Number(bS))return Number(aS)-Number(bS);
@@ -4351,10 +4543,10 @@ function _clipNvdbSegment(seg,wantFrom,wantTo){
  }
  return out;
 }
-async function fetchAsphaltNvdbRoad(nr){
+async function fetchAsphaltNvdbRoad(nr,countyId='15'){
  const base=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
  base.searchParams.set('srid','4326');
- base.searchParams.set('fylke','15');
+ base.searchParams.set('fylke',String(countyId||'15'));
  base.searchParams.set('vegsystemreferanse',`Fv${Number(nr)}`);
  base.searchParams.set('inkluderAntall','false');
  base.searchParams.set('antall','1000');
@@ -4403,22 +4595,44 @@ function matchAsphaltRecordToNvdb(rec,segments){
 }
 async function resolveAsphaltPlan(records){
  const byNr=new Map();
- for(const r of records){if(!byNr.has(r.nr))byNr.set(r.nr,[]);byNr.get(r.nr).push(r)}
+ for(const r of records){const groupKey=`${r.countyId||'15'}:${r.nr}`;if(!byNr.has(groupKey))byNr.set(groupKey,[]);byNr.get(groupKey).push(r)}
  let roadNoDone=0;
- for(const [nr,list] of byNr){
+ for(const [groupKey,list] of byNr){
+  const [countyId,nrText]=groupKey.split(':'),nr=Number(nrText);
   setMessage(`Matcher asfaltplan mot NVDB: FV${nr} (${roadNoDone+1}/${byNr.size}) …`,'notice');
-  const segs=await fetchAsphaltNvdbRoad(nr);
+  const segs=await fetchAsphaltNvdbRoad(nr,countyId);
   for(const r of list)matchAsphaltRecordToNvdb(r,segs);
   roadNoDone++;
  }
  return records;
+}
+function _asphaltIssueLine(x){return `${x.road||'uten Fv.nr'} / punkt ${x.punkt??'–'} (rad ${x.row})`}
+function asphaltDryRunText(parsed,resolved){
+ const s=parsed.summary,matched=resolved.filter(r=>r.parts.length).length,noMatch=resolved.length-matched;
+ const noMatchIssues=resolved.filter(r=>!r.parts.length).map(r=>({code:'NO_NVDB_MATCH',road:`FV${r.nr}`,punkt:r.punkt,row:r.row}));
+ parsed.issues.push(...noMatchIssues);s.nvdbMatched=matched;s.nvdbNoMatch=noMatch;
+ const classified=s.completed+s.inProgress+s.deferred+s.planned;
+ const a=s.columnA||{};
+ const lines=[`Format: ${parsed.format}`,`Ark: ${parsed.sheet}`,`Rader skannet: ${s.rowsScanned}`,`Gyldige planrader: ${s.planRowsWithRoadNumber}`,`Komplett VSR: ${s.completeVsr}`,`Ufullstendig VSR: ${s.incompleteVsr}`,`Mangler vegnummer: ${s.missingRoadNumber}`,`NVDB-treff: ${matched}`,`NVDB uten treff: ${noMatch}`,'',`Column A light green: ${a.LIGHT_GREEN||0}`,`Column A dark green: ${a.DARK_GREEN||0}`,`Column A yellow: ${a.YELLOW||0}`,`Column A red: ${a.RED||0}`,`Column A orange: ${a.ORANGE||0}`,`Column A unknown: ${a.UNKNOWN||0}`,'',`Completed: ${s.completed}`,`In progress: ${s.inProgress}`,`Deferred: ${s.deferred}`,`Planned: ${s.planned}`,`Klassifisert kontroll: ${classified}/${s.planRowsWithRoadNumber}`];
+ console.table(s.statusDiagnostics);
+ console.table(s.statusDiagnostics.filter(x=>x.columnAColor?.type==='UNKNOWN').map(x=>({file:x.file||parsed.sheet,row:x.row,punkt:x.punkt,FV:x.FV,rawFill:x.columnAColor?.fill})));
+ for(const code of ['INCOMPLETE_VSR','MISSING_ROAD_NUMBER','NO_NVDB_MATCH']){
+  const found=parsed.issues.filter(x=>x.code===code);lines.push('',`${code} (${found.length}):`,...(found.length?found.map(_asphaltIssueLine):['Ingen']));
+ }
+ return lines.join('\n');
 }
 async function importAsphaltExcelFile(file){
  if(!file)return;
  await ensureXlsxReady();
  setMessage(`Leser ${file.name} …`,'notice');
  const buf=await file.arrayBuffer(),parsed=parseAsphaltWorkbook(buf,file.name);
- const resolved=await resolveAsphaltPlan(parsed);
+ const resolved=await resolveAsphaltPlan(parsed.records);
+ const report=asphaltDryRunText(parsed,resolved);
+ console.log(report);
+ if(parsed.format==='NORDLAND'){
+  console.table(parsed.issues);
+  if(!confirm(report+'\n\nLagre gyldige rader lokalt og vis dem i kartet?')){setMessage('Nordland dry-run fullført. Importen ble ikke lagret.','notice');return}
+ }
  // Flere Excel-filer kan importeres etter hverandre. Samme id erstattes, øvrige beholdes.
  const map=new Map(asphaltPlan.map(r=>[r.id,r]));
  for(const r of resolved)map.set(r.id,r);
@@ -4430,7 +4644,7 @@ async function importAsphaltExcelFile(file){
  const ok=resolved.filter(r=>r.parts.length).length,miss=resolved.length-ok,fallback=resolved.filter(r=>r.usedLengthFallback).length;
  const missing=resolved.filter(r=>!r.parts.length).map(r=>({vegref:r.vegref,navn:r.navn,kilde:r.source,rad:r.row}));
  if(missing.length)console.table(missing);
- setMessage(`Asfaltplan importert: ${resolved.length} rader, ${ok} vegreferanser traff NVDB${miss?`, ${miss} uten treff`:''}${fallback?`, ${fallback} med lengde-fallback`:''}.` ,miss?'notice':'success');
+ setMessage(`${parsed.format} asfaltplan importert: ${resolved.length} gyldige rader, ${ok} vegreferanser traff NVDB${miss?`, ${miss} uten treff`:''}${fallback?`, ${fallback} med lengde-fallback`:''}.` ,miss?'notice':'success');
 }
 function asphaltPopupHtml(r){
  const date=r.asfaltDato?new Date(r.asfaltDato).toLocaleDateString('nb-NO'):'–';
