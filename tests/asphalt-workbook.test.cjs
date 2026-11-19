@@ -1,0 +1,50 @@
+const assert = require('node:assert/strict');
+const test = require('node:test');
+const {createAppContext} = require('./app-vm.cjs');
+
+const mrfk = [
+  ['Nr', 'FraS', 'FraDs', 'FraM', 'TilS', 'TilDs', 'TilM'],
+  [64, 8, 1, 0, 8, 1, 110]
+];
+const nordland = [
+  ['Punkt.Nr', 'Kommune', 'Fv.nr', 'S/D', 'Fra meter', 'S/D', 'Til meter'],
+  [1, 'Bodø', 17, '1/1', 0, '1/1', 110]
+];
+
+function parse(sheets) {
+  const readSheets = [];
+  const xlsx = {
+    read: () => ({SheetNames: Object.keys(sheets), Sheets: sheets}),
+    utils: {
+      sheet_to_json(rows) { readSheets.push(rows); return rows; },
+      decode_range: () => ({s: {r: 0}})
+    }
+  };
+  const app = createAppContext({window: {addEventListener() {}, XLSX: xlsx}});
+  const result = app.parseAsphaltWorkbook(null, 'Asfaltplan-2026.xlsx');
+  return {result, readSheets};
+}
+
+test('MRFK with cover sheet and header after introductory rows', () => {
+  const rows = [...Array(16).fill(['Merknad']), ...mrfk];
+  const {result, readSheets} = parse({Forside: [['Asfalt']], Tiltak: rows, Vedlegg: []});
+  assert.equal(result.sheet, 'Tiltak');
+  assert.equal(result.records[0].vegref, 'FV64 S8D1 m0 - S8D1 m110');
+  assert.equal(result.records[0].row, 18);
+  assert.equal(readSheets.length, 2);
+});
+
+test('Nordland on a named second sheet, preserving an explicit zero meter', () => {
+  const {result} = parse({Forside: [['Asfalt']], Nordland: nordland});
+  assert.equal(result.sheet, 'Nordland');
+  assert.equal(result.format, 'NORDLAND');
+  assert.equal(result.records[0].fraM, 0);
+});
+
+test('single-sheet MRFK keeps the same row id, and MRFK retains priority in mixed workbooks', () => {
+  const single = parse({Plan: mrfk}).result;
+  const mixed = parse({Alternativ: nordland, Plan: mrfk}).result;
+  assert.equal(single.records[0].id, mixed.records[0].id);
+  assert.equal(single.sheet, 'Plan');
+  assert.equal(mixed.format, 'MRFK');
+});

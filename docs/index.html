@@ -2,7 +2,7 @@
 // Uten denne fallbacken blir kartfanene bare en grå flate.
 if(!window.L){
  document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
-}</script><script src="./vendor/xlsx.full.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'"></script><script src="./vendor/jspdf.umd.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'"></script><script src="./vendor/jspdf.plugin.autotable.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js'"></script><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}body,html{height:100%;background:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}button,input,select{font-family:inherit}#app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}.top-bar{background:#002171;color:#fff;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-shrink:0}.top-bar .label{font-size:10px;opacity:.75;letter-spacing:.8px;text-transform:uppercase;font-weight:800}.top-bar h1{font-size:18px;font-weight:900;margin-top:2px;line-height:1.12}.top-bar .sub{font-size:11px;opacity:.92;margin-top:3px;line-height:1.2;max-width:260px}.top-actions{display:flex;align-items:flex-start;gap:6px}.menu-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:16px;padding:8px 12px;font-size:24px;font-weight:900;line-height:1;cursor:pointer;min-width:48px}#top-menu{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 52px);z-index:5000;background:#1f1f24;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:8px;box-shadow:0 8px 30px rgba(0,0,0,.55);display:none;min-width:220px;width:min(340px,calc(100vw - 20px));max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 64px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}#top-menu.visible{display:block}.menu-item{display:flex;width:100%;align-items:center;gap:8px;background:0 0;color:#fff;border:none;text-align:left;padding:12px 12px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer}.menu-item:hover{background:#2b2b31}.menu-sep{height:1px;background:rgba(255,255,255,.08);margin:6px 0}.menu-section-title{padding:8px 12px 6px;font-size:11px;color:#98a6c8;font-weight:900;letter-spacing:.4px;text-transform:uppercase}.menu-cat-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:4px 10px 10px}#top-menu .cat-chip,#top-menu .cat-mini{padding:7px 10px;font-size:12px}.hidden-file{display:none}.gps-sticky{background:#1a1a20;border-bottom:1px solid rgba(255,255,255,.08);padding:6px 10px;flex-shrink:0}.gps-inner{display:flex;align-items:center;gap:10px;background:#1f1f24;border-radius:16px;padding:10px 12px;box-shadow:0 1px 3px rgba(0,0,0,.2)}.gps-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;transition:background .4s}
+}</script><script defer src="./vendor/jspdf.umd.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'"></script><script defer src="./vendor/jspdf.plugin.autotable.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js'"></script><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}body,html{height:100%;background:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}button,input,select{font-family:inherit}#app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}.top-bar{background:#002171;color:#fff;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-shrink:0}.top-bar .label{font-size:10px;opacity:.75;letter-spacing:.8px;text-transform:uppercase;font-weight:800}.top-bar h1{font-size:18px;font-weight:900;margin-top:2px;line-height:1.12}.top-bar .sub{font-size:11px;opacity:.92;margin-top:3px;line-height:1.2;max-width:260px}.top-actions{display:flex;align-items:flex-start;gap:6px}.menu-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:16px;padding:8px 12px;font-size:24px;font-weight:900;line-height:1;cursor:pointer;min-width:48px}#top-menu{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 52px);z-index:5000;background:#1f1f24;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:8px;box-shadow:0 8px 30px rgba(0,0,0,.55);display:none;min-width:220px;width:min(340px,calc(100vw - 20px));max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 64px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}#top-menu.visible{display:block}.menu-item{display:flex;width:100%;align-items:center;gap:8px;background:0 0;color:#fff;border:none;text-align:left;padding:12px 12px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer}.menu-item:hover{background:#2b2b31}.menu-sep{height:1px;background:rgba(255,255,255,.08);margin:6px 0}.menu-section-title{padding:8px 12px 6px;font-size:11px;color:#98a6c8;font-weight:900;letter-spacing:.4px;text-transform:uppercase}.menu-cat-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:4px 10px 10px}#top-menu .cat-chip,#top-menu .cat-mini{padding:7px 10px;font-size:12px}.hidden-file{display:none}.gps-sticky{background:#1a1a20;border-bottom:1px solid rgba(255,255,255,.08);padding:6px 10px;flex-shrink:0}.gps-inner{display:flex;align-items:center;gap:10px;background:#1f1f24;border-radius:16px;padding:10px 12px;box-shadow:0 1px 3px rgba(0,0,0,.2)}.gps-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;transition:background .4s}
 .gps-dot.off{background:#777}
 .gps-dot.on{background:#7cb342;animation:gpsdot 1.2s infinite}
 .gps-dot.on.acc-good{background:#43a047;box-shadow:0 0 5px #43a04799;animation:gpsdot 1.2s infinite}
@@ -11,7 +11,29 @@ if(!window.L){
 @keyframes gpsdot{0%,100%{opacity:1}50%{opacity:.35}}
 .gps-acc-good{color:#66bb6a;font-weight:700}
 .gps-acc-medium{color:#ffa726;font-weight:700}
-.gps-acc-bad{color:#ef5350;font-weight:700}.gps-info{flex:1;min-width:0}.gps-coord{font-size:10px;color:#b6b6bd;font-weight:700;font-variant-numeric:tabular-nums;min-height:13px}.gps-speed{font-size:26px;font-weight:900;line-height:1.05;margin:1px 0;display:flex;align-items:center;gap:10px}.speed-limit-sign{width:44px;height:44px;border-radius:50%;background:#fff;color:#111;border:5px solid #d71920;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:1000;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.35);flex-shrink:0}.speed-limit-sign.unknown{border-color:#777;color:#777;font-size:14px;background:#f5f5f5}@media(max-width:430px){.speed-limit-sign{width:40px;height:40px;border-width:4px;font-size:16px}.gps-speed{gap:8px}}.gps-sub{font-size:11px;color:#b6b6bd;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.gps-heading{display:inline-flex;align-items:center;gap:5px;background:#2a2a34;border-radius:8px;padding:3px 8px}.compass-arrow{display:inline-block;font-size:13px;transition:transform .4s ease}.heading-val{font-size:12px;font-weight:900;color:#f9a825;font-variant-numeric:tabular-nums}.heading-dir{font-size:10px;color:#b6b6bd}.gps-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap}.gps-btn.start{background:#2e7d32;color:#fff}.gps-btn.stop{background:#7a5054;color:#ffd7d7}.tab-bar{display:flex;background:#1b1b1d;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}.tab{flex:1;padding:10px 3px 9px;font-size:12px;font-weight:900;text-align:center;cursor:pointer;background:0 0;border:none;color:#b7b7bc;position:relative}.tab.active{color:#7bc1ff}.tab.active::after{content:'';position:absolute;bottom:0;left:18%;right:18%;height:3px;background:#1e88ff;border-radius:3px}.content{flex:1;display:none;flex-direction:column;overflow:hidden;background:linear-gradient(90deg,#1e1e22,#17171b)}.content.active{display:flex}.notice{margin:8px 10px 0;background:#5f4b1d;color:#ffe8aa;border:1px solid #8f7641;padding:10px 12px;border-radius:14px;font-size:12px}.error{margin:8px 10px 0;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;padding:10px 12px;border-radius:14px;font-size:12px}.success{margin:8px 10px 0;background:#18361f;color:#c8ffd1;border:1px solid #2b6a39;padding:10px 12px;border-radius:14px;font-size:12px}.loading{display:flex;align-items:center;justify-content:center;padding:22px;font-size:14px;color:#c7c7cd}#overview-tools{padding:8px 10px 8px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px;flex-shrink:0}.ov-row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.ov-field{display:flex;flex-direction:column;gap:4px}.ov-field span{font-size:11px;color:#b6b6bd;font-weight:800}.ov-field input,.ov-field select{padding:9px 12px;border:none;border-radius:14px;font-size:14px;background:#323237;color:#fff}.ov-field input{width:82px}.ov-field select{min-width:190px;max-width:100%}.ov-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a}.ov-primary{background:#0059c9;border-color:#0059c9;color:#fff}.cat-row{align-items:center}.cat-label{font-size:12px;color:#b6b6bd;font-weight:900;margin-right:1px}.cat-chip,.cat-mini{border:none;cursor:pointer;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:900;transition:opacity .12s,box-shadow .12s;-webkit-appearance:none;appearance:none}.cat-chip{background:#1f1f24;color:#9a9aa3;border:1px dashed #3a3a44;opacity:.72}.cat-chip[data-cat="E"]{background:#2a1837;color:#d8b2ff;border-color:#6a1b9a}.cat-chip[data-cat=EGSV]{background:#32173d;color:#efb4ff;border-color:#8e24aa}.cat-chip[data-cat="R"]{background:#142946;color:#aad0ff;border-color:#1565c0}.cat-chip[data-cat=RGSV]{background:#14304d;color:#b6dcff;border-color:#1976d2}.cat-chip[data-cat="F"]{background:#17341c;color:#b7efbd;border-color:#2e7d32}.cat-chip[data-cat=FGSV]{background:#173c22;color:#c2f7c7;border-color:#43a047}.cat-chip[data-cat="K"]{background:#3a3000;color:#ffd866;border-color:#9a7c00}.cat-chip[data-cat=KGSV]{background:#3d2200;color:#ffcc99;border-color:#bf6000}.cat-chip.active{opacity:1;border-style:solid;box-shadow:0 0 0 2px rgba(255,255,255,.35) inset}.cat-chip.active[data-cat="E"]{background:#6a1b9a;color:#fff;border-color:#6a1b9a}.cat-chip.active[data-cat=EGSV]{background:#8e24aa;color:#fff;border-color:#8e24aa}.cat-chip.active[data-cat="R"]{background:#1565c0;color:#fff;border-color:#1565c0}.cat-chip.active[data-cat=RGSV]{background:#1976d2;color:#fff;border-color:#1976d2}.cat-chip.active[data-cat="F"]{background:#2e7d32;color:#fff;border-color:#2e7d32}.cat-chip.active[data-cat=FGSV]{background:#43a047;color:#fff;border-color:#43a047}.cat-chip.active[data-cat="K"]{background:#9a7c00;color:#fff;border-color:#9a7c00}.cat-chip.active[data-cat=KGSV]{background:#ef6c00;color:#fff;border-color:#ef6c00}.road-action-popup .leaflet-popup-content-wrapper{background:#1f1f24;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}.road-action-popup .leaflet-popup-tip{background:#1f1f24}.road-action-popup .leaflet-popup-close-button{color:#888}.kgsv-langs-btn{background:rgba(255,255,255,.06);color:#ccc;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer}.kgsv-langs-btn.active{background:#ef6c00;color:#fff;border-color:#ef6c00}.cat-mini{background:#1f1f24;color:#b6b6bd;border:1px solid #444}.stats-bar{padding:6px 10px}.stats-inner{background:#1f1f24;border-radius:14px;padding:9px 12px}.prog-row{display:flex;align-items:center;gap:10px}.prog-bar{flex:1;background:#2a2a31;border-radius:4px;height:6px;overflow:hidden}.prog-fill{background:#1e88ff;height:6px;border-radius:4px;transition:width .3s}.stat-text{font-size:11px;color:#d7d7db}#road-list{flex:1;overflow-y:auto;padding:6px 10px;padding-bottom:max(12px,env(safe-area-inset-bottom))}.road-card{background:#1f1f24;border-radius:16px;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.18);display:flex}.road-card.active-gps{border:2px solid #1e88ff}.road-accent{width:4px;flex-shrink:0}.road-body{padding:9px 11px;flex:1;min-width:0}.road-top{display:flex;align-items:center;gap:8px}.road-veg{font-size:14px;font-weight:900;flex:1}.road-status{font-size:15px}.road-meta{font-size:11px;color:#b6b6bd;margin-top:2px}.road-gps{font-size:11px;font-weight:900;margin-top:4px}.road-gps.near{color:#7bc1ff}.nav-btns{display:flex;gap:6px;margin-top:8px}.nav-btn{flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none}.nb-g{background:#e6f1fb;color:#185fa5}.table-controls{padding:8px 10px 6px;background:0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0}#table-filter{flex:1;min-width:150px;padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}#table-sort{padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}.table-btn{padding:11px 13px;border:none;border-radius:15px;font-size:13px;font-weight:900;cursor:pointer}.table-btn.sel{background:#323237;color:#fff}.table-btn.done{background:#1a3a1a;color:#8fca8f}.table-btn.clear{background:#3a1a1a;color:#ffb8b8}.table-wrap{flex:1;overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;white-space:nowrap}th{background:#1a1a1f;font-weight:900;font-size:11px;position:sticky;top:0;z-index:1}tr.active-row{background:#19334c}.progress-filter{padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}.progress-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.progress-mobile-summary{display:none}.progress-filter input,.progress-filter select{padding:9px 10px;border:none;border-radius:12px;background:#323237;color:#fff;font-size:13px}.progress-filter label{font-size:11px;color:#b6b6bd;font-weight:800;display:flex;align-items:center;gap:5px}.progress-filter .pf-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}.progress-filter .pf-btn:disabled{background:#22252c;color:#7f8794;border-color:#363b45;cursor:not-allowed;opacity:.75}.progress-filter .pf-quick{background:#24313f;color:#bfe1ff;border-color:#355371}.progress-filter .pf-quick.warn{background:#5f4b1d;color:#ffe8aa;border-color:#8f7641}.progress-summary-chip{display:inline-flex;align-items:center;border-radius:999px;padding:8px 11px;background:#1f1f24;border:1px solid #3d4654;color:#dfe9ff;font-size:12px;font-weight:900;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:100%}.progress-report-status{font-size:12px;font-weight:800;color:#7bc1ff;min-height:18px;line-height:1.25}.manual-marker-dot{width:22px;height:22px;border-radius:50%;background:#ff3b30;border:3px solid #fff;box-shadow:0 0 0 4px rgba(255,59,48,.35)}#tab-map,#tab-progress{position:relative;min-height:0}#map-container,#progress-map-container{width:100%;height:100%;min-height:240px;background:#e5e3df;flex:1;position:relative}.map-error{position:absolute;left:12px;right:12px;top:12px;z-index:1200;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;border-radius:14px;padding:10px 12px;font-size:12px;font-weight:800;line-height:1.35}.map-tools{position:absolute;right:12px;bottom:12px;z-index:900;display:flex;flex-direction:column;gap:8px}.map-tool-btn{background:rgba(31,31,36,.95);color:#fff;border:none;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}#progress-stats{padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:620px){#tab-progress .progress-filter{padding:6px 8px;gap:6px;display:block}#tab-progress .progress-mobile-summary{display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress .progress-mobile-summary::-webkit-scrollbar{display:none}#tab-progress .progress-controls{display:none;margin-top:6px;padding:8px;background:#1f1f24;border:1px solid rgba(255,255,255,.1);border-radius:16px;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}#tab-progress .progress-filter.expanded .progress-controls{display:grid}#tab-progress .progress-controls label{flex-direction:column;align-items:stretch;gap:4px;font-size:10px;color:#b6b6bd}#tab-progress .progress-controls label:nth-child(3){grid-column:1/-1}#tab-progress .progress-controls select{width:100%;min-height:42px;font-size:15px}#tab-progress .progress-controls .pf-btn{min-height:42px;font-size:13px}#tab-progress #progress-report-btn{grid-column:1/2}#tab-progress #progress-show-all-btn{grid-column:2/3}#tab-progress #progress-repair-fylke-btn{grid-column:1/-1}#tab-progress .progress-report-status{display:block;margin-top:4px;font-size:11px;min-height:15px;max-height:32px;overflow:hidden}#tab-progress #progress-stats{flex-wrap:nowrap;overflow-x:auto;padding:6px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress #progress-stats::-webkit-scrollbar{display:none}#tab-progress #progress-stats>div{flex:0 0 auto;white-space:nowrap}#progress-map-container{min-height:300px}}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:430px){.top-bar h1{font-size:17px}.menu-btn{padding:7px 10px;min-width:44px}.ov-field select{min-width:170px}.cat-chip,.cat-mini{padding:8px 10px}#top-menu{left:10px;right:10px;width:auto;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 60px)}}.leaflet-control-layers{border-radius:12px!important;box-shadow:0 2px 10px rgba(0,0,0,.25)!important}.leaflet-control-layers-toggle{width:36px!important;height:36px!important}.leaflet-control-layers-expanded{font-size:13px;line-height:1.35}</style></head><body><div id="app"><div class="top-bar"><div><div class="label" id="hdr-label">Vegmåling · v26.1.03</div><h1 id="hdr-title">Kjørelogg</h1><div class="sub" id="hdr-sub">Klar</div></div><div class="top-actions"><button class="menu-btn" id="menu-btn" title="Meny">⋯</button></div></div><div id="top-menu"><button class="menu-item" id="btn-refreshcenter">🔄 Oppdater området</button><div class="menu-sep"></div><div class="menu-section-title">Vegkategorier</div><div class="menu-cat-wrap"><button class="cat-chip" data-cat="E">EV</button> <button class="cat-chip" data-cat="EGSV">EV-GSV</button> <button class="cat-chip" data-cat="R">RV</button> <button class="cat-chip" data-cat="RGSV">RV-GSV</button> <button class="cat-chip active" data-cat="F">FV</button> <button class="cat-chip" data-cat="FGSV">FV-GSV</button> <button class="cat-chip" data-cat="K">KV</button> <button class="cat-chip" data-cat="KGSV">KV-GSV</button> <div id="kgsv-langs-wrap" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;padding-top:4px;border-top:1px solid rgba(255,255,255,.1);margin-top:2px"><button class="kgsv-langs-btn" data-langs="F">langs FV</button><button class="kgsv-langs-btn" data-langs="E">langs EV</button><button class="kgsv-langs-btn" data-langs="R">langs RV</button></div><button class="cat-mini" id="cat-all">Alle</button> <button class="cat-mini" id="cat-none">Ingen</button></div><div class="menu-sep"></div><button class="menu-item" id="btn-export">📤 Eksporter</button> <button class="menu-item" id="btn-restoresnap">⏪ Gjenopprett fra snapshot</button> <button class="menu-item" id="btn-exportgpx">🛰 Eksporter GPX-spor</button> <button class="menu-item" id="btn-import">📥 Importer fremdrift</button>
+.gps-acc-bad{color:#ef5350;font-weight:700}.gps-info{flex:1;min-width:0}.gps-coord{font-size:10px;color:#b6b6bd;font-weight:700;font-variant-numeric:tabular-nums;min-height:13px}.gps-speed{font-size:26px;font-weight:900;line-height:1.05;margin:1px 0;display:flex;align-items:center;gap:10px}
+.speed-limit-sign {
+ --sign-size: clamp(68px, 14vw, 80px);
+ width: var(--sign-size);
+ height: var(--sign-size);
+ flex: none;
+ display: grid;
+ place-items: center;
+ border: 5px solid #d71920;
+ border-radius: 50%;
+ background: white;
+ color: #111;
+ font: 900 clamp(34px, 6.5vw, 40px)/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+ font-variant-numeric: tabular-nums;
+}
+.speed-limit-sign.three-digits { font-size: clamp(27px, 5.5vw, 33px); }
+.speed-limit-sign.unknown { border-color: #888; color: #555; background: #f5f5f5; }
+@media(max-width: 375px) {
+ .gps-inner { gap: 6px; padding-inline: 8px; }
+ .gps-inner .gps-btn { padding-inline: 8px; }
+ .gps-speed { font-size: 23px; }
+}
+.gps-sub{font-size:11px;color:#b6b6bd;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.gps-heading{display:inline-flex;align-items:center;gap:5px;background:#2a2a34;border-radius:8px;padding:3px 8px}.compass-arrow{display:inline-block;font-size:13px;transition:transform .4s ease}.heading-val{font-size:12px;font-weight:900;color:#f9a825;font-variant-numeric:tabular-nums}.heading-dir{font-size:10px;color:#b6b6bd}.gps-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap}.gps-btn.start{background:#2e7d32;color:#fff}.gps-btn.stop{background:#7a5054;color:#ffd7d7}.tab-bar{display:flex;background:#1b1b1d;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}.tab{flex:1;padding:10px 3px 9px;font-size:12px;font-weight:900;text-align:center;cursor:pointer;background:0 0;border:none;color:#b7b7bc;position:relative}.tab.active{color:#7bc1ff}.tab.active::after{content:'';position:absolute;bottom:0;left:18%;right:18%;height:3px;background:#1e88ff;border-radius:3px}.content{flex:1;display:none;flex-direction:column;overflow:hidden;background:linear-gradient(90deg,#1e1e22,#17171b)}.content.active{display:flex}.notice{margin:8px 10px 0;background:#5f4b1d;color:#ffe8aa;border:1px solid #8f7641;padding:10px 12px;border-radius:14px;font-size:12px}.error{margin:8px 10px 0;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;padding:10px 12px;border-radius:14px;font-size:12px}.success{margin:8px 10px 0;background:#18361f;color:#c8ffd1;border:1px solid #2b6a39;padding:10px 12px;border-radius:14px;font-size:12px}.loading{display:flex;align-items:center;justify-content:center;padding:22px;font-size:14px;color:#c7c7cd}#overview-tools{padding:8px 10px 8px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px;flex-shrink:0}.ov-row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.ov-field{display:flex;flex-direction:column;gap:4px}.ov-field span{font-size:11px;color:#b6b6bd;font-weight:800}.ov-field input,.ov-field select{padding:9px 12px;border:none;border-radius:14px;font-size:14px;background:#323237;color:#fff}.ov-field input{width:82px}.ov-field select{min-width:190px;max-width:100%}.ov-btn{border:none;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a}.ov-primary{background:#0059c9;border-color:#0059c9;color:#fff}.cat-row{align-items:center}.cat-label{font-size:12px;color:#b6b6bd;font-weight:900;margin-right:1px}.cat-chip,.cat-mini{border:none;cursor:pointer;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:900;transition:opacity .12s,box-shadow .12s;-webkit-appearance:none;appearance:none}.cat-chip{background:#1f1f24;color:#9a9aa3;border:1px dashed #3a3a44;opacity:.72}.cat-chip[data-cat="E"]{background:#2a1837;color:#d8b2ff;border-color:#6a1b9a}.cat-chip[data-cat=EGSV]{background:#32173d;color:#efb4ff;border-color:#8e24aa}.cat-chip[data-cat="R"]{background:#142946;color:#aad0ff;border-color:#1565c0}.cat-chip[data-cat=RGSV]{background:#14304d;color:#b6dcff;border-color:#1976d2}.cat-chip[data-cat="F"]{background:#17341c;color:#b7efbd;border-color:#2e7d32}.cat-chip[data-cat=FGSV]{background:#173c22;color:#c2f7c7;border-color:#43a047}.cat-chip[data-cat="K"]{background:#3a3000;color:#ffd866;border-color:#9a7c00}.cat-chip[data-cat=KGSV]{background:#3d2200;color:#ffcc99;border-color:#bf6000}.cat-chip.active{opacity:1;border-style:solid;box-shadow:0 0 0 2px rgba(255,255,255,.35) inset}.cat-chip.active[data-cat="E"]{background:#6a1b9a;color:#fff;border-color:#6a1b9a}.cat-chip.active[data-cat=EGSV]{background:#8e24aa;color:#fff;border-color:#8e24aa}.cat-chip.active[data-cat="R"]{background:#1565c0;color:#fff;border-color:#1565c0}.cat-chip.active[data-cat=RGSV]{background:#1976d2;color:#fff;border-color:#1976d2}.cat-chip.active[data-cat="F"]{background:#2e7d32;color:#fff;border-color:#2e7d32}.cat-chip.active[data-cat=FGSV]{background:#43a047;color:#fff;border-color:#43a047}.cat-chip.active[data-cat="K"]{background:#9a7c00;color:#fff;border-color:#9a7c00}.cat-chip.active[data-cat=KGSV]{background:#ef6c00;color:#fff;border-color:#ef6c00}.road-action-popup .leaflet-popup-content-wrapper{background:#1f1f24;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}.road-action-popup .leaflet-popup-tip{background:#1f1f24}.road-action-popup .leaflet-popup-close-button{color:#888}.kgsv-langs-btn{background:rgba(255,255,255,.06);color:#ccc;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer}.kgsv-langs-btn.active{background:#ef6c00;color:#fff;border-color:#ef6c00}.cat-mini{background:#1f1f24;color:#b6b6bd;border:1px solid #444}.stats-bar{padding:6px 10px}.stats-inner{background:#1f1f24;border-radius:14px;padding:9px 12px}.prog-row{display:flex;align-items:center;gap:10px}.prog-bar{flex:1;background:#2a2a31;border-radius:4px;height:6px;overflow:hidden}.prog-fill{background:#1e88ff;height:6px;border-radius:4px;transition:width .3s}.stat-text{font-size:11px;color:#d7d7db}#road-list{flex:1;overflow-y:auto;padding:6px 10px;padding-bottom:max(12px,env(safe-area-inset-bottom))}.road-card{background:#1f1f24;border-radius:16px;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.18);display:flex}.road-card.active-gps{border:2px solid #1e88ff}.road-accent{width:4px;flex-shrink:0}.road-body{padding:9px 11px;flex:1;min-width:0}.road-top{display:flex;align-items:center;gap:8px}.road-veg{font-size:14px;font-weight:900;flex:1}.road-status{font-size:15px}.road-meta{font-size:11px;color:#b6b6bd;margin-top:2px}.road-gps{font-size:11px;font-weight:900;margin-top:4px}.road-gps.near{color:#7bc1ff}.nav-btns{display:flex;gap:6px;margin-top:8px}.nav-btn{flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none}.nb-g{background:#e6f1fb;color:#185fa5}.table-controls{padding:8px 10px 6px;background:0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0}#table-filter{flex:1;min-width:150px;padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}#table-sort{padding:11px;border:none;border-radius:15px;font-size:13px;background:#323237;color:#fff}.table-btn{padding:11px 13px;border:none;border-radius:15px;font-size:13px;font-weight:900;cursor:pointer}.table-btn.sel{background:#323237;color:#fff}.table-btn.done{background:#1a3a1a;color:#8fca8f}.table-btn.clear{background:#3a1a1a;color:#ffb8b8}.table-wrap{flex:1;overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;white-space:nowrap}th{background:#1a1a1f;font-weight:900;font-size:11px;position:sticky;top:0;z-index:1}tr.active-row{background:#19334c}.progress-filter{padding:8px 10px;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}.progress-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.progress-mobile-summary{display:none}.progress-filter input,.progress-filter select{padding:9px 10px;border:none;border-radius:12px;background:#323237;color:#fff;font-size:13px}.progress-filter label{font-size:11px;color:#b6b6bd;font-weight:800;display:flex;align-items:center;gap:5px}.progress-filter .pf-btn{border:none;border-radius:12px;background:#1a1a2e;color:#dfe9ff;border:1px solid #2a3a5a;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}.progress-filter .pf-btn:disabled{background:#22252c;color:#7f8794;border-color:#363b45;cursor:not-allowed;opacity:.75}.progress-filter .pf-quick{background:#24313f;color:#bfe1ff;border-color:#355371}.progress-filter .pf-quick.warn{background:#5f4b1d;color:#ffe8aa;border-color:#8f7641}.progress-summary-chip{display:inline-flex;align-items:center;border-radius:999px;padding:8px 11px;background:#1f1f24;border:1px solid #3d4654;color:#dfe9ff;font-size:12px;font-weight:900;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:100%}.progress-report-status{font-size:12px;font-weight:800;color:#7bc1ff;min-height:18px;line-height:1.25}.manual-marker-dot{width:22px;height:22px;border-radius:50%;background:#ff3b30;border:3px solid #fff;box-shadow:0 0 0 4px rgba(255,59,48,.35)}#tab-map,#tab-progress{position:relative;min-height:0}#map-container,#progress-map-container{width:100%;height:100%;min-height:240px;background:#e5e3df;flex:1;position:relative}.map-error{position:absolute;left:12px;right:12px;top:12px;z-index:1200;background:#55282b;color:#ffd7d7;border:1px solid #8f4f56;border-radius:14px;padding:10px 12px;font-size:12px;font-weight:800;line-height:1.35}.map-tools{position:absolute;right:12px;bottom:12px;z-index:900;display:flex;flex-direction:column;gap:8px}.map-tool-btn{background:rgba(31,31,36,.95);color:#fff;border:none;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}#progress-stats{padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap;background:#16161b;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:620px){#tab-progress .progress-filter{padding:6px 8px;gap:6px;display:block}#tab-progress .progress-mobile-summary{display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress .progress-mobile-summary::-webkit-scrollbar{display:none}#tab-progress .progress-controls{display:none;margin-top:6px;padding:8px;background:#1f1f24;border:1px solid rgba(255,255,255,.1);border-radius:16px;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}#tab-progress .progress-filter.expanded .progress-controls{display:grid}#tab-progress .progress-controls label{flex-direction:column;align-items:stretch;gap:4px;font-size:10px;color:#b6b6bd}#tab-progress .progress-controls label:nth-child(3){grid-column:1/-1}#tab-progress .progress-controls select{width:100%;min-height:42px;font-size:15px}#tab-progress .progress-controls .pf-btn{min-height:42px;font-size:13px}#tab-progress #progress-report-btn{grid-column:1/2}#tab-progress #progress-show-all-btn{grid-column:2/3}#tab-progress #progress-repair-fylke-btn{grid-column:1/-1}#tab-progress .progress-report-status{display:block;margin-top:4px;font-size:11px;min-height:15px;max-height:32px;overflow:hidden}#tab-progress #progress-stats{flex-wrap:nowrap;overflow-x:auto;padding:6px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}#tab-progress #progress-stats::-webkit-scrollbar{display:none}#tab-progress #progress-stats>div{flex:0 0 auto;white-space:nowrap}#progress-map-container{min-height:300px}}#offline-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}#offline-modal.hidden{display:none}.offline-box{background:#1f1f24;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)}.offline-title{font-size:18px;font-weight:900;margin-bottom:4px}.offline-sub{font-size:12px;color:#b6b6bd;margin-bottom:16px}.offline-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.offline-row label{font-size:13px;color:#d7d7db;min-width:80px}#dl-fylke,#dl-radius{flex:1;padding:10px;border:none;border-radius:12px;font-size:13px;background:#323237;color:#fff}.offline-prog-wrap{background:#2a2a31;border-radius:8px;height:10px;overflow:hidden;margin:12px 0}.offline-prog-fill{background:#1e88ff;height:10px;border-radius:8px;transition:width .3s;width:0%}.offline-status{font-size:12px;color:#b6b6bd;min-height:18px;margin-bottom:12px}.offline-btns{display:flex;gap:8px}.offline-btn-start{flex:1;background:#0059c9;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:900;cursor:pointer}.offline-btn-close{background:#2a2a31;color:#aaa;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer}.offline-cache-info{font-size:11px;color:#7bc1ff;margin-top:10px;text-align:center}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}@media(max-width:430px){.top-bar h1{font-size:17px}.menu-btn{padding:7px 10px;min-width:44px}.ov-field select{min-width:170px}.cat-chip,.cat-mini{padding:8px 10px}#top-menu{left:10px;right:10px;width:auto;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 60px)}}.leaflet-control-layers{border-radius:12px!important;box-shadow:0 2px 10px rgba(0,0,0,.25)!important}.leaflet-control-layers-toggle{width:36px!important;height:36px!important}.leaflet-control-layers-expanded{font-size:13px;line-height:1.35}</style></head><body><div id="app"><div class="top-bar"><div><div class="label" id="hdr-label">Vegmåling · v26.1.04</div><h1 id="hdr-title">Kjørelogg</h1><div class="sub" id="hdr-sub">Klar</div></div><div class="top-actions"><button class="menu-btn" id="menu-btn" title="Meny">⋯</button></div></div><div id="top-menu"><button class="menu-item" id="btn-refreshcenter">🔄 Oppdater området</button><div class="menu-sep"></div><div class="menu-section-title">Vegkategorier</div><div class="menu-cat-wrap"><button class="cat-chip" data-cat="E">EV</button> <button class="cat-chip" data-cat="EGSV">EV-GSV</button> <button class="cat-chip" data-cat="R">RV</button> <button class="cat-chip" data-cat="RGSV">RV-GSV</button> <button class="cat-chip active" data-cat="F">FV</button> <button class="cat-chip" data-cat="FGSV">FV-GSV</button> <button class="cat-chip" data-cat="K">KV</button> <button class="cat-chip" data-cat="KGSV">KV-GSV</button> <div id="kgsv-langs-wrap" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;padding-top:4px;border-top:1px solid rgba(255,255,255,.1);margin-top:2px"><button class="kgsv-langs-btn" data-langs="F">langs FV</button><button class="kgsv-langs-btn" data-langs="E">langs EV</button><button class="kgsv-langs-btn" data-langs="R">langs RV</button></div><button class="cat-mini" id="cat-all">Alle</button> <button class="cat-mini" id="cat-none">Ingen</button></div><div class="menu-sep"></div><button class="menu-item" id="btn-export">📤 Eksporter</button> <button class="menu-item" id="btn-restoresnap">⏪ Gjenopprett fra snapshot</button> <button class="menu-item" id="btn-exportgpx">🛰 Eksporter GPX-spor</button> <button class="menu-item" id="btn-import">📥 Importer fremdrift</button>
 <button class="menu-item" id="btn-import-asphalt">🛣 Importer asfaltplan Excel</button>
 <button class="menu-item" id="btn-clear-asphalt">🧹 Fjern asfaltplan</button><div class="menu-sep"></div><button class="menu-item" id="btn-offline">💾 Offline-cache</button> <button class="menu-item" id="btn-offlinemode">✈️ Offline-modus AV</button> <button class="menu-item" id="btn-datasaver">💾 Datasparing PÅ</button> <button class="menu-item" id="btn-backgroundgps">📍 Bakgrunns-GPS PÅ</button> <button class="menu-item" id="btn-sideanlegg">🅿️ Sideanlegg AV</button> <button class="menu-item" id="btn-ramper">🔀 Ramper AV</button> <button class="menu-item" id="btn-cleansideanlegg">🧹 Rens sideanlegg fra historikk</button> <button class="menu-item" id="btn-repairgeom">🔧 Reparer geometri</button> <button class="menu-item" id="btn-repairdir">🔄 Korriger retning</button> <button class="menu-item" id="btn-manualcenter">📍 Sett manuell kartmarkør</button> <button class="menu-item" id="btn-clearmanual">🧹 Fjern manuell markør</button>  <div class="menu-sep"></div><button class="menu-item" onclick="resetAll()">🗑 Nullstill</button></div><input type="file" id="import-file" class="hidden-file" accept="application/json,.json,.geojson">
 <input type="file" id="asphalt-file" class="hidden-file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"><div class="gps-sticky"><div id="gps-ui"></div></div><div class="tab-bar"><button class="tab active" data-tab="overview">Oversikt</button> <button class="tab" data-tab="table">Tabell</button> <button class="tab" data-tab="map">🗺 Kart</button> <button class="tab" data-tab="progress">📊 Fremdrift</button></div><div class="content active" id="tab-overview"><div id="secure-warning" class="notice" style="display:none">GPS krever normalt HTTPS eller localhost.</div><div id="overview-tools"><div class="ov-row"><label class="ov-field"><span>Radius</span> <input id="radius" type="number" min="1" max="100" step="1" value="10"></label> <label class="ov-field"><span>Fylke</span> <select id="fylke"><option value="">Fylke fra posisjon</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <button id="refresh" class="ov-btn ov-primary">Oppdater</button></div></div><div id="message-area"></div><div class="stats-bar"><div class="stats-inner"><div class="prog-row"><div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div><div class="stat-text" id="stat-text">0 · 0 km</div></div></div></div><div id="road-list"><div class="loading">Ingen data ennå.</div></div></div><div class="content" id="tab-table"><div class="table-controls"><input id="table-filter" placeholder="Filtrer veg / segment..."> <select id="table-sort"><option value="dist-asc">Avstand (nærmest)</option><option value="veg-asc">Veg (A–Å)</option><option value="veg-desc">Veg (Å–A)</option><option value="len-desc">Lengde (lengst)</option><option value="len-asc">Lengde (kortest)</option><option value="dist-desc">Avstand (lengst)</option></select> <button id="table-select-all" class="table-btn sel">☑️ Velg alle</button>  <button id="table-set-done" class="table-btn done">✅ Sett ferdig</button> <button id="table-set-skip" class="table-btn clear">⛔ Kjøres ikke</button> <button id="table-clear-selection" class="table-btn clear">↩ Nullstill valg</button></div><div class="table-wrap"><table id="road-table"><thead><tr><th>Kat</th><th>Veg</th><th>Segment</th><th>Lengde km</th><th>Avstand m</th><th>Rute</th></tr></thead><tbody></tbody></table></div></div><div class="content" id="tab-map"><div id="map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-map-btn">🎯 Tilpass kart</button></div></div><div class="content" id="tab-progress"><div class="progress-filter" id="progress-filter-box"><div class="progress-mobile-summary" aria-label="Fremdrift hurtigvalg"><button class="pf-btn pf-quick" id="progress-filter-toggle" type="button" aria-expanded="false">⚙ Filter</button> <button class="pf-btn pf-quick" id="progress-show-all-btn-mobile" type="button">Vis alt</button> <button class="pf-btn" id="progress-report-btn-mobile" type="button" disabled="disabled">PDF</button> <span class="progress-summary-chip" id="progress-filter-summary">Alt · Alle fylker · ingen PDF</span></div><div class="progress-controls" id="progress-controls"><label>Periode <select id="progress-range"><option value="all">Alt</option><option value="today">I dag</option><option value="7">Siste 7 dager</option><option value="14">Siste 14 dager</option><option value="month">Inneværende måned</option></select></label> <label>Fylke <select id="progress-fylke"><option value="">Alle fylker</option><option value="__unknown">Ukjent/uten fylke</option><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></label> <label>Rapport <select id="progress-report-kind"><option value="">Velg rapport</option><option value="day">Dagsrapport PDF</option><option value="week">Ukerapport PDF</option><option value="month">Månedsrapport PDF</option></select></label> <button class="pf-btn" id="progress-report-btn" type="button" disabled="disabled">Lag PDF</button> <button class="pf-btn pf-quick" id="progress-show-all-btn" type="button">Vis alt</button> <button class="pf-btn" id="progress-toggle-missing-btn" type="button" title="Vis ikke-kjørte veger som røde linjer">🔴 Vis ikke-kjørt</button> <button class="pf-btn pf-quick" id="progress-toggle-asphalt-btn" type="button" title="Vis eller skjul asfaltplan/dekkeplan i fremdriftskartet">🛣 Asfaltplan PÅ</button> <button class="pf-btn" id="progress-load-fylke-btn" type="button" title="Last hele vegnettet for valgt fylke">📥 Last fylkets vegnett</button> <button class="pf-btn" id="progress-repair-fylke-btn" type="button" title="Slår opp fylke mot Geonorge for importert fremdrift">🧭 Korriger fylke</button></div><div class="progress-report-status" id="progress-report-status">Velg rapporttype for å aktivere PDF.</div></div><div id="progress-stats"></div><div id="progress-map-container"></div><div class="map-tools"><button class="map-tool-btn" id="fit-progress-btn">🎯 Tilpass kart</button></div></div></div><div id="offline-modal" class="hidden"><div class="offline-box"><div class="offline-title">📥 Last ned vegnett offline</div><div class="offline-sub">Laster rutenett av tiles. Bruk på wifi!</div><div class="offline-row"><label>Fylke</label> <select id="dl-fylke"><option value="31">Østfold</option><option value="32">Akershus</option><option value="3">Oslo</option><option value="33">Buskerud</option><option value="34">Innlandet</option><option value="39">Vestfold</option><option value="40">Telemark</option><option value="42">Agder</option><option value="11">Rogaland</option><option value="46">Vestland</option><option value="15" selected="selected">Møre og Romsdal</option><option value="50">Trøndelag</option><option value="18">Nordland</option><option value="55">Troms</option><option value="56">Finnmark</option></select></div><div class="offline-row"><label>Tile-rad.</label> <select id="dl-radius"><option value="5">5 km (tett KV)</option><option value="10" selected="selected">10 km</option><option value="15">15 km</option><option value="20">20 km</option><option value="30">30 km</option><option value="40">40 km</option><option value="50">50 km</option></select></div><div class="offline-prog-wrap"><div class="offline-prog-fill" id="dl-prog"></div></div><div class="offline-status" id="dl-status">Klar</div><div class="offline-btns"><button class="offline-btn-start" id="dl-start">Last ned</button> <button class="offline-btn-close" id="dl-close">Lukk</button></div><div class="offline-btns" style="margin-top:8px"><button class="offline-btn-close" id="dl-clear" style="flex:1;background:#3a1a1a;color:#ffb8b8;border:1px solid #5a2a2a">🗑 Slett cache for dette fylket</button></div><div class="offline-cache-info" id="dl-cache-info"></div></div></div><script>'use strict';
@@ -56,7 +78,7 @@ const SELECT_STORE='mr_veg_table_selection_v1';
 const DATA_SAVER_ON={reloadDistKm:20,maxPerPage:400,maxPages:4,radiusDefault:3,mapMaxZoom:16,autoPan:false};
 const DATA_SAVER_OFF={reloadDistKm:5,maxPerPage:1000,maxPages:20,radiusDefault:10,mapMaxZoom:19,autoPan:true};
 const ALLOWED_KATS=new Set(['E','R','F','K']);
-const ROAD_FETCH_REFS='E,R,F,K', ROAD_FETCH_MAX_PER_PAGE=1000, ROAD_FETCH_MAX_PAGES=80, ROAD_TILE_SCHEMA=12;
+const ROAD_FETCH_MAX_PER_PAGE=1000, ROAD_FETCH_MAX_PAGES=80, ROAD_TILE_SCHEMA=12, ROAD_MODEL_VERSION=2;
 const ROAD_FETCH_SPLIT_MIN_RADIUS_KM=0.9, ROAD_FETCH_MAX_SPLIT_DEPTH=5, ROAD_FETCH_SPLIT_OVERLAP=1.15;
 const COUNTY_CACHE_TTL_MS=14*24*3600*1000, COUNTY_CACHE_REMINDER_COOLDOWN_MS=12*3600*1000;
 const SPEED_LIMIT_TYPE_ID=105, SPEED_LIMIT_PROP_ID=2021, SPEED_LIMIT_MAX_DIST_M=45;
@@ -77,7 +99,9 @@ let roads=[],skipKeys=new Set(),deletedGeomKeys=new Set(),drivenKeys=new Set(),o
 let asphaltPlan=[];
 let gps={watching:false,watchId:null,lastPos:null,acc:null,speed:null,heading:null,activeKey:null,detectedFylke:null,activeDir:null,exitCount:0,_lastActiveKey:null,_lastActiveDir:null,_activeKeyLeftAt:null,_candidateKey:null,_candidateCount:0,_candidateDist:null,_sessionId:null,_sessionStartedAt:null,_dirFlipCandidate:null,_dirFlipCount:0,_dirDrivenM:0,_dirLastPos:null};
 let map=null,carMarker=null,carTailLayer=null,roadLayers=[],roadLayerGroup=null,progressMap=null,progressLayerGroup=null,_svgRenderer=null,_progressRenderer=null,_progressAutoFitDone=false;
-let speedLimits=[],currentSpeedLimit=null,lastSpeedLimitFetchKey='',lastSpeedLimitRefreshPos=null,speedLimitRefreshInFlight=false,speedLimitStartRefreshPending=false;
+let speedLimits=[],currentSpeedLimit=null,speedLimitStartRefreshPending=false;
+let lastSpeedLimitArea=null,speedLimitRequest=null,speedLimitRetryAfter=0;
+const SPEED_LIMIT_RETRY_MS=15000;
 let lastCenter=null,lastCenterRadius=null,lastCenterFylke=null,nvdbLoading=false,offlineMode=false,nativeGpsTimer=null,nativeWatchId=null,lastNativeFixTs=0;
 let lastRenderTime=0,lastRenderPos=null,_countyCacheMem=new Map(),_mapOverlayTimer=null,_activeTabLightRenderTimer=null,_lastMapPanTs=0,_lastMapOverlayRenderTs=0,_lastProgressMapRenderTs=0,_pendingNvdbRefresh=null,_gpsRestarting=false,_resumeGpsTimer=null;
 const RENDER_INTERVAL_MS=5000,RENDER_MOVE_M=10;
@@ -89,7 +113,7 @@ const PROGRESS_META_STORE='mr_veg_progress_meta_v3';
 const PROGRESS_SNAPSHOT_DEBOUNCE_MS=5000;
 const EXPORT_RESERVED_APPDATA_KEYS=new Set([STORE,GEOM_STORE,LEGACY_GEOM,DIR_STORE,ROUTE_STORE,'mr_veg_day_plan_v1',COMMENT_STORE,ASPHALT_PLAN_STORE,PROGRESS_IDB_KEY,PROGRESS_META_STORE,SETTINGS_STORE]);
 let _progressSaveTimer=null,_flushAllPromise=null,_lastHiddenFlushTs=0;
-let _appReady=false,_dataGeneration=0;
+let _appReady=false,_dataGeneration=0,roadFilterRevision=0;
 const _hydratedStoreKeys=new Set(),_storageFailures=new Map();
 
 const FYLKER=[
@@ -97,7 +121,7 @@ const FYLKER=[
 {id:'34',name:'Innlandet'},{id:'39',name:'Vestfold'},{id:'40',name:'Telemark'},{id:'42',name:'Agder'},
 {id:'11',name:'Rogaland'},{id:'46',name:'Vestland'},{id:'15',name:'Møre og Romsdal'},{id:'50',name:'Trøndelag'},
 {id:'18',name:'Nordland'},{id:'55',name:'Troms'},{id:'56',name:'Finnmark'}];
-const APP_VERSION='v26.1.03';
+const APP_VERSION='v26.1.04';
 
 const FYLKE_BBOX={
 '31':[10.45,58.75,12.10,59.85],'32':[10.15,59.35,12.25,60.60],'3':[10.45,59.75,11.00,60.05],
@@ -108,7 +132,7 @@ const FYLKE_BBOX={
 
 /* ───────────────────── HJELPERE ───────────────────── */
 function currentProfile(){return settings.dataSaver?DATA_SAVER_ON:DATA_SAVER_OFF}
-function getReloadDistKm(){return currentProfile().reloadDistKm}
+function getReloadDistKm(radiusKm){return Math.min(currentProfile().reloadDistKm,radiusKm/2)}
 function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;")}
 function setMessage(t,type='notice'){
  const failure=_storageFailures.size?'Lagring er ikke bekreftet. Behold appen åpen og eksporter en sikkerhetskopi.':'';
@@ -120,17 +144,34 @@ function roadMainKatLabel(k){return k==='E'?'EV':k==='R'?'RV':k==='K'?'KV':'FV'}
 function normalizeFylkeId(id){const n=Number(String(id??'').replace(/\D/g,''));return Number.isFinite(n)&&n>0?String(n):''}
 function fylkeIdFromKommuneNr(kommune){const s=String(kommune??'').replace(/\D/g,'');if(!s)return'';return normalizeFylkeId(s.padStart(4,'0').slice(0,2))}
 function getRoadMetaFromKey(key){let kat='F';let kvG=false;const k=String(key||'');if(/^Ev/i.test(k))kat='E';else if(/^Rv/i.test(k))kat='R';else if(/^Kv/i.test(k)){kat='K';kvG=/^Kv(?:\d+-)?\d+G/i.test(k)||/\bKV\s*\d+\s+G\b/i.test(k)}const m=k.match(/S\d+D(\d+)/i);const gsv=(kat==='K')?kvG:!!(m&&Number(m[1])>=100);return{kat,gsv}}
-let _kvgsvLangsCache=null;
+let _kvgsvLangsCache=null,_kvgsvReferenceRoads=[];
+function extraKvgsvReferenceCategory(){
+ const cf=settings.categoryFilter,kat=settings.kvgsvLangsKat;
+ return cf.KGSV&&['E','R','F'].includes(kat)&&!cf[kat]&&!cf[kat+'GSV']?kat:'';
+}
+function setAreaRoads(area){
+ const ref=extraKvgsvReferenceCategory();
+ _kvgsvReferenceRoads=ref?area.filter(r=>roadFilterKey(r)===ref):[];
+ roads=ref?area.filter(roadPassesSelectedDownloadCategory):area;
+ invalidateKvgsvLangsCache();
+}
 function buildKvgsvLangsCache(kat){
  const mainKat=kat.toUpperCase();
  const nearKeys=new Set();
- const mainRoads=roads.filter(m=>String(m.kat||'').toUpperCase()===mainKat&&m.parts?.length);
+ const mainRoads=[...roads,..._kvgsvReferenceRoads].filter(m=>String(m.kat||'').toUpperCase()===mainKat&&m.parts?.length);
+ // Litt rom rundt søkeboksen. Selve langs-kravet er fortsatt strengt under 130 meter.
+ const latPad=135/111320,lonPad=latPad/Math.cos(72*Math.PI/180);
  for(const r of roads){
   if(roadFilterKey(r)!=='KGSV')continue;
+  const b=roadBBox(r);
+  if(!b)continue;
+  const box={minLat:b.minLat-latPad,maxLat:b.maxLat+latPad,minLon:b.minLon-lonPad,maxLon:b.maxLon+lonPad};
+  const nearby=mainRoads.filter(m=>roadIntersectsBBox(m,box));
+  if(!nearby.length)continue;
   for(const part of(r.parts||[])){
    for(const pt of part){
     if(!pt||pt.length<2)continue;
-    for(const m of mainRoads){
+    for(const m of nearby){
      if(roadDist(pt[1],pt[0],m)<130){nearKeys.add(r.key);break}
     }
     if(nearKeys.has(r.key))break;
@@ -141,18 +182,20 @@ function buildKvgsvLangsCache(kat){
  return nearKeys;
 }
 function invalidateKvgsvLangsCache(){_kvgsvLangsCache=null;}
-function activeRoadFilterKeys(){const cf=settings.categoryFilter||{};return['E','EGSV','R','RGSV','F','FGSV','K','KGSV'].filter(k=>!!cf[k])}
+function activeRoadFilterKeys(){
+ const cf=settings.categoryFilter,ref=extraKvgsvReferenceCategory();
+ return ['E','EGSV','R','RGSV','F','FGSV','K','KGSV'].filter(k=>cf[k]||k===ref);
+}
 function activeRoadFetchRefs(){
- const cf=settings.categoryFilter||{},refs=[];
- if(cf.E||cf.EGSV)refs.push('E');
- if(cf.R||cf.RGSV)refs.push('R');
- if(cf.F||cf.FGSV)refs.push('F');
- if(cf.K||cf.KGSV)refs.push('K');
- return refs.join(',');
+ const keys=activeRoadFilterKeys();
+ return ['E','R','F','K'].filter(k=>keys.includes(k)||keys.includes(k+'GSV')).map(k=>k+'V').join(',');
 }
 function activeRoadCacheSignature(){const keys=activeRoadFilterKeys();return keys.length?keys.join('-'):'none'}
 function roadPassesSelectedDownloadCategory(r){const k=roadFilterKey(r),fk=k==='KGSV_OTHER'?'KGSV':k;return !!settings.categoryFilter[fk]}
-function filterFetchedRoadsByActiveCategories(list){return (list||[]).filter(roadPassesSelectedDownloadCategory)}
+function filterFetchedRoadsByActiveCategories(list){
+ const ref=extraKvgsvReferenceCategory();
+ return (list||[]).filter(r=>roadPassesSelectedDownloadCategory(r)||(ref&&roadFilterKey(r)===ref));
+}
 function roadPassesCategoryFilter(r){
  const k=roadFilterKey(r);
  const fk=k==='KGSV_OTHER'?'KGSV':k;
@@ -466,9 +509,12 @@ async function loadPersistentAppState(){
  syncAsphaltPlanToProgressCache();
  rebuildStatusSetsFromDirections();
  applyAutomaticFerrySkips(Object.values(geomCache),{save:false});
- // Migrer gamle store localStorage-data over til IndexedDB ved første oppstart i v2.0.4.
+ // persistJsonStore fjerner hver lokal kopi først når IndexedDB har bekreftet skrivingen.
  saveState();saveDirectionState();saveRouteLog();saveGeomCache();saveRoadComments();saveAsphaltPlan();
- if(await flushPendingIdbWrites())safeLocalRemove(LEGACY_GEOM);
+ if(await flushPendingIdbWrites() && HAS_INDEXED_DB){
+  safeLocalRemove(LEGACY_GEOM);
+  if(!settings.settingsVersion||settings.settingsVersion<7){settings.settingsVersion=7;saveSettings()}
+ }
 }
 
 /* ───────────────────── SETTINGS / STATE ───────────────────── */
@@ -515,13 +561,6 @@ function loadSettings(){
     if(typeof settings.includeRamper!=='boolean')settings.includeRamper=false;
     settings.settingsVersion=6;
     saveSettings();
-   }
-   // v2.0.46: migrer bort store localStorage-nøkler. IDB er nå sannhetskilden.
-   if(!settings.settingsVersion||settings.settingsVersion<7){
-    [STORE,GEOM_STORE,LEGACY_GEOM,DIR_STORE,ROUTE_STORE,COMMENT_STORE,PROGRESS_META_STORE].forEach(safeLocalRemove);
-    settings.settingsVersion=7;
-    saveSettings();
-    console.log('v2.0.46: store data flyttet helt til IndexedDB');
    }
   }
  }catch(e){}
@@ -586,11 +625,13 @@ function rebuildStatusSetsFromDirections(){
  for(const k of legacyDriven)if(!directionState[k])drivenKeys.add(k);
  for(const k of legacyOneWay)if(!directionState[k]&&!drivenKeys.has(k))oneWayKeys.add(k);
 }
+function isGsvKey(key,road=roadByKeyAny(key)){
+ return road?.kat?roadFilterKey(road).endsWith('GSV'):getRoadMetaFromKey(key).gsv;
+}
 function _isOneWayKey(key){
  if(!key)return false;
- const meta=getRoadMetaFromKey(key);
- if(meta.gsv)return true;
- const r=(typeof roadByKeyAny==='function')?roadByKeyAny(key):null;
+ const r=roadByKeyAny(key);
+ if(isGsvKey(key,r))return true;
  if(r&&_isAuxRoad(r))return true;
  return false;
 }
@@ -729,12 +770,12 @@ function setRoadSkipFromTable(key){
  return true;
 }
 function getDirectionState(key){const st=directionState[key]||{fwd:false,rev:false};return{fwd:!!st.fwd,rev:!!st.rev}}
-function getRoadStatus(key){
+function getRoadStatus(key,plans){
  const st=getDirectionState(key),state=directionState[key]||{};
  if((st.fwd||st.rev)&&_isOneWayKey(key))return'done';
  if(st.fwd&&st.rev){
   if(state.manualFull)return'done';
-  const plan=typeof getCoverageDrawPlan==='function'?getCoverageDrawPlan(key):null;
+  const plan=getCoverageDrawPlan(key,plans);
   if(plan&&plan.hasTrack&&Number.isFinite(plan.total)&&plan.total>0){
    const totalKm=plan.total/1000,missingKm=Math.max(0,totalKm-(plan.bothKm||0));
    if(missingKm<=0.05||(plan.bothKm||0)>=totalKm*0.985)return'done';
@@ -1027,29 +1068,18 @@ function loadScriptWithCheck(src,checkFn,timeoutMs=12000){
   const script=document.createElement('script');
   script.src=src;
   script.async=false;
-  script.dataset.dynamicLoader='pdf';
-  let done=false;
-  const timer=setTimeout(()=>{
-   if(done)return;
-   done=true;
-   reject(new Error('Tidsavbrudd ved lasting av '+src));
-  },timeoutMs);
-  script.onload=()=>{
-   if(done)return;
+  const finish=error=>{
    clearTimeout(timer);
-   setTimeout(()=>{
-    done=true;
-    checkFn()?resolve(true):reject(new Error('Lastet, men biblioteket ble ikke registrert: '+src));
-   },0);
+   script.onload=null;
+   script.onerror=null;
+   if(error){script.remove();reject(error)}
+   else resolve(true);
   };
-  script.onerror=()=>{
-   if(done)return;
-   done=true;
-   clearTimeout(timer);
-   reject(new Error('Kunne ikke laste '+src));
-  };
+  const timer=setTimeout(()=>finish(new Error('Tidsavbrudd ved lasting av '+src)),timeoutMs);
+  script.onload=()=>finish(checkFn()?null:new Error('Lastet, men biblioteket ble ikke registrert: '+src));
+  script.onerror=()=>finish(new Error('Kunne ikke laste '+src));
   document.head.appendChild(script);
- });
+ }).finally(()=>{delete _dynamicScriptPromises[src]});
  return _dynamicScriptPromises[src];
 }
 async function tryLoadFirstWorkingScript(urls,checkFn,label){
@@ -1333,23 +1363,21 @@ function normalizeRoadRecordForList(r,key){
  return {...r,key:key||'',kat:r.kat||m.kat,gsv:r.gsv??m.gsv};
 }
 
-function partSignature(part){
- const p=(part||[]).filter(isVLL);
- if(p.length<2)return '';
- const a=p[0],b=p[p.length-1];
- return `${a[0].toFixed(6)},${a[1].toFixed(6)}>${b[0].toFixed(6)},${b[1].toFixed(6)}#${p.length}`;
-}
 function mergePartsUnique(oldParts,newParts){
- const out=[];
- const seen=new Set();
+ const out=[],buckets=new Map();
  for(const part of [...(oldParts||[]),...(newParts||[])]){
   const clean=(part||[]).filter(isVLL);
   if(clean.length<2)continue;
-  const sig=partSignature(clean);
-  const rev=partSignature(clean.slice().reverse());
-  if(seen.has(sig)||seen.has(rev))continue;
-  seen.add(sig);
-  out.push(clean);
+  const a=clean[0].join(','),b=clean[clean.length-1].join(',');
+  const key=a<b?`${a}>${b}#${clean.length}`:`${b}>${a}#${clean.length}`;
+  const bucket=buckets.get(key)||[];
+  // Parallelle løp kan ha like endepunkter og like mange punkter.
+  const matches=(line,reverse)=>clean.every((point,i)=>{
+   const other=line[reverse?line.length-1-i:i];
+   return point[0]===other[0]&&point[1]===other[1];
+  });
+  if(bucket.some(line=>matches(line,false)||matches(line,true)))continue;
+  bucket.push(clean);buckets.set(key,bucket);out.push(clean);
  }
  return out;
 }
@@ -1378,7 +1406,7 @@ function mergeRoadIntoGeomCache(r){
   key:r.key,
   veg:r.veg||old.veg||'',
   seg:r.seg||old.seg||'',
-  gsv:!!(r.gsv||old.gsv),
+  gsv:(r.kat||old.kat)==='K'?!!(r.gsv||old.gsv):gsvFromTrafficGroup(newTraf,!!(r.gsv||old.gsv)),
   kat:r.kat||old.kat||'F',
   len:Math.max(Number(r.len)||0,Number(old.len)||0,newLen),
   fylke:newFylke,
@@ -1429,10 +1457,23 @@ function openIDB(){
  }).finally(()=>{_idbOpenPromise=null});
  return _idbOpenPromise;
 }
-function tileKey(lat,lon,r,f){const dLat=TILE_SIZE_KM/111.32,cos=Math.cos(lat*Math.PI/180)||1,dLon=TILE_SIZE_KM/(111.32*Math.max(0.2,Math.abs(cos))),cat=activeRoadCacheSignature().replace(/[^A-Z0-9-]/gi,'');const sa=settings.includeSideanlegg?'s':'';const rm=settings.includeRamper?'r':'';return`nvdb_t${ROAD_TILE_SCHEMA}_${Math.round(lat/dLat)}_${Math.round(lon/dLon)}_r${Math.round(r)}_f${f||'0'}_c${cat}${sa}${rm}`}
-async function saveTile(lat,lon,r,f,data){
+function legacyTileKey(lat,lon,r,f){const dLat=TILE_SIZE_KM/111.32,cos=Math.cos(lat*Math.PI/180)||1,dLon=TILE_SIZE_KM/(111.32*Math.max(0.2,Math.abs(cos))),cat=activeRoadCacheSignature().replace(/[^A-Z0-9-]/gi,'');const sa=settings.includeSideanlegg?'s':'';const rm=settings.includeRamper?'r':'';return`nvdb_t${ROAD_TILE_SCHEMA}_${Math.round(lat/dLat)}_${Math.round(lon/dLon)}_r${Math.round(r)}_f${f||'0'}_c${cat}${sa}${rm}`}
+function roadTileForArea(lat,lon,radiusKm,fylke){
+ // Navnet og NVDB-utsnittet skal beskrive samme område for alle posisjoner i ruten.
+ const stepKm=Math.min(2,radiusKm/5),step=stepKm/111.32;
+ const row=Math.round(lat/step),col=Math.round(lon/step);
+ const centerLat=row*step,centerLon=col*step;
+ // Nordgrensen trenger størst lengdegradsspenn på norske breddegrader.
+ const north=centerLat+step/2;
+ const [,,east]=bboxFromPoint(north,centerLon+step/2,radiusKm);
+ const eastKm=(east-centerLon)*111.32*Math.cos(centerLat*Math.PI/180);
+ const fetchRadius=Math.max(radiusKm+stepKm/2,eastKm);
+ const filters=activeCountyCacheKey(fylke);
+ return {lat:centerLat,lon:centerLon,radius:fetchRadius,key:`nvdb_area_v${ROAD_MODEL_VERSION}_${row}_${col}_r${radiusKm}_${filters}`};
+}
+async function saveTile(key,data){
  if(!HAS_INDEXED_DB)return false;
- const key=tileKey(lat,lon,r,f),db=await openIDB();
+ const db=await openIDB();
  return new Promise((res,rej)=>{
   const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).put({data,ts:Date.now()},key);
   tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error('Vegnett-lagring avbrutt'));
@@ -1442,11 +1483,11 @@ function rememberCountyCache(key,payload){
  _countyCacheMem.delete(key);_countyCacheMem.set(key,payload);
  while(_countyCacheMem.size>2)_countyCacheMem.delete(_countyCacheMem.keys().next().value);
 }
-async function loadTile(lat,lon,r,f){if(!HAS_INDEXED_DB)return null;try{const db=await openIDB();return await new Promise(res=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get(tileKey(lat,lon,r,f));req.onsuccess=()=>{const o=req.result;if(!o||!Array.isArray(o.data))return res(null);if(Date.now()-o.ts>30*24*3600*1000)return res(null);res(o.data)};req.onerror=()=>res(null)})}catch(e){return null}}
+async function loadTile(key,maxAgeMs=30*24*3600*1000){if(!HAS_INDEXED_DB)return null;try{const db=await openIDB();return await new Promise(res=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get(key);req.onsuccess=()=>{const o=req.result;if(!o||!Array.isArray(o.data))return res(null);if(Date.now()-o.ts>maxAgeMs)return res(null);res(o.data)};req.onerror=()=>res(null)})}catch(e){return null}}
 function activeCountyCacheKey(f){const cat=activeRoadCacheSignature().replace(/[^A-Z0-9-]/gi,'');const sa=settings.includeSideanlegg?'s':'';const rm=settings.includeRamper?'r':'';return`nvdb_county_v${ROAD_TILE_SCHEMA}_f${f||'0'}_c${cat}${sa}${rm}`}
 async function saveCountyCache(f,data,meta={}){
  if(!HAS_INDEXED_DB||!f||!Array.isArray(data))return false;
- const key=activeCountyCacheKey(f),payload={data,ts:Date.now(),meta:{...meta,count:data.length,version:APP_VERSION,cat:activeRoadCacheSignature()}};
+ const key=activeCountyCacheKey(f),payload={data,ts:Date.now(),meta:{...meta,count:data.length,version:APP_VERSION,cat:activeRoadCacheSignature(),roadModel:ROAD_MODEL_VERSION}};
  try{
   const db=await openIDB();
   await new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readwrite'),store=tx.objectStore(IDB_STORE);store.put(payload,key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error('IDB avbrutt'))});
@@ -1467,7 +1508,7 @@ async function loadCountyCache(f,{allowStale=true}={}){
   }catch(e){return null}
  }
  if(!payload||!Array.isArray(payload.data)||Number(payload.meta?.errors)>0)return null;
- const age=Date.now()-(payload.ts||0),stale=age>COUNTY_CACHE_TTL_MS;
+ const age=Date.now()-(payload.ts||0),stale=age>COUNTY_CACHE_TTL_MS||payload.meta?.roadModel!==ROAD_MODEL_VERSION;
  if(stale&&!allowStale)return null;
  return {key,data:payload.data,ts:payload.ts||0,age,stale,meta:payload.meta||{}};
 }
@@ -1485,12 +1526,12 @@ function maybeWarnCountyCacheUpdate(f,hit){
  if(now-last<COUNTY_CACHE_REMINDER_COOLDOWN_MS)return;
  settings.countyCacheReminder={...(settings.countyCacheReminder||{}),[key]:now};saveSettings();
  const name=fylkeName(f)||`fylke ${f}`;
- const msg=hit?`Vegnettet for ${name} er eldre enn 14 dager. Last ned fylkets vegnett på WiFi når du har tid.`:`Ingen samlet fylkes-cache for ${name}. Last ned fylkets vegnett på WiFi for raskere oppstart og mindre mobildata.`;
+ const msg=hit?`Vegnettet for ${name} bør oppdateres. Last ned fylkets vegnett på WiFi.`:`Ingen samlet fylkes-cache for ${name}. Last ned fylkets vegnett på WiFi for raskere oppstart og mindre mobildata.`;
  setMessage(msg,'notice');
 }
-async function loadCountyRoadsForArea(lat,lon,radiusKm,f){
+async function loadCountyRoadsForArea(lat,lon,radiusKm,f,{allowLegacy=offlineMode}={}){
  const hit=await loadCountyCache(f,{allowStale:true});
- if(!hit)return null;
+ if(!hit||(!allowLegacy&&hit.meta?.roadModel!==ROAD_MODEL_VERSION))return null;
  const area=applySearchRadiusView(hit.data,lat,lon,radiusKm);
  return {...hit,area};
 }
@@ -1674,21 +1715,20 @@ function repairFalseRevTracks(){
   const hasRevPoints=Array.isArray(log.rev)&&log.rev.length>0;
   const hasFwdPoints=Array.isArray(log.fwd)&&log.fwd.length>0;
   const ds=directionState[key]||{};
-  // v2.0.49.1: Ramper/GSV kjores alltid one-way.
-  const meta=getRoadMetaFromKey(key);
-  if(meta.gsv){
+  if(ds.manualFull){keptManualFull++;continue}
+  if(isGsvKey(key)){
    if(ds.fwd&&ds.rev){
     const fwdCount=(log.fwd||[]).length;
     const revCount=(log.rev||[]).length;
     if(fwdCount>=revCount){
-     delete routeLog[key].rev;
+     delete log.rev;
      if(directionState[key]){
       directionState[key].rev=false;
       delete directionState[key].revFirstTs;
       delete directionState[key].revLastTs;
      }
     }else{
-     delete routeLog[key].fwd;
+     delete log.fwd;
      if(directionState[key]){
       directionState[key].fwd=false;
       delete directionState[key].fwdFirstTs;
@@ -1701,7 +1741,6 @@ function repairFalseRevTracks(){
    keptRamp++;
    continue;
   }
-  if(ds.manualFull){keptManualFull++;continue}
   if(hasRevPoints&&hasFwdPoints){
    const fwdTs=(log.fwd||[]).map(p=>p.ts).filter(Number.isFinite);
    const revTs=(log.rev||[]).map(p=>p.ts).filter(Number.isFinite);
@@ -2140,16 +2179,24 @@ function parseCoords(text){if(!text)return[];const out=[];for(const t of text.sp
 function parseWkt(wkt){if(!wkt)return[];const t=wkt.trim();if(/^LINESTRING/i.test(t)){const m=t.match(/LINESTRING\s*(?:Z(?:M)?|M)?\s*\((.*?)\)\s*$/is);if(!m)return[];const p=parseCoords(m[1]);return p.length>=2?[p]:[]}if(/^MULTILINESTRING/i.test(t)){const m=t.match(/MULTILINESTRING\s*(?:Z(?:M)?|M)?\s*\((.*)\)\s*$/is);if(!m)return[];let inner=m[1].trim();if(inner.startsWith('(')&&inner.endsWith(')'))inner=inner.slice(1,-1);return inner.split(/\)\s*,\s*\(/).map(p=>parseCoords(p)).filter(p=>p.length>=2)}return[]}
 function isVLL(c){return Array.isArray(c)&&c.length===2&&Number.isFinite(c[0])&&Number.isFinite(c[1])&&c[0]>=3&&c[0]<=32&&c[1]>=57&&c[1]<=72}
 function isGSV(seg){const m=seg.match(/D(\d+)$/i);return m?Number(m[1])>=100:false}
+function gsvFromTrafficGroup(group,fallback){
+ if(group==='G')return true;
+ if(group==='K')return false;
+ return fallback;
+}
 function dM(la1,lo1,la2,lo2){const R=6371000,dlat=(la2-la1)*Math.PI/180,dlon=(lo2-lo1)*Math.PI/180,a=Math.sin(dlat/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dlon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))}
 function ptSeg(lat,lon,a,b){const lat0=(a[1]+b[1]+lat)/3,mLat=111320,mLon=Math.cos(lat0*Math.PI/180)*111320,ax=a[0]*mLon,ay=a[1]*mLat,bx=b[0]*mLon,by=b[1]*mLat,px=lon*mLon,py=lat*mLat,abx=bx-ax,aby=by-ay,ab2=abx*abx+aby*aby;if(ab2===0)return Math.hypot(px-ax,py-ay);const t=Math.max(0,Math.min(1,((px-ax)*abx+(py-ay)*aby)/ab2));return Math.hypot(px-(ax+t*abx),py-(ay+t*aby))}
 function roadDist(lat,lon,r){let best=Infinity;for(const part of(r.parts||[])){if(!part?.length)continue;if(part.length===1){const d=dM(lat,lon,part[0][1],part[0][0]);if(d<best)best=d;continue}for(let i=0;i<part.length-1;i++){const d=ptSeg(lat,lon,part[i],part[i+1]);if(d<best)best=d}}return best}
 
+const _boundsByParts=new WeakMap();
 function roadBBox(r){
- if(r?._bbox)return r._bbox;
+ const parts=r?.parts;
+ if(!Array.isArray(parts))return null;
+ if(_boundsByParts.has(parts))return _boundsByParts.get(parts);
  let minLat=Infinity,minLon=Infinity,maxLat=-Infinity,maxLon=-Infinity;
- for(const part of(r?.parts||[]))for(const c of(part||[])){if(!isVLL(c))continue;const lon=c[0],lat=c[1];if(lat<minLat)minLat=lat;if(lat>maxLat)maxLat=lat;if(lon<minLon)minLon=lon;if(lon>maxLon)maxLon=lon}
+ for(const part of parts)for(const c of(part||[])){if(!isVLL(c))continue;const lon=c[0],lat=c[1];if(lat<minLat)minLat=lat;if(lat>maxLat)maxLat=lat;if(lon<minLon)minLon=lon;if(lon>maxLon)maxLon=lon}
  const b=Number.isFinite(minLat)?{minLat,minLon,maxLat,maxLon}:null;
- if(r)r._bbox=b;
+ _boundsByParts.set(parts,b);
  return b;
 }
 function roadBBoxDist(lat,lon,r){
@@ -2189,7 +2236,11 @@ function roadRenderParts(r){return r?.displayParts?.length?r.displayParts:(r?.pa
 function roadRenderLen(r){return Number.isFinite(r?.displayLen)?r.displayLen:(r?.len||0)}
 function applySearchRadiusView(list,lat,lon,radiusKm){
  const limitM=radiusKm*1000+25,out=[];
+ // Bruk laveste mulige lengdegradsskala i klippingen. isVLL tillater vegpunkt opp til 72°N.
+ const latPad=limitM/111320,lonPad=latPad/Math.cos(Math.max(72,Math.abs(lat))*Math.PI/180);
+ const bounds={minLat:lat-latPad,maxLat:lat+latPad,minLon:lon-lonPad,maxLon:lon+lonPad};
  for(const r of list||[]){
+  if(!roadIntersectsBBox(r,bounds))continue;
   const minDist=roadDist(lat,lon,r);
   if(!Number.isFinite(minDist)||minDist>limitM)continue;
   const displayParts=clipPartsToRadius(r.parts,lat,lon,radiusKm);
@@ -2211,19 +2262,25 @@ function getDenseCityRadiusRule(lat,lon,radiusKm){
 }
 function getRoadStartLatLon(r){if(r.parts?.length&&r.parts[0]?.length){const c=r.parts[0][0];if(isVLL(c))return{lat:c[1],lon:c[0]}}return null}
 function calcPartsKm(parts){let m=0;for(const part of(parts||[])){const v=part.filter(isVLL);for(let i=0;i<v.length-1;i++)m+=dM(v[i][1],v[i][0],v[i+1][1],v[i+1][0])}return m/1000}
+const _headingChainsByRoad=new WeakMap();
 function getRoadHeadingAtPoint(lat,lon,r,myHeading){
  // v2.0.47: bruker normalisert chain via makeChainsFromParts i stedet for raa r.parts.
  // Tidligere kunne samme kjoretning klassifiseres vekselvis som fwd og rev nar GPS-fix
  // krysset fra ett NVDB-segment til et annet med motsatt intern retning. Chain-en er
  // normalisert av orderPartsForBridging og gir konsistent retning langs hele veg-objektet.
  if(!r||!r.parts)return null;
- const chains=makeChainsFromParts(r.parts,35);
+ let cached=_headingChainsByRoad.get(r);
+ if(!cached||cached.parts!==r.parts){
+  cached={parts:r.parts,chains:makeChainsFromParts(r.parts,35)};
+  _headingChainsByRoad.set(r,cached);
+ }
+ const chains=cached.chains;
  if(!chains.length)return null;
  let bestDist=Infinity,bestHeading=null;
  for(const chain of chains){
   for(let i=0;i<chain.length-1;i++){
    const a=chain[i],b=chain[i+1],d=ptSeg(lat,lon,a,b);
-   if(d<bestDist){bestDist=d;const dy=b[1]-a[1],dx=b[0]-a[0];bestHeading=(Math.atan2(dx,dy)*180/Math.PI+360)%360}
+   if(d<bestDist){bestDist=d;bestHeading=bearingBetween(a[1],a[0],b[1],b[0])}
   }
  }
  if(bestHeading===null)return null;
@@ -2353,13 +2410,12 @@ function finalizeActiveRoad(){
 /* ───────────────────── FARTSGRENSE 105 ───────────────────── */
 function parseSpeedLimitNumber(v){
  if(v==null)return null;
- if(typeof v==='number'&&Number.isFinite(v))return v;
  if(typeof v==='object'){
   for(const k of ['verdi','value','enumVerdi','enum_verdi','kortnavn','navn','tekst','displayValue']){
    const n=parseSpeedLimitNumber(v[k]);if(n!=null)return n;
   }
  }
- const m=String(v).match(/\b(5|10|20|30|40|50|60|70|80|90|100|110|120)\b/);
+ const m=String(v).trim().match(/^(5|10|20|30|40|50|60|70|80|90|100|110|120)(?:\s*km\/(?:h|t))?$/i);
  return m?Number(m[1]):null;
 }
 function getSpeedLimitFromObject(obj){
@@ -2369,15 +2425,14 @@ function getSpeedLimitFromObject(obj){
   for(const e of props){
    const id=Number(e?.id??e?.egenskapstype?.id);
    const name=String(e?.navn??e?.egenskapstype?.navn??'').toLowerCase();
-   if(id===SPEED_LIMIT_PROP_ID||name.includes('fartsgrense')||name.includes('hastighet')){
+   if(id===SPEED_LIMIT_PROP_ID||(!Number.isFinite(id)&&['fartsgrense','hastighet'].includes(name))){
     const n=parseSpeedLimitNumber(e?.verdi??e?.enum_verdi??e?.enumVerdi??e?.verdi_tekst??e?.navn);if(n!=null)return n;
    }
   }
-  for(const e of props){const n=parseSpeedLimitNumber(e?.verdi??e?.navn);if(n!=null)return n}
  }
- if(props&&typeof props==='object'){
+ else if(props&&typeof props==='object'){
   for(const [k,v] of Object.entries(props)){
-   if(String(k).toLowerCase().includes('fartsgrense')||String(k)===String(SPEED_LIMIT_PROP_ID)){
+   if(['fartsgrense','hastighet',String(SPEED_LIMIT_PROP_ID)].includes(k.toLowerCase())){
     const n=parseSpeedLimitNumber(v);if(n!=null)return n;
    }
   }
@@ -2397,12 +2452,12 @@ function normalizeSpeedLimitObject(obj,i){
  if(!speed||!parts.length)return null;
  return {key:`sl_${obj?.id??i}`,id:obj?.id??null,speed,parts,minDist:null};
 }
-async function fetchSpeedLimitPage(url){
- const resp=await fetch(url,{headers:{'X-Client':'kjorelogg-nvdb-fartsgrense/v2.0.60','Accept':'application/json'}});
+async function fetchSpeedLimitPage(url,signal){
+ const resp=await fetch(url,{signal,headers:{'X-Client':'kjorelogg-nvdb-fartsgrense/v2.0.60','Accept':'application/json'}});
  if(!resp.ok)throw new Error(`NVDB fartsgrense ${resp.status}`);
  return await resp.json();
 }
-async function loadSpeedLimitsAround(lat,lon,radiusKm,fylkeNr){
+async function loadSpeedLimitsAround(lat,lon,radiusKm,fylkeNr,signal){
  const [minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm),base=new URL(`${NVDB}/vegobjekter/api/v4/vegobjekter/${SPEED_LIMIT_TYPE_ID}`);
  base.searchParams.set('srid','4326');
  base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);
@@ -2411,9 +2466,13 @@ async function loadSpeedLimitsAround(lat,lon,radiusKm,fylkeNr){
  base.searchParams.set('inkluderAntall','false');
  base.searchParams.set('antall','1000');
  const out=[];let url=base.toString(),pages=0;
- try{
-  while(url&&pages<20){pages++;const data=await fetchSpeedLimitPage(url);for(const o of(data.objekter||[])){const sl=normalizeSpeedLimitObject(o,out.length);if(sl)out.push(sl)}url=data?.metadata?.neste?.href||null}
- }catch(e){console.warn('Kunne ikke hente fartsgrenser 105',e)}
+ while(url&&pages<20){
+  pages++;
+  const data=await fetchSpeedLimitPage(url,signal);
+  for(const obj of data.objekter){const sl=normalizeSpeedLimitObject(obj,out.length);if(sl)out.push(sl)}
+  url=data?.metadata?.neste?.href||null;
+ }
+ if(url)throw new Error('Fartsgrenseoppslaget nådde sidegrensen');
  return out;
 }
 function getSpeedLimitFetchFylke(){
@@ -2422,41 +2481,48 @@ function getSpeedLimitFetchFylke(){
  if(manualSel?.dataset.manual==='1'&&manualSel.value)return manualSel.value;
  return gps.detectedFylke||null;
 }
-async function refreshSpeedLimitsLight(lat,lon,reason='auto',force=false){
- if(offlineMode||!Number.isFinite(lat)||!Number.isFinite(lon))return false;
- if(speedLimitRefreshInFlight)return false;
- if(!force&&lastSpeedLimitRefreshPos&&dM(lastSpeedLimitRefreshPos[0],lastSpeedLimitRefreshPos[1],lat,lon)<SPEED_LIMIT_REFRESH_DISTANCE_M)return false;
- speedLimitRefreshInFlight=true;
- const fylkeNr=getSpeedLimitFetchFylke(),radius=SPEED_LIMIT_REFRESH_RADIUS_KM;
+async function refreshSpeedLimitsLight(lat,lon,force=false){
+ if(offlineMode||!Number.isFinite(lat)||!Number.isFinite(lon))return;
+ const fylke=getSpeedLimitFetchFylke(),generation=_dataGeneration;
+ const nearby=area=>area&&area.generation===generation&&area.fylke===fylke&&
+  dM(area.lat,area.lon,lat,lon)<SPEED_LIMIT_REFRESH_DISTANCE_M;
+ if(nearby(speedLimitRequest))return;
+ speedLimitRequest?.controller.abort();
+ speedLimitRequest=null;
+ if(!force&&(nearby(lastSpeedLimitArea)||Date.now()<speedLimitRetryAfter))return;
+ const request={lat,lon,fylke,generation,controller:new AbortController()};
+ speedLimitRequest=request;
  try{
-  const fresh=await loadSpeedLimitsAround(lat,lon,radius,fylkeNr);
-  speedLimits=Array.isArray(fresh)?fresh:[];
-  lastSpeedLimitRefreshPos=[lat,lon];
-  lastSpeedLimitFetchKey=`light:${lat.toFixed(4)},${lon.toFixed(4)},${radius},${fylkeNr||''}`;
-  updateCurrentSpeedLimit(lat,lon);
+  const fresh=await loadSpeedLimitsAround(lat,lon,SPEED_LIMIT_REFRESH_RADIUS_KM,fylke,request.controller.signal);
+  if(speedLimitRequest!==request||generation!==_dataGeneration||offlineMode)return;
+  speedLimits=fresh;
+  lastSpeedLimitArea={lat,lon,fylke,generation};
+  speedLimitRetryAfter=0;
+  const [showLat,showLon]=gps.watching&&gps.lastPos?gps.lastPos:[lat,lon];
+  updateCurrentSpeedLimit(showLat,showLon);
   renderGPS();
-  return true;
  }catch(e){
-  console.warn('Lett fartsgrenseoppdatering feilet',e);
-  return false;
- }finally{speedLimitRefreshInFlight=false}
-}
-function maybeRefreshSpeedLimitsLight(lat,lon,force=false){
- refreshSpeedLimitsLight(lat,lon,force?'start':'500m',force).catch(e=>console.warn('Fartsgrense-refresh feilet',e));
+  if(speedLimitRequest===request&&generation===_dataGeneration&&!request.controller.signal.aborted){
+   speedLimitRetryAfter=Date.now()+SPEED_LIMIT_RETRY_MS;
+   console.warn('Fartsgrenseoppslag feilet',e);
+  }
+ }finally{if(speedLimitRequest===request)speedLimitRequest=null}
 }
 function updateCurrentSpeedLimit(lat,lon){
  currentSpeedLimit=null;
  if(!speedLimits.length||!Number.isFinite(lat)||!Number.isFinite(lon))return null;
  let best=null,bestD=Infinity;
- for(const sl of speedLimits){const d=roadDist(lat,lon,sl);sl.minDist=d;if(d<bestD){best=sl;bestD=d}}
+ // Filtrer på omsluttende rektangel før nøyaktig avstand til veggeometrien.
+ const [minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,(SPEED_LIMIT_MAX_DIST_M+2)/1000);
+ const bbox={minLon,minLat,maxLon,maxLat};
+ for(const sl of speedLimits){
+  if(!roadIntersectsBBox(sl,bbox))continue;
+  const d=roadDist(lat,lon,sl);
+  if(d<bestD){best=sl;bestD=d}
+ }
  if(best&&bestD<=SPEED_LIMIT_MAX_DIST_M)currentSpeedLimit=best.speed;
  return currentSpeedLimit;
 }
-function speedLimitSignHtml(){
- if(currentSpeedLimit==null)return '<span class="speed-limit-sign unknown" title="Fartsgrense ikke funnet">--</span>';
- return `<span class="speed-limit-sign" title="Fartsgrense fra NVDB 105">${Math.round(currentSpeedLimit)}</span>`;
-}
-
 /* ───────────────────── FYLKE + NVDB ───────────────────── */
 async function detectFylkeFromAPI(lat,lon){try{const resp=await fetch(`https://ws.geonorge.no/kommuneinfo/v1/punkt?nord=${lat}&ost=${lon}&koordsys=4326`,{headers:{Accept:'application/json'}});if(!resp.ok)return null;const d=await resp.json();
  // v2.0.49: bruk fylkesnummer direkte fra Geonorge. Avledning fra kommunenummer.substring(0,2)
@@ -2491,17 +2557,15 @@ function shouldPreSplitDenseRoadFetch(lat,lon,radiusKm,fetchRefs,depth){
  if(depth!==0||!String(fetchRefs||'').includes('K')||!Number.isFinite(radiusKm)||radiusKm<DENSE_CITY_RADIUS_LIMIT_KM)return null;
  return DENSE_CITY_RADIUS_AREAS.find(c=>dM(lat,lon,c.lat,c.lon)<=c.triggerKm*1000)||null;
 }
-async function loadRoadsAroundSplit(lat,lon,radiusKm,fylkeNr,depth,fallbackOut=null){
+async function loadRoadsAroundSplit(lat,lon,radiusKm,fylkeNr,depth){
  const subRadius=radiusKm/2,fetchRadius=Math.max(ROAD_FETCH_SPLIT_MIN_RADIUS_KM,subRadius*ROAD_FETCH_SPLIT_OVERLAP),cos=Math.cos(lat*Math.PI/180)||1,latOff=subRadius/111.32,lonOff=subRadius/(111.32*Math.max(0.2,Math.abs(cos)));
  const centers=[[lat-latOff,lon-lonOff],[lat-latOff,lon+lonOff],[lat+latOff,lon-lonOff],[lat+latOff,lon+lonOff]];
- const nested=[];let splitFailures=0;
+ const nested=[];
  for(const[cLat,cLon]of centers){
-  try{nested.push(...await loadRoadsAround(cLat,cLon,fetchRadius,fylkeNr,depth+1))}
-  catch(e){splitFailures++;console.warn('Delhenting av tett NVDB-område feilet',e)}
+  const batch=await loadRoadsAround(cLat,cLon,fetchRadius,fylkeNr,depth+1);
+  for(const road of batch)nested.push(road);
  }
- if(!nested.length)return null;
- const merged=mergeRoads(splitFailures&&Array.isArray(fallbackOut)?fallbackOut.concat(nested):nested);
- return filterFetchedRoadsByActiveCategories(merged);
+ return mergeRoads(nested);
 }
 async function loadRoadsAround(lat,lon,radiusKm,fylkeNr,depth=0){
  const profile=currentProfile(),perPage=Math.max(profile.maxPerPage,ROAD_FETCH_MAX_PER_PAGE),maxPages=Math.max(profile.maxPages,ROAD_FETCH_MAX_PAGES),[minLon,minLat,maxLon,maxLat]=bboxFromPoint(lat,lon,radiusKm),base=new URL(`${NVDB}/vegnett/api/v4/veglenkesekvenser/segmentert`);
@@ -2509,8 +2573,7 @@ async function loadRoadsAround(lat,lon,radiusKm,fylkeNr,depth=0){
  if(!fetchRefs){if(depth===0)setMessage('Velg minst én vegkategori før nedlasting av vegnett.','notice');return[]}
  const preSplitArea=shouldPreSplitDenseRoadFetch(lat,lon,radiusKm,fetchRefs,depth);
  if(preSplitArea){
-  const splitResult=await loadRoadsAroundSplit(lat,lon,radiusKm,fylkeNr,depth);
-  if(splitResult?.length){setMessage(`${preSplitArea.name}: tett KV-område hentes i mindre ruter for komplett 5 km-dekning.`,'notice');return splitResult}
+  return loadRoadsAroundSplit(lat,lon,radiusKm,fylkeNr,depth);
  }
  base.searchParams.set('srid','4326');base.searchParams.set('kartutsnitt',`${minLon},${minLat},${maxLon},${maxLat}`);base.searchParams.set('vegsystemreferanse',fetchRefs);
  // v2.0.71: Send fylke-nummer direkte til NVDB. NVDB filtrerer da serverside basert på sine
@@ -2519,10 +2582,11 @@ async function loadRoadsAround(lat,lon,radiusKm,fylkeNr,depth=0){
  base.searchParams.set('inkluderAntall','false');base.searchParams.set('antall',String(perPage));
  const out=[];let url=base.toString(),pages=0;let skippedSideanlegg=0;
  while(url&&pages<maxPages){pages++;const resp=await fetch(url,{headers:{'X-Client':'kjorelogg-nvdb-gps/v2.0.60'}});if(!resp.ok)throw new Error(`NVDB ${resp.status}`);const data=await resp.json();
-  for(const s of(data.objekter||[])){
+  if(!Array.isArray(data.objekter))throw new Error('NVDB returnerte et ugyldig vegnettsvar.');
+  for(const s of data.objekter){
    const vs=s?.vegsystemreferanse;if(!vs?.vegsystem||!vs?.strekning)continue;
    const vegsys=vs.vegsystem,kat=String(vegsys.vegkategori||'').toUpperCase();
-   if(!ALLOWED_KATS.has(kat))continue;
+   if(!ALLOWED_KATS.has(kat)||(vegsys.fase&&vegsys.fase!=='V'))continue;
    const tv=String(s.typeVeg||'').toLowerCase(),typeBlob=kgsvV9Text([s.typeVeg,s.typeveg,s.type,s.objekttype,s.navn,s.detaljnivå,s.detaljniva,vs.kortform]).toLowerCase();
    // NVDB-feltet skrives både med "detaljnivå" (med å) og "detaljniva" (uten) av ulike klienter,
    // så vi sjekker begge varianter for å være robust.
@@ -2536,16 +2600,22 @@ async function loadRoadsAround(lat,lon,radiusKm,fylkeNr,depth=0){
    // Rundkøyringar på rampearm har R\d i kortforma (t.d. 'EV 18 R1 S1D1').
    // Berre desse vert filtrert med rampar — vanlege rundkøyringar på hovudveg vert alltid henta.
    if(tv.includes('rundkj')&&!settings.includeRamper&&/\bR\d/i.test(_kortform))continue;
-   const _erSA=dn.includes('sideanlegg')||!!(vs.strekning?.sideanleggsdel)||/\bSD\d/i.test(_kortform)||tv.includes('snuplass')||tv.includes('parkeringsomr')||tv.includes('rasteplass');if(!settings.includeSideanlegg&&_erSA){skippedSideanlegg++;continue}
-const strek=vs.strekning||{},seg=`S${strek.strekning}D${strek.delstrekning}`,_kvKort=String(vs.kortform||s?.vegsystemreferanse?.kortform||''),_kvTrafikantgruppeRaw=(strek.trafikantgruppe??vs.trafikantgruppe??s?.trafikantgruppe??''),_kvTrafikantgruppe=kgsvV9Text(_kvTrafikantgruppeRaw).toUpperCase(),_kvTypeRaw=(s?.typeVeg??s?.typeveg??s?.typeVeg_sosi??s?.type??s?.objekttype??s?.navn??s?.detaljnivå??s?.detaljniva??''),_kvTypeText=kgsvV9Text(_kvTypeRaw),_kvKortErG=kgsvV9HasKvG(_kvKort),_isKvGsv=(kat==='K'&&(kgsvV9IsTrafG(_kvTrafikantgruppeRaw)||_kvKortErG||kgsvV9IsGsvType(_kvTypeText))),gsv=(kat==='K')?_isKvGsv:isGSV(seg),_kvGsvSuffix=_isKvGsv?'G':'',kommuneNr=s.kommune||s?.geometri?.kommune||'',kommuneFylke=fylkeIdFromKommuneNr(kommuneNr);
+   const _erSA=dn.includes('sideanlegg')||!!vs.sideanlegg||!!(vs.strekning?.sideanleggsdel)||/\bSD\d/i.test(_kortform)||tv.includes('snuplass')||tv.includes('parkeringsomr')||tv.includes('rasteplass');if(!settings.includeSideanlegg&&_erSA){skippedSideanlegg++;continue}
+   const strek=vs.strekning,seg=`S${strek.strekning}D${strek.delstrekning}`;
+   const trafficRaw=strek.trafikantgruppe??vs.trafikantgruppe??s.trafikantgruppe??'';
+   const trafficGroup=kgsvV9Text(trafficRaw).toUpperCase();
+   const typeText=kgsvV9Text(s.typeVeg??s.typeveg??s.typeVeg_sosi??s.type??s.objekttype??s.navn??s.detaljnivå??s.detaljniva??'');
+   const kvGsv=kat==='K'&&(kgsvV9IsTrafG(trafficRaw)||kgsvV9HasKvG(_kortform)||kgsvV9IsGsvType(typeText));
+   const gsv=kat==='K'?kvGsv:gsvFromTrafficGroup(trafficGroup,isGSV(seg));
+   const kvSuffix=kvGsv?'G':'',kommuneNr=s.kommune||s.geometri?.kommune||'',kommuneFylke=fylkeIdFromKommuneNr(kommuneNr);
    if(fylkeNr&&kat==='K'&&kommuneFylke&&kommuneFylke!==String(fylkeNr))continue;
-   const vegnavn=`${roadPrefixFromKat(kat)}${vegsys.nummer}${_kvGsvSuffix}${vs.klasse||vegsys.klasse||''}`,keyVegnavn=(kat==='K'&&kommuneNr)?`${roadPrefixFromKat(kat)}${kommuneNr}-${vegsys.nummer}${_kvGsvSuffix}${vs.klasse||vegsys.klasse||''}`:vegnavn,parts=parseWkt(s?.geometri?.wkt).map(p=>p.filter(isVLL)).filter(p=>p.length>=2);
+   const vegnavn=`${roadPrefixFromKat(kat)}${vegsys.nummer}${kvSuffix}${vs.klasse||vegsys.klasse||''}`,keyVegnavn=(kat==='K'&&kommuneNr)?`${roadPrefixFromKat(kat)}${kommuneNr}-${vegsys.nummer}${kvSuffix}${vs.klasse||vegsys.klasse||''}`:vegnavn,parts=parseWkt(s?.geometri?.wkt).map(p=>p.filter(isVLL)).filter(p=>p.length>=2);
    if(!parts.length)continue;
    const fraM=Number(strek.fra_meter)||0,tilM=Number(strek.til_meter)||0;
    // v2.0.32: lagre typeVeg og detaljnivå på vegposten slik at "Rens sideanlegg fra historikk"
    // og fremtidige filterverktøy kan jobbe med konkrete metadata.
    const keyBase=`${keyVegnavn}_${seg}`,roadFylke=kommuneFylke||normalizeFylkeId(s.fylke)||normalizeFylkeId(fylkeNr);
-   out.push({key:`${keyBase}_${out.length}`,keyBase,veg:vegnavn,kat,gsv,trafikantgruppe:_kvTrafikantgruppe,kortform:_kvKort,typeVegText:_kvTypeText,nr:Number(vegsys.nummer)||0,kommune:kommuneNr,seg,str:Number(strek.strekning)||0,dstr:Number(strek.delstrekning)||0,fra:fraM,til:tilM,len:Number(s.lengde)||0,fylke:roadFylke,typeVeg:s.typeVeg||'',detaljnivaa:s.detaljnivå||s.detaljniva||'',partsWithMeter:parts.map(p=>({coords:p,fra:fraM,til:tilM})),parts,minDist:null})
+   out.push({key:`${keyBase}_${out.length}`,keyBase,veg:vegnavn,kat,gsv,trafikantgruppe:trafficGroup,kortform:_kortform,typeVegText:typeText,nr:Number(vegsys.nummer)||0,kommune:kommuneNr,seg,str:Number(strek.strekning)||0,dstr:Number(strek.delstrekning)||0,fra:fraM,til:tilM,len:Number(s.lengde)||0,fylke:roadFylke,typeVeg:s.typeVeg||'',detaljnivaa:s.detaljnivå||s.detaljniva||'',partsWithMeter:parts.map(p=>({coords:p,fra:fraM,til:tilM})),parts,minDist:null})
   }
   url=data?.metadata?.neste?.href||null
  }
@@ -2555,13 +2625,9 @@ const strek=vs.strekning||{},seg=`S${strek.strekning}D${strek.delstrekning}`,_kv
   if(url&&pages>=maxPages){
    console.warn(`NVDB pagination-tak nådd (${pages} sider × ${perPage} pr side). Området er trunkert.`);
    if(radiusKm>ROAD_FETCH_SPLIT_MIN_RADIUS_KM&&depth<ROAD_FETCH_MAX_SPLIT_DEPTH){
-    const splitResult=await loadRoadsAroundSplit(lat,lon,radiusKm,fylkeNr,depth,out);
-    if(splitResult?.length){
-     if(depth===0)setMessage(`Tett NVDB-område: hentingen ble delt opp i mindre ruter for komplett dekning (${splitResult.length} delstrekninger).`,'notice');
-     return splitResult;
-    }
+    return loadRoadsAroundSplit(lat,lon,radiusKm,fylkeNr,depth);
    }
-   setMessage(`Området er stort: NVDB-svar truncert ved ${pages*perPage} segmenter. Reduser radius eller bruk Last fylkets vegnett for fullstendig dekning.`,'notice');
+   throw new Error('NVDB returnerte et ufullstendig vegnett. Reduser radius og prøv igjen.');
   }
  return filterFetchedRoadsByActiveCategories(mergeRoads(out))
 }
@@ -2605,12 +2671,12 @@ function buildGpsUiOnce(){
  if(_gpsUiBuilt)return;
  const el=document.getElementById('gps-ui');if(!el)return;
  el.innerHTML=`<div class="gps-inner">
+  <span id="gps-speed-limit" class="speed-limit-sign unknown" role="img" aria-label="Ukjent fartsgrense" title="Fartsgrense ikke funnet">–</span>
   <div class="gps-dot off" id="gps-dot"></div>
   <div class="gps-info">
    <div class="gps-coord" id="gps-coord"></div>
    <div class="gps-speed">
     <span id="gps-speed-val">0 km/t</span>
-    <span id="gps-speed-limit"></span>
    </div>
    <div class="gps-sub">
     <span id="gps-sub"></span>
@@ -2643,7 +2709,15 @@ function renderGPS(){
  const speedLimit=document.getElementById('gps-speed-limit');
  const subEl=document.getElementById('gps-sub');
  const headWrap=document.getElementById('gps-heading');
- if(speedLimit)speedLimit.innerHTML=speedLimitSignHtml();
+ const limitText=currentSpeedLimit==null?'–':String(currentSpeedLimit);
+ if(speedLimit&&speedLimit.textContent!==limitText){
+  speedLimit.textContent=limitText;
+  speedLimit.classList.toggle('unknown',currentSpeedLimit==null);
+  speedLimit.classList.toggle('three-digits',limitText.length===3);
+  const label=currentSpeedLimit==null?'Ukjent fartsgrense':`Fartsgrense ${limitText} km/t`;
+  speedLimit.setAttribute('aria-label',label);
+  speedLimit.title=currentSpeedLimit==null?'Fartsgrense ikke funnet':label+' fra NVDB';
+ }
  let coord='',kmh=0,subTxt=on?'Venter på GPS…':'';
  if(on&&gps.lastPos){
   const[la,lo]=gps.lastPos;
@@ -3067,7 +3141,7 @@ function onPos(pos){
  }
  const forceSpeedLimitRefresh=!!speedLimitStartRefreshPending;
  if(forceSpeedLimitRefresh)speedLimitStartRefreshPending=false;
- maybeRefreshSpeedLimitsLight(lat,lon,forceSpeedLimitRefresh);
+ refreshSpeedLimitsLight(lat,lon,forceSpeedLimitRefresh);
  updateCurrentSpeedLimit(lat,lon);renderGPS();
  if(activeChanged)scheduleMapOverlayRender(120);
  if(movedEnough||timeOk){lastRenderTime=now;lastRenderPos=[lat,lon];updateFylkeFromPosition(lat,lon);setMessage('');if(!document.hidden&&document.getElementById('tab-map').classList.contains('active'))updateMap(lat,lon);updateFromCenter(false).catch(e=>console.warn('Live-oppdatering av vegnett feilet',e))}
@@ -3161,7 +3235,7 @@ function updateHeaderTitle(){
 function getFilteredTableRows(){const sort=document.getElementById('table-sort').value;let arr=activeFilteredRoads().slice();arr.sort((a,b)=>{if(sort==='veg-asc')return a.veg.localeCompare(b.veg,'no');if(sort==='veg-desc')return b.veg.localeCompare(a.veg,'no');if(sort==='len-asc')return roadRenderLen(a)-roadRenderLen(b);if(sort==='len-desc')return roadRenderLen(b)-roadRenderLen(a);if(sort==='dist-asc')return(a.minDist??1e9)-(b.minDist??1e9);if(sort==='dist-desc')return(b.minDist??-1)-(a.minDist??-1);return 0});return arr}
 
 function renderStats(){const vis=activeFilteredRoads(),n=vis.length,km=(vis.reduce((s,r)=>s+roadRenderLen(r),0)/1000).toFixed(1),cat=activeCategoryText(),fylkeName=getActiveFylkeName();document.getElementById('stat-text').textContent=`${n} strekninger · ${km} km · ${cat}`;document.getElementById('prog-fill').style.width='100%';updateHeaderTitle();document.getElementById('hdr-sub').textContent=`${n} stk · ${km} km · ${cat}${fylkeName?` · ${fylkeName}`:''}`}
-function catBadgeHtml(r){const k=roadFilterKey(r),color=k==='E'?'#6a1b9a':k==='EGSV'?'#8e24aa':k==='R'?'#1565c0':k==='RGSV'?'#1976d2':k==='F'?'#2e7d32':k==='FGSV'?'#43a047':k==='K'?'#e65100':k==='KGSV'?'#ef6c00':'#555';return`<span style="display:inline-block;background:${color};color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:900;margin-right:6px">${roadMainKatLabel(r.kat)}${r.gsv?'-GSV':''}</span>`}
+function catBadgeHtml(r){const k=roadFilterKey(r),color=k==='E'?'#6a1b9a':k==='EGSV'?'#8e24aa':k==='R'?'#1565c0':k==='RGSV'?'#1976d2':k==='F'?'#2e7d32':k==='FGSV'?'#43a047':k==='K'?'#e65100':k==='KGSV'?'#ef6c00':'#555';return`<span style="display:inline-block;background:${color};color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:900;margin-right:6px">${roadMainKatLabel(r.kat)}${k.endsWith('GSV')?'-GSV':''}</span>`}
 function renderRoads(){
  const el=document.getElementById('road-list'),vis=activeFilteredRoads().sort((a,b)=>(a.minDist??1e9)-(b.minDist??1e9));if(!vis.length){el.innerHTML='<div class="loading">Ingen veger funnet innen søkeradiusen.</div>';return}
  el.innerHTML=vis.map(r=>{const status=getRoadStatus(r.key),isAct=gps.activeKey===r.key,isDriven=status==='done',isOneWay=status==='oneway',isSkipR=skipKeys.has(r.key),ds=getDirectionState(r.key),icon=isAct?'🔵':isDriven?'🟢':isOneWay?'🟡':isSkipR?'⛔':'⬜',color=isAct?'#1e88ff':isDriven?'#43a047':isOneWay?'#f9a825':isSkipR?'#333':'#555',km=(roadRenderLen(r)/1000).toFixed(2),meter=`${Math.round(r.fra)}–${Math.round(r.til)}`,p=getRoadStartLatLon(r),google=p?`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving`:'#',distTxt=Number.isFinite(r.minDist)?` · ca ${Math.round(r.minDist)} m`:'';
@@ -3333,7 +3407,9 @@ function initMap(){
   const p=currentProfile(),baseLayers=createBaseLayers(p.mapMaxZoom),base=baseLayers['OpenStreetMap']||baseLayers['Topo'];
    map=L.map('map-container',{center:gps.lastPos||[62.7,7.2],zoom:gps.lastPos?13:10,layers:[base],zoomControl:true,preferCanvas:true,zoomAnimation:false,fadeAnimation:false,markerZoomAnimation:false,inertia:false});
    addBaseLayerControl(map,baseLayers);
-   _svgRenderer=L.canvas({padding:.2,tolerance:8});roadLayerGroup=L.layerGroup().addTo(map);map.whenReady(()=>{safeInvalidate(map);updateManualMarker();updateMapOverlay(false)});
+   _svgRenderer=L.canvas({padding:.2,tolerance:8});roadLayerGroup=L.layerGroup().addTo(map);
+   map.on('moveend zoomend',()=>scheduleMapOverlayRender(120));
+   map.whenReady(()=>{safeInvalidate(map);updateManualMarker();updateMapOverlay(false)});
   return map;
  }catch(e){console.error('Kart init feilet',e);setMapError('map-container','Kart kunne ikke startes: '+(e?.message||e));return null}
 }
@@ -3366,7 +3442,7 @@ window._mapSetDone=key=>{setRoadDoneFull(key);map.closePopup();renderAllViews()}
 window._mapSetSkip=key=>{deletedGeomKeys.delete(key);skipKeys.add(key);clearDirectionStateForKey(key);saveState();map.closePopup();renderAllViews()};
 window._mapReset=key=>{clearRoadProgressForKey(key,{clearSkip:true});map.closePopup();renderAllViews()};
 function updateMapOverlay(fit=false){
- if(!map||document.hidden)return;
+ if(!map||document.hidden||activeTabId()!=='map')return;
  if(gps.watching&&!fit){
   const now=Date.now();
   if(now-_lastMapOverlayRenderTs<MAP_OVERLAY_ACTIVE_THROTTLE_MS){scheduleMapOverlayRender(MAP_OVERLAY_ACTIVE_THROTTLE_MS-(now-_lastMapOverlayRenderTs));return}
@@ -3378,10 +3454,10 @@ function updateMapOverlay(fit=false){
  const draw=(part,color,weight,opacity,key)=>{const v=part.filter(isVLL);if(v.length<2)return;const lls=v.map(c=>[c[1],c[0]]),opts={color,weight,opacity,interactive:!!key,bubblingMouseEvents:false};if(key&&_svgRenderer)opts.renderer=_svgRenderer;const pl=L.polyline(lls,opts).addTo(roadLayerGroup);if(key){pl.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});const hit=L.polyline(lls,{color:'transparent',weight:20,opacity:0,interactive:true,bubblingMouseEvents:false,renderer:_svgRenderer||L.canvas({padding:.2,tolerance:8})}).addTo(roadLayerGroup);hit.on('click',e=>{L.DomEvent.stopPropagation(e);openRoadPopup(key,e.latlng)});roadLayers.push(hit);}roadLayers.push(pl);pushBounds(bounds,lls)};
  for(const pass of[false,true])for(const r of toRender){
   const act=gps.activeKey===r.key;if(pass!==act)continue;
-  const st=getRoadStatus(r.key),done=st==='done',one=st==='oneway',skip=skipKeys.has(r.key),plans=getCoverageDrawPlans(r.key);
+  const plans=getCoverageDrawPlans(r.key),st=getRoadStatus(r.key,plans),done=st==='done',one=st==='oneway',skip=skipKeys.has(r.key);
   if(plans.length){
    for(const part of roadRenderParts(r))draw(part,skip?'#444':'#d32f2f',skip?3:4,skip?.35:.45,r.key);
-    drawCoveragePlans(roadLayerGroup,r.key,bounds,coverageDrawOptionsForKey(r.key,{oneWeight:7,oneOpacity:.95,bothWeight:8,bothOpacity:.98,status:st}));
+    drawCoveragePlans(roadLayerGroup,r.key,bounds,coverageDrawOptionsForKey(r.key,{oneWeight:7,oneOpacity:.95,bothWeight:8,bothOpacity:.98,status:st}),plans);
    if(act)for(const part of roadRenderParts(r))draw(part,'#1e88ff',3,.75,r.key);
    continue;
   }
@@ -3392,7 +3468,8 @@ function updateMapOverlay(fit=false){
  for(const key of [...oneWayKeys,...drivenKeys]){
   if(inView.has(key)||!keyPassesCategoryFilter(key)||!keyPassesMapFylke(key))continue;
   if(!keyIntersectsMapBBox(key,viewBox))continue;
-   const cov=drawCoveragePlans(roadLayerGroup,key,bounds,coverageDrawOptionsForKey(key,{oneWeight:7,oneOpacity:.9,bothWeight:8,bothOpacity:.95}));
+  const plans=getCoverageDrawPlans(key),status=getRoadStatus(key,plans);
+  const cov=drawCoveragePlans(roadLayerGroup,key,bounds,coverageDrawOptionsForKey(key,{oneWeight:7,oneOpacity:.9,bothWeight:8,bothOpacity:.95,status}),plans);
   if(!cov.drew&&oneWayKeys.has(key)){const parts=getGeomParts(geomCache[key]);if(parts.length)for(const part of parts)draw(part,'#f9a825',5,.35,key)}
  }
  if(fit){if(gps.lastPos)bounds.push([gps.lastPos[0],gps.lastPos[1]]);if(bounds.length>=2)map.fitBounds(L.latLngBounds(bounds),{padding:[20,20]});else if(gps.lastPos)map.setView(gps.lastPos,14)}
@@ -3655,8 +3732,6 @@ function buildCoveragePlanForChain(key,chain,manualFull=false,strictSnap=false){
  return plan;
 }
 function getCoverageDrawPlans(key){
- const parts=getRoadPartsForKey(key),chains=makeChainsFromParts(parts,35);
- if(!chains.length)return [];
  const ds=directionState[key]||{};
  const explicitManual=!!ds.manualFull;
  // Fallback: fwd+rev=true utan manualFull og utan GPS-spor i routeLog.
@@ -3667,6 +3742,9 @@ function getCoverageDrawPlans(key){
  const hasGps=(log.fwd?.length>0)||(log.rev?.length>0);
  const implicitManual=!explicitManual&&!hasGps&&!!ds.fwd&&!!ds.rev;
  const manual=explicitManual||implicitManual;
+ if(!manual&&!hasGps)return [];
+ const chains=makeChainsFromParts(getRoadPartsForKey(key),35);
+ if(!chains.length)return [];
  // Sideanlegg/rampar/ramp-rundkøyringar skal IKKJE arve GPS-dekning frå hovudvegen geometrisk.
  // Vert berre grøne viss: a) eksplisitt manualFull, eller b) GPS faktisk snappa til DENNE vegen
  // innanfor ENTER_THRESH_M (strictSnap=true, halvert toleranse samanlikna med hovudvegar).
@@ -3676,17 +3754,20 @@ function getCoverageDrawPlans(key){
  }
  return chains.map(ch=>buildCoveragePlanForChain(key,ch,manual)).filter(p=>p&&(p.hasTrack||p.hasLoggedTrack||manual));
 }
-function getCoverageSummaryForKey(key){
- const plans=getCoverageDrawPlans(key);
- if(!plans.length)return null;
- return plans.reduce((a,p)=>{a.total+=(p.total||0);a.oneKm+=(p.oneKm||0);a.bothKm+=(p.bothKm||0);a.hasTrack=a.hasTrack||p.hasTrack;a.hasLoggedTrack=a.hasLoggedTrack||p.hasLoggedTrack;a.manualFull=a.manualFull||p.manualFull;return a},{total:0,oneKm:0,bothKm:0,hasTrack:false,hasLoggedTrack:false,manualFull:false,plans});
-}
-function getCoverageDrawPlan(key){
- const plans=getCoverageDrawPlans(key);
+function getCoverageDrawPlan(key,plans=getCoverageDrawPlans(key)){
  if(!plans.length)return null;
  if(plans.length===1)return plans[0];
- const sum=getCoverageSummaryForKey(key);
- return {...plans[0],plans,total:sum.total,oneKm:sum.oneKm,bothKm:sum.bothKm,hasTrack:sum.hasTrack,hasLoggedTrack:sum.hasLoggedTrack,manualFull:sum.manualFull};
+ const summary={...plans[0],plans,total:0,oneKm:0,bothKm:0,hasTrack:false,hasLoggedTrack:false,manualFull:false};
+ for(const plan of plans){
+  summary.total+=plan.total;
+  summary.oneKm+=plan.oneKm;
+  summary.bothKm+=plan.bothKm;
+  summary.hasTrack||=plan.hasTrack;
+  summary.hasLoggedTrack||=plan.hasLoggedTrack;
+  summary.manualFull||=plan.manualFull;
+ }
+ summary.totalKm=summary.oneKm+summary.bothKm;
+ return summary;
 }
 function drawCoverageIntervals(targetMap,plan,intervals,col,weight,opacity,bounds,opts={}){
  let drew=false;
@@ -3709,8 +3790,8 @@ function coverageDrawOptionsForKey(key,opts={}){
  const status=opts.status||getRoadStatus(key),oneAsDone=status==='done'||_isOneWayKey(key);
  return oneAsDone?{...opts,status,oneColor:'#43a047'}:{...opts,status};
 }
-function drawCoveragePlans(targetMap,key,bounds,opts={}){
- const plans=getCoverageDrawPlans(key);let drew=false,oneKm=0,bothKm=0;
+function drawCoveragePlans(targetMap,key,bounds,opts={},plans=getCoverageDrawPlans(key)){
+ let drew=false,oneKm=0,bothKm=0;
  for(const plan of plans){
   const d1=opts.drawOne===false?false:drawCoverageIntervals(targetMap,plan,plan.one,opts.oneColor||'#f9a825',opts.oneWeight||7,opts.oneOpacity||.95,bounds,opts);
   const d2=opts.drawBoth===false?false:drawCoverageIntervals(targetMap,plan,plan.both,opts.bothColor||'#43a047',opts.bothWeight||8,opts.bothOpacity||.98,bounds,opts);
@@ -4031,8 +4112,9 @@ function updateProgressMap(opts={}){
  const historyStyle={weight:6,opacity:.82};
  const drawFallbackGeom=(key,col,status)=>{const parts=getGeomParts(geomCache[key]);if(!parts.length){missing++;return 0}drawPartsWithGapBridge(progressLayerGroup,parts,col,historyStyle.weight,historyStyle.opacity,bounds,250,{renderer:_progressRenderer,interactiveKey:key,popup:'progress',status});return calcPartsKm(parts)};
  const drawKeyCoverage=(key,fallbackCol)=>{
-  const fallbackStatus=fallbackCol==='#43a047'?'done':'oneway',status=getRoadStatus(key)||fallbackStatus,oneAsDone=status==='done'||_isOneWayKey(key);
-  const cov=drawCoveragePlans(progressLayerGroup,key,bounds,coverageDrawOptionsForKey(key,{renderer:_progressRenderer,oneWeight:historyStyle.weight,oneOpacity:historyStyle.opacity,bothWeight:historyStyle.weight,bothOpacity:historyStyle.opacity,drawOne:oneAsDone?settings.progressShowDone:settings.progressShowOneway,drawBoth:settings.progressShowDone,interactiveKey:key,popup:'progress',status}));
+  const plans=getCoverageDrawPlans(key);
+  const fallbackStatus=fallbackCol==='#43a047'?'done':'oneway',status=getRoadStatus(key,plans)||fallbackStatus,oneAsDone=status==='done'||_isOneWayKey(key);
+  const cov=drawCoveragePlans(progressLayerGroup,key,bounds,coverageDrawOptionsForKey(key,{renderer:_progressRenderer,oneWeight:historyStyle.weight,oneOpacity:historyStyle.opacity,bothWeight:historyStyle.weight,bothOpacity:historyStyle.opacity,drawOne:oneAsDone?settings.progressShowDone:settings.progressShowOneway,drawBoth:settings.progressShowDone,interactiveKey:key,popup:'progress',status}),plans);
   if(cov.drew){partialSnap++;return{green:cov.bothKm+(oneAsDone?cov.oneKm:0),orange:oneAsDone?0:cov.oneKm,drew:true}}
   if(status==='done')return{green:drawFallbackGeom(key,'#43a047','done'),orange:0,drew:false};
   return{green:0,orange:drawFallbackGeom(key,'#f9a825','oneway'),drew:false};
@@ -4135,47 +4217,66 @@ async function updateFromCenter(force=false,centerLat=null,centerLon=null){
  if(!c){if(force)setMessage('Ingen GPS-posisjon eller manuell kartmarkør. Start GPS eller sett manuell markør i ⋯-menyen.','notice');renderAllViews();return}
  const fylkeSel=document.getElementById('fylke'),fylkeNr=// v2.0.49.2-fix4: gps.detectedFylke brukes ved auto-modus slik at NVDB-reload trigges ved fylkeskifte
  fylkeSel?.dataset.manual==='1'?(fylkeSel.value||null):(gps.detectedFylke||null);
- const lat=c.lat,lon=c.lon,requestedRadius=parseFloat(document.getElementById('radius').value)||currentProfile().radiusDefault,denseCityRule=getDenseCityRadiusRule(lat,lon,requestedRadius),radius=denseCityRule?DENSE_CITY_RADIUS_LIMIT_KM:requestedRadius;
+ const lat=c.lat,lon=c.lon,requestedRadius=Math.max(1,Math.min(100,parseFloat(document.getElementById('radius').value)||currentProfile().radiusDefault)),denseCityRule=getDenseCityRadiusRule(lat,lon,requestedRadius),radius=denseCityRule?DENSE_CITY_RADIUS_LIMIT_KM:requestedRadius;
   if(denseCityRule){const radiusEl=document.getElementById('radius');if(radiusEl)radiusEl.value=String(radius)}
+ if(!gps.watching){
+  updateCurrentSpeedLimit(lat,lon);
+  renderGPS();
+  refreshSpeedLimitsLight(lat,lon,force);
+ }
   const changed=radius!==lastCenterRadius||fylkeNr!==lastCenterFylke;
  // v2.0.30: avstandssjekk FØR loadTile. Tidligere åpnet vi IDB-transaksjon på hver onPos selv om
  // vi var langt under reload-grensen — unødvendig disk-I/O under kjøring.
- if(!force&&!changed&&lastCenter){const dist=dM(lastCenter[0],lastCenter[1],lat,lon)/1000;if(dist<getReloadDistKm()){if(gps.watching)scheduleActiveTabLightRender(900,{allowMap:false});else{updateDistancesAndActiveRoad();renderAllViews()}return}}
+ if(!force&&!changed&&lastCenter){const dist=dM(lastCenter[0],lastCenter[1],lat,lon)/1000;if(dist<getReloadDistKm(radius)){if(gps.watching)scheduleActiveTabLightRender(900,{allowMap:false});else{updateDistancesAndActiveRoad();renderAllViews()}return}}
  if(nvdbLoading){if(force||changed)_pendingNvdbRefresh={force,centerLat:lat,centerLon:lon};return}
- const generation=_dataGeneration;
+ const generation=_dataGeneration,filterRevision=roadFilterRevision;
  nvdbLoading=true;document.getElementById('road-list').innerHTML='<div class="loading">Laster vegnett…</div>';setMessage(c.manual?'Laster vegnett rundt manuell markør…':(denseCityRule?`${denseCityRule.name}: tett vegnett, radius satt til ${DENSE_CITY_RADIUS_LIMIT_KM} km for komplett lasting.`:''));
  try{
+  const tile=roadTileForArea(lat,lon,radius,fylkeNr);
   let countyHit=fylkeNr?await loadCountyRoadsForArea(lat,lon,radius,fylkeNr):null;
-  let newRoads=countyHit?countyHit.data:((!force||offlineMode)?await loadTile(lat,lon,radius,fylkeNr):null);
-  const cachedRoads=force&&!offlineMode?await loadTile(lat,lon,radius,fylkeNr):null;
+  const cachedRoads=countyHit?null:await loadTile(tile.key);
+  let newRoads=countyHit?countyHit.data:(!force||offlineMode?cachedRoads:null);
+  let legacyOffline=false;
+  if(!newRoads&&offlineMode){
+   newRoads=await loadTile(legacyTileKey(lat,lon,radius,fylkeNr));
+   legacyOffline=!!newRoads;
+  }
   if(!newRoads){
-   if(offlineMode){document.getElementById('road-list').innerHTML='<div class="loading" style="color:#f9a825">✈️ Offline-modus – ingen cache for dette området.<br>Last ned fylkets vegnett først via menyen.</div>';nvdbLoading=false;maybeWarnCountyCacheUpdate(fylkeNr,countyHit);updateProgressMap();return}
+   if(offlineMode){
+    if(generation!==_dataGeneration||filterRevision!==roadFilterRevision)return;
+    const ref=extraKvgsvReferenceCategory();
+    const msg=ref?`Ingen offline-cache for KV-GSV langs ${ref}V her. Last ned fylkets vegnett med dette filteret når du er på nett.`:'Offline-modus – ingen cache for dette området. Last ned fylkets vegnett først via menyen.';
+    setAreaRoads([]);lastCenter=null;
+    renderAllViews();document.getElementById('road-list').innerHTML=`<div class="loading" style="color:#f9a825">${esc(msg)}</div>`;setMessage(msg,'notice');
+    return;
+   }
    for(let attempt=1;attempt<=3;attempt++){
-    try{newRoads=await loadRoadsAround(lat,lon,radius,fylkeNr);break}
+    try{newRoads=await loadRoadsAround(tile.lat,tile.lon,tile.radius,fylkeNr);break}
     catch(e){
      const status=parseInt((e.message||'').replace(/[^0-9]/g,''))||0,retry=status===0||status===429||(status>=500&&status<=599);
-     if(!retry||attempt===3){if(cachedRoads){newRoads=cachedRoads;setMessage('Live oppdatering feilet, viser sist lagrede data for området.','notice');break}throw e}
+     if(!retry||attempt===3){
+      if(!cachedRoads&&fylkeNr)countyHit=await loadCountyRoadsForArea(lat,lon,radius,fylkeNr,{allowLegacy:true});
+      newRoads=cachedRoads||countyHit?.data;
+      if(!newRoads)throw e;
+      setMessage('Live oppdatering feilet, viser sist lagrede data for området.','notice');
+      break;
+     }
      await new Promise(r=>setTimeout(r,attempt*2000))
     }
    }
-   if(generation!==_dataGeneration)return;
-   await saveTile(lat,lon,radius,fylkeNr,newRoads).catch(e=>setMessage('Vegnettet er hentet, men kunne ikke lagres offline: '+(e?.message||e),'error'));
+   if(generation!==_dataGeneration||filterRevision!==roadFilterRevision)return;
+   if(!countyHit&&newRoads!==cachedRoads)await saveTile(tile.key,newRoads).catch(e=>setMessage('Vegnettet er hentet, men kunne ikke lagres offline: '+(e?.message||e),'error'));
   }
-  if(generation!==_dataGeneration)return;
-  roads=countyHit?countyHit.area:applySearchRadiusView(newRoads,lat,lon,radius);invalidateKvgsvLangsCache();
+  if(generation!==_dataGeneration||filterRevision!==roadFilterRevision)return;
+  setAreaRoads(countyHit?countyHit.area:applySearchRadiusView(newRoads,lat,lon,radius));
   // Ferjer må få status før neste GPS-punkt kan velge en ny aktiv veg.
   cacheGeomForTrackedRoads(roads);
-  try{
-   const slKey=`${lat.toFixed(4)},${lon.toFixed(4)},${radius},${fylkeNr||''}`;
-   if(!offlineMode&&slKey!==lastSpeedLimitFetchKey){speedLimits=await loadSpeedLimitsAround(lat,lon,radius,fylkeNr);lastSpeedLimitFetchKey=slKey;lastSpeedLimitRefreshPos=[lat,lon]}
-  }catch(e){console.warn('Fartsgrense 105 ble ikke oppdatert',e)}
-  if(generation!==_dataGeneration)return;
-  updateCurrentSpeedLimit(lat,lon);
   updateDistancesAndActiveRoad();
   lastCenter=[lat,lon];lastCenterRadius=radius;lastCenterFylke=fylkeNr;
   renderAllViews();
   if(countyHit&&countyHit.stale)maybeWarnCountyCacheUpdate(fylkeNr,countyHit);
-  if(!roads.length)setMessage(`Ingen E/R/F-veger funnet innen ${radius} km.`,'notice')
+  if(legacyOffline)setMessage('Bruker eldre lokal rute. Den kan dekke bare deler av valgt område.','notice');
+  else if(!roads.length)setMessage(`Ingen veger i valgte kategorier innen ${radius} km.`,'notice')
  }catch(e){console.error(e);setMessage('Feil ved lasting av vegnett: '+e.message,'error');document.getElementById('road-list').innerHTML='<div class="loading" style="color:#f66">Feil ved lasting – trykk Oppdater.</div>';updateProgressMap()}finally{nvdbLoading=false;if(_pendingNvdbRefresh){const p=_pendingNvdbRefresh;_pendingNvdbRefresh=null;setTimeout(()=>updateFromCenter(p.force,p.centerLat,p.centerLon).catch(e=>console.warn('Kølagt NVDB-oppdatering feilet',e)),250)}}
 }
 function refreshCurrentCenter(close=true){const c=currentFetchCenter();if(close)closeMenu();return updateFromCenter(true,c?.lat,c?.lon)}
@@ -4196,7 +4297,9 @@ async function resetAll(){
     tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error('Nullstilling avbrutt'));
    });
   }
-  roads=[];speedLimits=[];currentSpeedLimit=null;lastSpeedLimitFetchKey='';lastSpeedLimitRefreshPos=null;speedLimitRefreshInFlight=false;speedLimitStartRefreshPending=false;
+  speedLimitRequest?.controller.abort();
+  speedLimitRequest=null;lastSpeedLimitArea=null;speedLimitRetryAfter=0;speedLimitStartRefreshPending=false;
+  setAreaRoads([]);speedLimits=[];currentSpeedLimit=null;
   drivenKeys.clear();oneWayKeys.clear();skipKeys.clear();deletedGeomKeys.clear();selectedTableKeys.clear();
   visitLog={};geomCache={};routeLog={};roadComments={};directionState={};asphaltPlan=[];
   _countyCacheMem.clear();_storageFailures.clear();invalidateKvgsvLangsCache();
@@ -4263,6 +4366,7 @@ async function startOfflineDownload(){
  if(!HAS_INDEXED_DB){setMessage('Offline-cache er ikke tilgjengelig her.','notice');return}
  updateOfflineDialogLabels();
  const fylkeNr=document.getElementById('dl-fylke').value,tileRad=parseInt(document.getElementById('dl-radius').value)||10,tiles=generateTileGrid(fylkeNr,tileRad),name=fylkeName(fylkeNr)||`fylke ${fylkeNr}`;
+ if(!activeRoadFetchRefs()){document.getElementById('dl-status').textContent='Velg minst én vegkategori før nedlasting.';return}
  if(!tiles.length){document.getElementById('dl-status').textContent='Ukjent fylke';return}
  if(!confirm(`Laste ned vegnett for hele ${name}?\n\nDette kan ta litt tid og bruke mye data. WiFi er anbefalt. Appen lagrer én fylkes-cache og varsler om oppdatering etter 14 dager.${networkWarningText()}`))return;
  dlAbort=false;
@@ -4277,8 +4381,9 @@ async function startOfflineDownload(){
   if(dlAbort)break;
   let tileData=null;
   try{
-   tileData=await loadTile(lat,lon,tileRad,fylkeNr);
-   if(!tileData){tileData=await loadRoadsAround(lat,lon,tileRad,fylkeNr);await saveTile(lat,lon,tileRad,fylkeNr,tileData||[])}
+   const tile=roadTileForArea(lat,lon,tileRad,fylkeNr);
+   tileData=await loadTile(tile.key,COUNTY_CACHE_TTL_MS);
+   if(!tileData){tileData=await loadRoadsAround(tile.lat,tile.lon,tile.radius,fylkeNr);await saveTile(tile.key,tileData)}
    done++;
   }catch(e){errors++;done++;await new Promise(r=>setTimeout(r,500))}
   if(Array.isArray(tileData)&&tileData.length){
@@ -4288,7 +4393,8 @@ async function startOfflineDownload(){
   document.getElementById('dl-status').textContent=`${done}/${tiles.length} deler · ${allRoads.length} treff · ${errors} feil`;
  }
  const countyData=filterFetchedRoadsByActiveCategories(mergeRoads(allRoads));
- const before=Object.keys(geomCache).length,autoSkipped=cacheGeomForTrackedRoads(countyData);roadsAdded=Math.max(0,Object.keys(geomCache).length-before);
+ const tracked=extraKvgsvReferenceCategory()?countyData.filter(roadPassesSelectedDownloadCategory):countyData;
+ const before=Object.keys(geomCache).length,autoSkipped=cacheGeomForTrackedRoads(tracked);roadsAdded=Math.max(0,Object.keys(geomCache).length-before);
  if(!dlAbort&&errors===0){
   const saved=await saveCountyCache(fylkeNr,countyData,{tiles:done,errors:0,tileRadiusKm:tileRad,complete:true});
   if(!saved)throw new Error('Fylkesnettet kunne ikke lagres. Kontroller ledig lagringsplass og prøv igjen.');
@@ -4310,7 +4416,7 @@ async function updateOfflineCacheInfo(){
  if(!HAS_INDEXED_DB){if(info)info.textContent='IndexedDB er ikke tilgjengelig';btn.textContent='💾 Offline utilgj.';return}
  const f=document.getElementById('dl-fylke')?.value||document.getElementById('fylke')?.value||'15',name=fylkeName(f)||`fylke ${f}`,count=await countTilesByFylke(f),meta=await getCountyCacheMeta(f);
  if(meta?.ts){
-  const days=Math.floor((Date.now()-meta.ts)/86400000),fresh=Date.now()-meta.ts<=COUNTY_CACHE_TTL_MS;
+  const days=Math.floor((Date.now()-meta.ts)/86400000),fresh=meta.roadModel===ROAD_MODEL_VERSION&&Date.now()-meta.ts<=COUNTY_CACHE_TTL_MS;
   if(info)info.textContent=`💾 ${name}: ${meta.count||0} strekninger i fylkes-cache · ${days} dager gammel${count?` · ${count} lokale deler`:''}`;
   if(btn)btn.textContent=fresh?'💾 Fylke-cache OK':'💾 Oppdater vegnett';
  }else{
@@ -4329,15 +4435,24 @@ document.getElementById('fylke').addEventListener('change',function(){this.datas
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 document.getElementById('fit-map-btn').addEventListener('click',async()=>{await ensureLeafletReady();if(!map)initMap();if(map){safeInvalidate(map);updateMapOverlay(true)}});
 document.getElementById('fit-progress-btn').addEventListener('click',async()=>{await ensureLeafletReady();if(!progressMap)initProgressMap();if(progressMap){safeInvalidate(progressMap);updateProgressMap({fit:true})}});
-function refreshAfterCategoryChange(){
- invalidateKvgsvLangsCache();saveSettings();applySettingsToUI();renderAllViews();
+function refreshAfterCategoryChange(reload=true){
+ if(reload)++roadFilterRevision;
+ if(_kvgsvReferenceRoads.length||extraKvgsvReferenceCategory()){
+  setAreaRoads(filterFetchedRoadsByActiveCategories([...roads,..._kvgsvReferenceRoads]));
+ }else invalidateKvgsvLangsCache();
+ if(gps.activeKey&&!keyPassesCategoryFilter(gps.activeKey))finalizeActiveRoad();
+ saveSettings();applySettingsToUI();renderAllViews();
  const c=currentFetchCenter();
- if(c&&activeRoadFetchRefs())updateFromCenter(true,c.lat,c.lon);
+ if(reload&&c&&activeRoadFetchRefs())updateFromCenter(true,c.lat,c.lon);
 }
 document.querySelectorAll('.cat-chip').forEach(btn=>btn.addEventListener('click',()=>{const cat=btn.dataset.cat;settings.categoryFilter[cat]=!settings.categoryFilter[cat];btn.classList.toggle('active',settings.categoryFilter[cat]);refreshAfterCategoryChange()}));
 document.getElementById('cat-all').addEventListener('click',()=>{settings.categoryFilter={E:true,EGSV:true,R:true,RGSV:true,F:true,FGSV:true,K:true,KGSV:true};refreshAfterCategoryChange()});
 document.getElementById('cat-none').addEventListener('click',()=>{settings.categoryFilter={E:false,EGSV:false,R:false,RGSV:false,F:false,FGSV:false,K:false,KGSV:false};refreshAfterCategoryChange()});
-document.querySelectorAll('.kgsv-langs-btn').forEach(btn=>btn.addEventListener('click',()=>{const kat=btn.dataset.langs;settings.kvgsvLangsKat=(settings.kvgsvLangsKat===kat)?'':kat;invalidateKvgsvLangsCache();saveSettings();applySettingsToUI();renderAllViews();}));
+document.querySelectorAll('.kgsv-langs-btn').forEach(btn=>btn.addEventListener('click',()=>{
+ const before=activeRoadCacheSignature(),kat=btn.dataset.langs;
+ settings.kvgsvLangsKat=settings.kvgsvLangsKat===kat?'':kat;
+ refreshAfterCategoryChange(before!==activeRoadCacheSignature());
+}));
 document.getElementById('table-filter').addEventListener('input',()=>{renderRoads();renderStats();renderTable();updateMapOverlay(false)});
 document.getElementById('table-sort').addEventListener('change',renderTable);
 document.getElementById('table-select-all').addEventListener('click',()=>{const rows=getFilteredTableRows();rows.forEach(r=>selectedTableKeys.add(r.key));saveSelectedTableKeys();renderTable();setMessage(`${rows.length} rader valgt.`,'success')});
@@ -4356,7 +4471,7 @@ document.getElementById('btn-backgroundgps').addEventListener('click',async()=>{
 // v2.0.32: toggle for sideanlegg-filter. AV (default) = filtrer bort rasteplasser, P-plasser
 // og lignende fra NVDB-vegnettet. PÅ = inkluder dem (for spesialtilfeller).
 document.getElementById('btn-sideanlegg')?.addEventListener('click',async()=>{
- settings.includeSideanlegg=!settings.includeSideanlegg;
+ ++roadFilterRevision;settings.includeSideanlegg=!settings.includeSideanlegg;
  saveSettings();applySettingsToUI();closeMenu();
  setMessage(settings.includeSideanlegg?'Sideanlegg vises nå i vegnettet (rasteplasser, P-plasser osv).':'Sideanlegg filtreres ut fra vegnettet (rasteplasser, P-plasser osv).','success');
  // Tving full reload av området slik at endringen får umiddelbar effekt
@@ -4366,7 +4481,7 @@ document.getElementById('btn-sideanlegg')?.addEventListener('click',async()=>{
 });
 
 document.getElementById('btn-ramper')?.addEventListener('click',async()=>{
- settings.includeRamper=!settings.includeRamper;
+ ++roadFilterRevision;settings.includeRamper=!settings.includeRamper;
  saveSettings();applySettingsToUI();closeMenu();
  setMessage(settings.includeRamper?'Ramper og avkjørsler vises nå i vegnettet.':'Ramper filtreres ut fra vegnettet.','success');
  lastCenter=null;lastCenterRadius=null;lastCenterFylke=null;
@@ -4670,7 +4785,7 @@ function _asphaltDateIso(v){
  const dt=new Date(v);return isNaN(dt)?null:dt.toISOString();
 }
 function _asphaltHeaderMap(row){
- const map={};(row||[]).forEach((v,i)=>{const k=_asphaltHeaderKey(v);if(k&&!map[k])map[k]=i});return map;
+ const map={};(row||[]).forEach((v,i)=>{const k=_asphaltHeaderKey(v);if(k&&map[k]===undefined)map[k]=i});return map;
 }
 function _asphaltCell(row,map,...keys){
  for(const k of keys){const idx=map[_asphaltHeaderKey(k)];if(idx!==undefined)return row[idx]}
@@ -4681,27 +4796,15 @@ function _asphaltPhysicalRowIndex(ws,jsonRowIndex){
  return start+jsonRowIndex;
 }
 async function ensureXlsxReady(){
- if(window.XLSX?.read)return true;
  const urls=['./vendor/xlsx.full.min.js','https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'];
- for(const src of urls){
-  try{
-   await new Promise((resolve,reject)=>{
-    const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s);
-   });
-   if(window.XLSX?.read)return true;
-  }catch(e){}
+ try{
+  return await tryLoadFirstWorkingScript(urls,()=>typeof window.XLSX?.read==='function','SheetJS');
+ }catch(e){
+  throw new Error('Excel-biblioteket SheetJS mangler. Legg xlsx.full.min.js i vendor-mappen eller bruk nettilgang.');
  }
- throw new Error('Excel-biblioteket SheetJS mangler. Legg xlsx.full.min.js i vendor-mappen eller bruk nettilgang.');
 }
-function parseMrfkAsphaltWorkbook(wb,fileName){
- const sheetName=wb.SheetNames[0],ws=wb.Sheets[sheetName];
- const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
- let headerRow=-1,map=null;
- for(let i=0;i<Math.min(rows.length,15);i++){
-  const m=_asphaltHeaderMap(rows[i]);
-  if(['nr','fras','frads','fram','tils','tilds','tilm'].every(k=>m[k]!==undefined)){headerRow=i;map=m;break}
- }
- if(headerRow<0)throw new Error('Fant ikke Excel-header med Nr, FraS, FraDs, FraM, TilS, TilDs og TilM.');
+function parseMrfkAsphaltWorkbook(sheetName,ws,rows,headerRow,fileName){
+ const map=_asphaltHeaderMap(rows[headerRow]);
  const out=[],summary={rowsScanned:rows.length,planRowsWithRoadNumber:0,completeVsr:0,incompleteVsr:0,missingRoadNumber:0,completed:0,inProgress:0,deferred:0,planned:0,columnA:{LIGHT_GREEN:0,DARK_GREEN:0,YELLOW:0,RED:0,ORANGE:0,UNKNOWN:0},statusDiagnostics:[]};
  for(let i=headerRow+1;i<rows.length;i++){
   const row=rows[i]||[],nr=_asphaltNum(_asphaltCell(row,map,'Nr'));
@@ -4804,10 +4907,8 @@ function assertNordlandColumnARegression(){
  if(result.state!=='PLANNED'||result.completed)throw new Error('Nordland-status brukte annen kolonne enn A.');
  return result;
 }
-function parseNordlandAsphaltWorkbook(wb,fileName){
+function parseNordlandAsphaltWorkbook(sheetName,ws,rows,fileName){
  assertNordlandColumnARegression();
- const sheetName=wb.SheetNames[0],ws=wb.Sheets[sheetName];
- const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
  const records=[],issues=[];let map=null,sourceSection='';
  const summary={rowsScanned:rows.length,planRowsWithRoadNumber:0,completeVsr:0,incompleteVsr:0,missingRoadNumber:0,finished:0,unfinished:0,completed:0,completedLightGreen:0,completedDarkGreen:0,inProgress:0,deferred:0,planned:0,unknownNoKnownFill:0,statusFallback:0,columnA:{LIGHT_GREEN:0,DARK_GREEN:0,YELLOW:0,RED:0,ORANGE:0,UNKNOWN:0},statusDiagnostics:[]};
  for(let i=0;i<rows.length;i++){
@@ -4861,17 +4962,22 @@ function parseNordlandAsphaltWorkbook(wb,fileName){
 }
 function parseAsphaltWorkbook(buffer,fileName){
  const wb=window.XLSX.read(buffer,{type:'array',cellDates:true,cellStyles:true});
- let hasMrfk=false,hasNordland=false;
+ let nordlandSheet=null;
  for(const sheetName of wb.SheetNames){
-  const rows=window.XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,raw:true,defval:null});
-  for(const row of rows){
-   const m=_asphaltHeaderMap(row);
-   if(['nr','fras','frads','fram','tils','tilds','tilm'].every(k=>m[k]!==undefined))hasMrfk=true;
-   if(_nordlandHeaderColumns(row))hasNordland=true;
+  const ws=wb.Sheets[sheetName];
+  const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+  for(let i=0;i<rows.length;i++){
+   const row=rows[i],map=_asphaltHeaderMap(row);
+   if(['nr','fras','frads','fram','tils','tilds','tilm'].every(k=>map[k]!==undefined)){
+    return parseMrfkAsphaltWorkbook(sheetName,ws,rows,i,fileName);
+   }
+   if(!nordlandSheet&&_nordlandHeaderColumns(row))nordlandSheet={sheetName,ws,rows};
   }
  }
- if(hasMrfk)return parseMrfkAsphaltWorkbook(wb,fileName);
- if(hasNordland)return parseNordlandAsphaltWorkbook(wb,fileName);
+ if(nordlandSheet){
+  const {sheetName,ws,rows}=nordlandSheet;
+  return parseNordlandAsphaltWorkbook(sheetName,ws,rows,fileName);
+ }
  throw new Error('Ukjent asfaltplan-format. Fant verken MRFK- eller Nordland-header.');
 }
 function _cmpSD(aS,aD,bS,bD){
@@ -4905,9 +5011,23 @@ function _clipNvdbSegment(seg,wantFrom,wantTo){
  const s0=Math.min(Number(seg.fra),Number(seg.til)),s1=Math.max(Number(seg.fra),Number(seg.til));
  const o0=Math.max(s0,Math.min(wantFrom,wantTo)),o1=Math.min(s1,Math.max(wantFrom,wantTo));
  if(!(o1>o0))return[];
- const denom=Math.max(1e-9,s1-s0),f0=(o0-s0)/denom,f1=(o1-s0)/denom,out=[];
- for(const part of seg.parts||[]){
-  const c=_clipLineFraction(part,f0,f1);if(c.length>=2)out.push(c);
+ const f0=(o0-s0)/(s1-s0),f1=(o1-s0)/(s1-s0),parts=seg.parts||[],out=[];
+ if(parts.length===1){
+  const clipped=_clipLineFraction(parts[0],f0,f1);
+  return clipped.length>=2?[clipped]:[];
+ }
+ // Meterintervallet gjelder hele segmentet, også når geometrien har flere deler.
+ const lengths=parts.map(part=>calcPartsKm([part])*1000);
+ const total=lengths.reduce((sum,length)=>sum+length,0);
+ let offset=0;
+ for(const [index,part] of parts.entries()){
+  const length=lengths[index];
+  const start=Math.max(0,f0*total-offset),end=Math.min(length,f1*total-offset);
+  if(end>start){
+   const clipped=_clipLineFraction(part,start/length,end/length);
+   if(clipped.length>=2)out.push(clipped);
+  }
+  offset+=length;
  }
  return out;
 }
@@ -4921,7 +5041,7 @@ async function fetchAsphaltNvdbRoad(nr,countyId='15'){
  let url=base.toString(),pages=0,out=[];
  while(url&&pages<100){
   pages++;
-  const resp=await fetch(url,{headers:{'X-Client':'kjorelogg-asfaltplan/v26.1.03','Accept':'application/json'}});
+  const resp=await fetch(url,{headers:{'X-Client':'kjorelogg-asfaltplan/'+APP_VERSION,'Accept':'application/json'}});
   if(!resp.ok)throw new Error(`NVDB ${resp.status} for FV${nr}`);
   const data=await resp.json();
   for(const s of(data.objekter||[])){
@@ -4932,6 +5052,11 @@ async function fetchAsphaltNvdbRoad(nr,countyId='15'){
    if(!parts.length)continue;
    const fra=Number(st.fra_meter),til=Number(st.til_meter);
    if(!Number.isFinite(fra)||!Number.isFinite(til))continue;
+   // NVDB leverer koordinater i lenkeretning, mens planens meter øker i metreringsretning.
+   if(st.retning==='MOT'){
+    parts.reverse();
+    for(const part of parts)part.reverse();
+   }
    out.push({
     nr:Number(nr),s:Number(st.strekning)||0,d:Number(st.delstrekning)||0,
     fra,til,parts,typeVeg:String(s.typeVeg||''),kortform:String(vr.kortform||''),
@@ -5096,7 +5221,7 @@ async function bootApp(){
  repairGeomCacheFromRoads();
  applySettingsToUI();updateProgressReportUi();renderGPS();showSecureWarning();renderStats();renderRoads();renderTable();updateOfflineCacheInfo().catch(e=>console.warn('Cacheinformasjon feilet',e));
  const bootFylke=document.getElementById('fylke')?.value||document.getElementById('dl-fylke')?.value;
- if(bootFylke){getCountyCacheMeta(bootFylke).then(meta=>{if(meta?.ts&&Date.now()-meta.ts>COUNTY_CACHE_TTL_MS)maybeWarnCountyCacheUpdate(bootFylke,{stale:true,ts:meta.ts,meta})}).catch(()=>{})}
+ if(bootFylke){getCountyCacheMeta(bootFylke).then(meta=>{if(meta?.ts&&(meta.roadModel!==ROAD_MODEL_VERSION||Date.now()-meta.ts>COUNTY_CACHE_TTL_MS))maybeWarnCountyCacheUpdate(bootFylke,{stale:true,ts:meta.ts,meta})}).catch(()=>{})}
  if(isNativeApp()){
   console.log('Auto-backup klar: '+AUTO_BACKUP_DIR+' (behold siste '+AUTO_BACKUP_KEEP+' filer)');
  }
@@ -5115,6 +5240,6 @@ function kgsvV9IsTrafG(v){const s=kgsvV9Upper(v);return /(^|[^A-Z])G([^A-Z]|$)/.
 function kgsvV9IsGsvType(v){const s=kgsvV9Upper(v);return s.includes('GANG- OG SYKKEL')||s.includes('GANG OG SYKKEL')||s.includes('GANG/SYKKEL')||s.includes('SYKKELVEG')||s.includes('SYKKELVEI')||s.includes('GANGVEG')||s.includes('GANGVEI')}
 function kgsvV9HasKvG(v){const s=kgsvV9Text(v);return /\bKV\s*\d+\s+G\b/i.test(s)||/\bK\s*V\s*\d+\s+G\b/i.test(s)||/^Kv(?:\d+-)?\d+G/i.test(s)}
 function kgsvV9IsKvGsv(r){if(!r||String(r.kat||'').toUpperCase()!=='K')return false;const txt=String(r.veg||r.key||'');return kgsvV9IsTrafG(r.trafikantgruppe)||kgsvV9HasKvG(txt)||kgsvV9HasKvG(r.kortform)||kgsvV9IsGsvType(r.typeVegText||r.typeVeg||r.typeveg||r.objekttype||r.navn||r.detNavn)}
-function roadFilterKey(r){const kat=String(r?.kat||'').toUpperCase();if(kat==='K'){return kgsvV9IsKvGsv(r)?'KGSV':'K';}return kat+(!!r?.gsv?'GSV':'')}
+function roadFilterKey(r){const kat=String(r?.kat||'').toUpperCase();if(kat==='K'){return kgsvV9IsKvGsv(r)?'KGSV':'K';}return kat+(gsvFromTrafficGroup(r?.trafikantgruppe,!!r?.gsv)?'GSV':'')}
 /* === /KV-GSV v9 === */
 </script></body></html>
