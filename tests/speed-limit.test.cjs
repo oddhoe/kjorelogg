@@ -120,3 +120,29 @@ test('Known, three-digit and unknown limits update the same accessible sign', ()
     assert.equal(marks.has('three-digits'), speed === 110);
   }
 });
+
+test('A stationary GPS fix shows the fetched limit when NVDB ends with an empty page that still links onward', async () => {
+  const requests = [];
+  const next = 'https://example.test/next';
+  const {run} = load(async url => {
+    requests.push(url);
+    return requests.length === 1 ? response([object(70)], next) : response([], next);
+  });
+  run('gps.watching=true; gps.speed=0; gps.heading=null; gps.lastPos=[63.10015,7.705]');
+  await run('refreshSpeedLimitsLight(...gps.lastPos,true)');
+  assert.equal(requests.length, 2);
+  assert.equal(run('currentSpeedLimit'), 70);
+});
+
+test('A repeated nonempty page is rejected without replacing the last complete lookup', async () => {
+  const repeated = 'https://example.test/repeated';
+  let calls = 0;
+  const {run} = load(async () => {
+    calls++;
+    return calls === 1 ? response([object(70)]) : response([object(50)], repeated);
+  });
+  await run('refreshSpeedLimitsLight(63.1,7.705)');
+  await run('refreshSpeedLimitsLight(63.1,7.705,true)');
+  assert.equal(calls, 3);
+  assert.equal(run('currentSpeedLimit'), 70);
+});
