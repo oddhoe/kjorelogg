@@ -87,7 +87,7 @@ test('An online update never reuses a neighbouring legacy tile or saves a failed
   gps.watching=true;
   loadCountyRoadsForArea=async()=>null;
   const reads=[],writes=[],messages=[],requests=[];
-  const legacyKey=legacyTileKey(63.12,7.75,3,null);
+  const legacyKey='nvdb_t12_703_39_r3_f0_cF';
   const tile=roadTileForArea(63.12,7.75,3,null);
   let available=new Map([[legacyKey,[]]]);
   loadTile=async key=>{reads.push(key);return available.get(key)??null};
@@ -107,8 +107,10 @@ test('An online update never reuses a neighbouring legacy tile or saves a failed
   available.delete(tile.key);
   offlineMode=true;
   await updateFromCenter(true,63.12,7.75);
-  assert.deepEqual(reads.slice(-2),[tile.key,legacyKey]);
-  assert.ok(messages.at(-1).includes('eldre lokal rute'));
+  assert.equal(reads.at(-1),tile.key);
+  assert.ok(!reads.includes(legacyKey),'Old tiles do not distinguish all G/K/branches');
+  assert.equal(roads.length,0);
+  assert.match(messages.at(-1),/Velg det nedlastede fylket/);
  })()
 `));
 
@@ -144,24 +146,18 @@ test('Only roads in service are fetched and changing a filter discards a pending
   `);
 });
 
-test('County geometry from before the phase filter stays available offline', async () => run(`
+test('Old and empty counties do not masquerade as classified local road data, including offline', async () => run(`
  (async()=>{
-  const payload={data:[],ts:Date.now(),meta:{complete:true}};
+  const road={key:'Fv1_S1D1',kat:'F',parts:[[[7,63],[7.001,63]]]};
+  const payload={data:[road],ts:Date.now(),meta:{complete:true,roadModel:2}};
   loadCountyCache=async()=>payload;
   assert.equal(await loadCountyRoadsForArea(63,7,1,'15'),null);
-  document.getElementById=()=>({value:'1',dataset:{}});
-  gps.watching=true;gps.detectedFylke='15';
-  loadTile=async()=>null;
-  loadRoadsAround=async()=>{throw new Error('NVDB 400')};
-  saveTile=()=>assert.fail('Legacy county data must not replace an area tile');
-  setMessage=cacheGeomForTrackedRoads=updateDistancesAndActiveRoad=renderAllViews=()=>{};
-  await updateFromCenter(true,63,7);
-  assert.equal(lastCenterFylke,'15');
   offlineMode=true;
-  assert.deepEqual((await loadCountyRoadsForArea(63,7,1,'15')).area,[]);
-  offlineMode=false;
-  payload.meta.roadModel=2;
-  assert.deepEqual((await loadCountyRoadsForArea(63,7,1,'15')).area,[]);
+  assert.equal(await loadCountyRoadsForArea(63,7,1,'15'),null);
+  payload.meta.roadModel=ROAD_MODEL_VERSION;
+  assert.equal((await loadCountyRoadsForArea(63,7,1,'15')).area.length,1);
+  payload.data=[];
+  assert.equal(await loadCountyRoadsForArea(63,7,1,'15'),null);
  })()
 `));
 
@@ -175,10 +171,10 @@ test('Explicit traffic groups override section numbers for main roads and older 
   await run(`
    (async()=>{
     let selected=await loadRoadsAround(59.12,6.05,1,'11');
-    assert.deepEqual(selected.map(r=>r.key),['Fv523_S2D101']);
+    assert.deepEqual(selected.map(r=>r.key),['Fv523_S2D101_K']);
     settings.categoryFilter={FGSV:true};
     selected=await loadRoadsAround(59.12,6.05,1,'11');
-    assert.deepEqual(selected.map(r=>r.key),['Fv523_S2D20','Fv523_S2D110']);
+    assert.deepEqual(selected.map(r=>r.key),['Fv523_S2D20_G','Fv523_S2D110']);
     geomCache['Fv523_S2D20']={kat:'F',trafikantgruppe:'G',gsv:false};
     geomCache['Fv523_S2D101']={kat:'F',trafikantgruppe:'K',gsv:true};
     assert.equal(_isOneWayKey('Fv523_S2D20'),true);

@@ -56,7 +56,8 @@ for(const kat of ['F','E','R']){
       offlineMode=true;
       settings.categoryFilter[kat]=true;
       assert.equal(activeCountyCacheKey('15'),refKey);
-      rememberCountyCache(refKey,{data:stored,ts:Date.now(),meta:{roadModel:ROAD_MODEL_VERSION}});
+      const cat=activeRoadCacheSignature(),categoryCounts=Object.fromEntries(activeRoadFilterKeys().map(key=>[key,stored.filter(r=>roadFilterKey(r)===key).length]));
+      rememberCountyCache(refKey,{data:stored,ts:Date.now(),meta:{cat,categoryCounts,complete:true,count:stored.length,roadModel:ROAD_MODEL_VERSION}});
       tiles.clear();
       await updateFromCenter(true,63,7.01);
       assert.deepEqual(visibleRoadsList().filter(r=>r.kat==='K').map(r=>r.nr),visible);
@@ -107,4 +108,17 @@ test('Changing the visible categories stops tracking the reference road before a
     assert.equal(_kvgsvReferenceRoads.length,0);
     assert.deepEqual(roads.map(r=>r.key),[path.key]);
   `,context);
+});
+
+test('KV-GSV along FV with FV-GSV visible still requires the reference carriageway', async()=>{
+ const data=[makeRoad('F',64,0),makeRoad('F',40,2000,true),makeRoad('K',7,20,true),makeRoad('K',9,2020,true)];
+ const context=createAppContext({assert,URL,fetch:async()=>({ok:true,json:async()=>({objekter:data})})});
+ await vm.runInContext(`(async()=>{
+  settings.categoryFilter={FGSV:true,KGSV:true};settings.kvgsvLangsKat='F';
+  assert.equal(extraKvgsvReferenceCategory(),'F');
+  const all=await loadRoadsAround(63,7.01,10,'15');
+  setAreaRoads(all);
+  assert.deepEqual(_kvgsvReferenceRoads.map(r=>r.nr),[64]);
+  assert.deepEqual(visibleRoadsList().map(r=>r.nr),[40,7]);
+ })()`,context);
 });
