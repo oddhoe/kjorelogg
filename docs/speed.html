@@ -35,6 +35,8 @@ body{position:fixed;inset:0;padding:calc(10px + var(--safeTop)) 12px calc(10px +
 .sign-row{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:nowrap;min-height:154px}
 .speed-sign{width:142px;height:142px;border-radius:50%;background:#fff;color:#111;border:14px solid #df1818;display:grid;place-items:center;font-size:56px;font-weight:900;box-shadow:0 12px 30px rgba(0,0,0,.35),inset 0 0 0 2px rgba(0,0,0,.05);font-variant-numeric:tabular-nums;transition:transform .15s ease,filter .15s ease}
 .speed-sign.unknown{color:#666;border-color:#777;font-size:48px}.speed-sign.blink{animation:blinkSign .55s steps(2,start) infinite}@keyframes blinkSign{0%,100%{transform:scale(1);filter:brightness(1);box-shadow:0 12px 30px rgba(0,0,0,.35)}50%{transform:scale(1.08);filter:brightness(1.2);box-shadow:0 12px 30px rgba(0,0,0,.35),0 0 28px 8px rgba(255,48,48,.65)}}
+.speed-sign.general-limit{border-color:#d6aa52;border-radius:24px;background:#fff5d9}
+.data-credit{color:var(--muted);font-size:11px;text-align:center}.data-credit a{color:inherit}
 .speed-sign.marine{background:#eaf7ff;color:#082033;border-color:#2aaeea;font-size:42px;letter-spacing:.08em}
 .speed-sign.marine.limit{font-size:56px;letter-spacing:0}
 .info-panel{display:grid;gap:10px;min-width:225px;max-width:320px;color:var(--muted);font-size:16px}
@@ -72,6 +74,7 @@ body{position:fixed;inset:0;padding:calc(10px + var(--safeTop)) 12px calc(10px +
       <div class="info-panel">
         <div class="info-line gps-line"><span>GPS</span><strong id="accuracyText">--</strong></div>
         <div class="info-line altitude-line"><span>Høyde</span><strong id="altitudeText">--</strong></div>
+        <div class="data-credit" id="dataCredit" hidden><span id="sourceDetail"></span> <a id="creditLink" target="_blank" rel="noopener noreferrer"></a></div>
       </div>
     </div>
   </section>
@@ -87,7 +90,7 @@ const SPEED_LIMIT_TYPE_ID=105, SPEED_LIMIT_PROP_ID=2021, SPEED_LIMIT_MAX_DIST_M=
 const SPEED_LIMIT_HEADING_MIN_SPEED_MPS=3, SPEED_LIMIT_HEADING_SOFT_DELTA_DEG=45;
 const SPEED_LIMIT_REFRESH_DISTANCE_M=500, SPEED_LIMIT_REFRESH_RADIUS_KM=0.9;
 const GPS_STALE_WARN_MS=30000, GPS_FORCE_RESTART_MS=60000, GPS_LONG_GAP_MS=15000;
-const OVERPASS_URLS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+const OVERPASS_URL='https://overpass.private.coffee/api/interpreter';
 const SPEED_UNIT_STORAGE_KEY='oddis-speed-unit';
 const SPEED_UNITS={
  kmh:{label:'km/t',speedFromMps:3.6,limitFromKmh:1,gaugeMax:140},
@@ -100,6 +103,7 @@ const MARINE_AREA_PRIMARY_TYPES=new Set(['Fjord','Sjøstykke','Havområde','Sund
 const MARINE_AREA_SECONDARY_TYPES=new Set(['Havn','Småbåthavn','Ankringsplass','Soneinndeling til havs','Fiskeplass i sjø']);
 
 const el={
+ sourcePanel:document.getElementById('dataCredit'),sourceDetail:document.getElementById('sourceDetail'),creditLink:document.getElementById('creditLink'),
  gpsDot:document.getElementById('gpsDot'), gpsStatus:document.getElementById('gpsStatus'),
  speedometer:document.getElementById('speedometer'), speed:document.getElementById('speed'), unit:document.getElementById('unitText'),
  speedSign:document.getElementById('speedSign'), roadText:document.getElementById('roadText'),
@@ -111,8 +115,10 @@ const el={
 let displayUnit=loadDisplayUnit();
 let gps={watching:false,watchId:null,lastPos:null,acc:null,speed:null,heading:null,altitude:null,altitudeAccuracy:null,courseSpeed:null,_lastFixTs:null,_lastTransientErrTs:0};
 let roadRefs=[],limitsByLink=new Map(),currentSpeedLimit=null,currentRoadLabel='';
-let lastSpeedLimitRefreshPos=null,speedLimitRefreshInFlight=false,speedLimitStartRefreshPending=false,osmEndpointIndex=0;
-let lastRoadFailure=null,roadLookupGeneration=0;
+let lastSpeedLimitRefreshPos=null,speedLimitRefreshInFlight=false,speedLimitStartRefreshPending=false;
+let lastRoadFailure=null,roadLookupGeneration=0,roadSource='',roadSnapshotTime=0,roadFromCache=false;
+let lastGeneralLookupTime=0;
+const osmRetryAt=new Map(),osmPending=new Set();
 let currentMarineAreaLabel='',currentMarineAreaType='',lastMarineAreaRefreshPos=null,marineAreaRefreshInFlight=false;
 let currentMarineSpeedLimitKn=null,currentMarineSpeedLimitLabel='',lastMarineSpeedLimitRefreshPos=null,marineSpeedLimitRefreshInFlight=false;
 let _wakeLockRef=null,_wakeLockOn=false,_gpsHealthTimer=null,_gpsStaleNotified=false;
@@ -142,7 +148,7 @@ function setDisplayUnit(nextUnit){
  syncUnitButtons();
  if(isMarineMode()){
   roadLookupGeneration++;speedLimitRefreshInFlight=false;lastRoadFailure=null;lastSpeedLimitRefreshPos=null;
-  currentSpeedLimit=null;currentRoadLabel='';limitsByLink.clear();roadRefs=[];
+  currentSpeedLimit=null;currentRoadLabel='';roadSource='';limitsByLink.clear();roadRefs=[];
   currentMarineSpeedLimitKn=null;currentMarineSpeedLimitLabel='';
   if(gps.lastPos){maybeRefreshMarineAreaLight(gps.lastPos[0],gps.lastPos[1],true);maybeRefreshMarineSpeedLimitLight(gps.lastPos[0],gps.lastPos[1],true)}
  }else{
@@ -190,10 +196,12 @@ function roadMatch(lat,lon,road,heading,radius){
    const delta=Number.isFinite(heading)?headingDelta(heading,bearing):0;
    // Bound the course penalty so a completed turn can outweigh the previous course.
    const angle=Math.min(delta,180-delta);
-   const score=dist+Math.max(0,angle-15)*0.2;
+   const opposesTraffic=Number.isFinite(heading)&&(
+    (road.oneWay===1&&delta>=135)||(road.oneWay===-1&&delta<=45));
+   const score=dist+Math.max(0,angle-15)*0.2+(opposesTraffic?20:0);
    if(!best||score<best.score){
     const fraction=(offsets[i-1]+t*(offsets[i]-offsets[i-1]))/road.length;
-    best={road,dist,score,bearing,fraction};
+    best={road,dist,score,bearing,fraction,opposesTraffic};
    }
   }
  }
@@ -462,17 +470,124 @@ async function refreshMarineSpeedLimitLight(lat,lon,force=false){
 }
 function maybeRefreshMarineSpeedLimitLight(lat,lon,force=false){refreshMarineSpeedLimitLight(lat,lon,force).catch(e=>console.warn(e))}
 
+const OSM_EUROPE_LAYER={
+ url:'https://services-eu1.arcgis.com/zci5bUiJ8olAal7N/arcgis/rest/services/OpenStreetMap_Highways_for_Europe/FeatureServer/0/query',
+ oid:'OBJECTID',extraFields:',motorcar,vehicle,area'
+};
+const OSM_ASIA_LAYER={
+ url:'https://services-ap1.arcgis.com/iA7fZQOnjY9D67Zx/arcgis/rest/services/OSM_AS_Highways/FeatureServer/0/query',
+ oid:'objectid',extraFields:''
+};
+function osmRegionalService(lat,lon){
+ // Stay inside the regional extracts. Other areas use the worldwide source.
+ if(lat>=42&&lat<=72&&lon>=-11&&lon<=32)return OSM_EUROPE_LAYER;
+ if(lat>=36&&lat<42&&lon>=-10&&lon<=22)return OSM_EUROPE_LAYER;
+ if(lat>=-10&&lat<=52&&lon>=70&&lon<=147)return OSM_ASIA_LAYER;
+ return null;
+}
+async function fetchRegionalRoads(lat,lon,radiusKm,service){
+ const base=new URL(service.url);
+ const where="highway NOT IN ('footway','pedestrian','path','steps','cycleway')";
+ base.searchParams.set('geometry',bboxFromPoint(lat,lon,radiusKm).join(','));
+ base.searchParams.set('geometryType','esriGeometryEnvelope');
+ base.searchParams.set('spatialRel','esriSpatialRelIntersects');
+ base.searchParams.set('inSR','4326');
+ base.searchParams.set('where',where);
+ const idUrl=new URL(base);
+ idUrl.searchParams.set('f','json');
+ idUrl.searchParams.set('returnIdsOnly','true');
+ const list=await fetchRoadJson(idUrl.href);
+ if(list?.error||list?.exceededTransferLimit||list?.objectIdFieldName!==service.oid||!Array.isArray(list.objectIds)){
+  throw new Error('Ufullstendig objektliste fra det regionale vegkartet');
+ }
+ const ids=list.objectIds.sort((a,b)=>a-b);
+ if(!ids.every(Number.isSafeInteger)||new Set(ids).size!==ids.length)throw new Error('Ugyldige kartobjekt-ID-er');
+ const roads=new Map(),pageSize=1000;
+ base.searchParams.set('f','geojson');
+ base.searchParams.set('outSR','4326');
+ base.searchParams.set('outFields',service.oid+',osm_id2,highway,maxspeed,ref,name,access,motor_vehicle'+service.extraFields);
+ base.searchParams.set('resultRecordCount',String(pageSize));
+ // ID ranges keep mobile GET URLs short. Check the exact IDs so a truncated
+ // page, or an edit to the live layer between requests, cannot look complete.
+ for(let offset=0;offset<ids.length;offset+=pageSize){
+  const batch=ids.slice(offset,offset+pageSize),remaining=new Set(batch);
+  base.searchParams.set('where',where+' AND '+service.oid+' BETWEEN '+batch[0]+' AND '+batch[batch.length-1]);
+  const page=await fetchRoadJson(base.href);
+  if(page?.error||page?.exceededTransferLimit||page?.type!=='FeatureCollection'||!Array.isArray(page.features)){
+   throw new Error('Ufullstendig svar fra det regionale vegkartet');
+  }
+  for(const feature of page.features){
+   const tags=feature?.properties;
+   if(!remaining.delete(tags?.[service.oid]))throw new Error('Uventet eller gjentatt kartobjekt');
+   if(!OSM_ROAD_TYPES.test(tags.highway)||tags.area==='yes'||(tags.motorcar??tags.motor_vehicle??tags.vehicle??tags.access)==='no')continue;
+   const id=tags.osm_id2;
+   if(!id)throw new Error('Manglende OSM-ID');
+   const geometry=feature.geometry,parts=geometry?.type==='LineString'?[geometry.coordinates]:
+    geometry?.type==='MultiLineString'?geometry.coordinates:null;
+   if(!Array.isArray(parts)||!parts.length||!parts.every(part=>Array.isArray(part)&&part.length>=2&&
+    part.every(point=>Array.isArray(point)&&Number.isFinite(point[0])&&Math.abs(point[0])<=180&&Number.isFinite(point[1])&&Math.abs(point[1])<=90))){
+    throw new Error('Ugyldig veggeometri i det regionale vegkartet');
+   }
+   const speed=parseOsmMaxspeed(tags.maxspeed),label=roadLabelFromOsmTags(tags);
+   // The live layer can contain identical copies of one OSM way under separate Esri IDs.
+   const prior=roads.get(id);
+   if(prior){
+    if(prior.speed!==speed||prior.label!==label||JSON.stringify(prior.parts)!==JSON.stringify(parts)){
+     throw new Error('Motstridende kopier av samme OSM-veg');
+    }
+    continue;
+   }
+   roads.set(id,{source:'osm',key:'osm_'+id,id,label,roadLabel:label,parts,
+    speed,speedForward:speed,speedBackward:speed,generalOnly:true});
+  }
+  if(remaining.size)throw new Error('Kartobjekter mangler i det regionale vegkartet');
+ }
+ return Array.from(roads.values());
+}
+
 const OSM_ROAD_TYPES=/^((motorway|trunk|primary|secondary|tertiary)(_link)?|unclassified|residential|living_street|service|track|road)$/;
+// Explicit OSM context codes for a passenger car without a trailer.
+// See wiki.openstreetmap.org/wiki/Key:maxspeed#Implicit_maxspeed_values.
+const OSM_CONTEXT_SPEEDS={
+ 'no:urban':50,'no:rural':80,'se:urban':50,'se:rural':70,
+ 'dk:urban':50,'dk:rural':80,'dk:motorway':130,'fi:urban':50,'fi:rural':80,
+ 'de:urban':50,'de:rural':100,'de:zone30':30,'de:zone:30':30,
+ 'at:urban':50,'at:rural':100,'gb:nsl_single':Math.round(60*1.609344),
+ 'gb:nsl_dual':Math.round(70*1.609344),'gb:motorway':Math.round(70*1.609344)
+};
+function osmContextSpeed(value){
+ const code=String(value??'').trim().toLowerCase();
+ return Object.hasOwn(OSM_CONTEXT_SPEEDS,code)?OSM_CONTEXT_SPEEDS[code]:null;
+}
 function parseOsmMaxspeed(value){
- const match=String(value??'').trim().match(/^(\d+(?:[.,]\d+)?)\s*(mph|km\/h)?$/i);
- if(!match)return null;
+ const match=String(value??'').trim().match(/^(\d{1,3}(?:[.,]\d+)?)\s*(mph|km\/h|kmh|kph)?$/i);
+ if(!match)return osmContextSpeed(value);
  const kmh=Number(match[1].replace(',','.'))*(match[2]?.toLowerCase()==='mph'?1.609344:1);
- return kmh>=5&&kmh<=140?Math.round(kmh):null;
+ return kmh>=1&&kmh<=200?Math.round(kmh):null;
 }
 function osmDirectionalSpeed(tags,direction){
- const variable=tags[`maxspeed:variable:${direction}`]??tags['maxspeed:variable'];
- if(tags['maxspeed:conditional']||tags[`maxspeed:${direction}:conditional`]||(variable&&variable!=='no'))return null;
- return parseOsmMaxspeed(tags[`maxspeed:${direction}`]??tags.maxspeed);
+ // Resolve the most specific tag for a car. Without a lane, weather or
+ // live signal, only a single applicable numeric limit can be displayed.
+ let fixed,directed,lanes;
+ for(const key of ['maxspeed:motorcar','maxspeed:motor_vehicle','maxspeed:vehicle','maxspeed']){
+  const variable=tags[`${key}:variable:${direction}`]??tags[`${key}:variable`];
+  if((variable&&variable!=='no')||tags[`${key}:conditional`]||tags[`${key}:${direction}:conditional`]||
+     tags[`${key}:lanes:conditional`]||tags[`${key}:lanes:${direction}:conditional`])return null;
+  const directional=tags[`${key}:${direction}`];
+  fixed??=directional??tags[key];
+  directed??=directional;
+  lanes??=tags[`${key}:lanes:${direction}`]??tags[`${key}:lanes`];
+ }
+ let speed=parseOsmMaxspeed(fixed);
+ // A vehicle-only tag and a direction-only tag can apply at the same time.
+ if(directed!=null&&parseOsmMaxspeed(directed)!==speed)return null;
+ if(fixed==null||fixed==='implicit'){
+  const type=tags[`maxspeed:type:${direction}`]??tags['maxspeed:type'];
+  const source=tags[`source:maxspeed:${direction}`]??tags['source:maxspeed'];
+  speed=commonValue([type,source].map(osmContextSpeed).filter(Number.isFinite));
+ }
+ if(lanes==null)return speed;
+ return commonValue(String(lanes).split('|').map(value=>value.trim()?parseOsmMaxspeed(value):speed));
 }
 function osmSpeedForMatch(road,heading,bearing){
  if(road.speedForward===road.speedBackward)return road.speed;
@@ -485,31 +600,173 @@ function osmSpeedForMatch(road,heading,bearing){
 function roadLabelFromOsmTags(tags){
  return String(tags.ref||tags.official_ref||tags.name||tags['name:sv']||tags['name:no']||'').trim().replace(/\s+/g,' ');
 }
-async function fetchOverpass(lat,lon,radiusKm){
- const [west,south,east,north]=bboxFromPoint(lat,lon,radiusKm);
- const query=`[out:json][timeout:8];way["highway"~"${OSM_ROAD_TYPES.source}"]["area"!="yes"](${south},${west},${north},${east});out geom;`;
- for(let attempt=0;attempt<OVERPASS_URLS.length;attempt++){
-  const idx=(osmEndpointIndex+attempt)%OVERPASS_URLS.length;
-  try{
-   const data=await fetchRoadJson(OVERPASS_URLS[idx],{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(query)});
-   if(data.remark||!Array.isArray(data.elements))throw new Error(data.remark||'Ufullstendig svar fra Overpass');
-   osmEndpointIndex=idx;
-   return data;
-  }catch(err){if(attempt===OVERPASS_URLS.length-1)throw err}
+function normalizeOsmRoad(id,tags,parts){
+ const access=tags.motorcar??tags.motor_vehicle??tags.vehicle??tags.access;
+ if(!OSM_ROAD_TYPES.test(tags.highway)||tags.area==='yes'||access==='no')return null;
+ if(id==null||!Array.isArray(parts)||!parts.length||!parts.every(part=>
+  Array.isArray(part)&&part.length>=2&&part.every(p=>Array.isArray(p)&&
+   Number.isFinite(p[0])&&Math.abs(p[0])<=180&&Number.isFinite(p[1])&&Math.abs(p[1])<=90))){
+  throw new Error('Ufullstendig OSM-veg');
  }
+ const label=roadLabelFromOsmTags(tags);
+ const speedForward=osmDirectionalSpeed(tags,'forward'),speedBackward=osmDirectionalSpeed(tags,'backward');
+ const direction=tags['oneway:motorcar']??tags['oneway:motor_vehicle']??tags['oneway:vehicle']??tags.oneway;
+ let oneWay=0;
+ if(!Object.keys(tags).some(key=>key.startsWith('oneway')&&key.endsWith(':conditional'))){
+  if(direction==='-1')oneWay=-1;
+  else if(['yes','1','true'].includes(direction)||(!direction&&tags.junction==='roundabout'))oneWay=1;
+ }
+ return {id,source:'osm',label,parts,oneWay,speedForward,speedBackward,speed:speedForward===speedBackward?speedForward:null};
 }
-async function loadOsmSpeedLimitsAround(lat,lon,radiusKm){
- const data=await fetchOverpass(lat,lon,radiusKm),roads=[];
- for(const way of data.elements){
-  const tags=way.tags||{},access=tags.motorcar??tags.motor_vehicle??tags.vehicle??tags.access;
-  if(way.type!=='way'||!OSM_ROAD_TYPES.test(tags.highway)||tags.area==='yes'||access==='no')continue;
-  if(!Array.isArray(way.geometry)||way.geometry.length<2||!way.geometry.every(p=>Number.isFinite(p?.lon)&&Number.isFinite(p?.lat)))continue;
-  const label=roadLabelFromOsmTags(tags),part=way.geometry.map(p=>[p.lon,p.lat]);
-  const speedForward=osmDirectionalSpeed(tags,'forward'),speedBackward=osmDirectionalSpeed(tags,'backward');
-  roads.push({source:'osm',key:`osm_${way.id}`,id:way.id,label,roadLabel:label,parts:[part],
-   speedForward,speedBackward,speed:speedForward===speedBackward?speedForward:null});
+async function fetchPostpassRoads(lat,lon,radiusKm){
+ if(!Number.isFinite(lat)||Math.abs(lat)>90||!Number.isFinite(lon)||Math.abs(lon)>180||
+    !Number.isFinite(radiusKm)||radiusKm<=0||radiusKm>SPEED_LIMIT_REFRESH_RADIUS_KM)throw new Error('Ugyldig kartutsnitt');
+ const [west,south,east,north]=bboxFromPoint(lat,lon,radiusKm);
+ const intervals=west< -180?[[west+360,180],[-180,east]]:
+  east>180?[[west,180],[-180,east-360]]:[[west,east]];
+ const intersects=intervals.map(([w,e])=>{
+  const box=[w,Math.max(-90,south),e,Math.min(90,north)].map(n=>n.toFixed(7)).join(',');
+  return `ST_Intersects(geom,ST_MakeEnvelope(${box},4326))`;
+ }).join(' OR ');
+ // ST_Intersects uses the geometry index. Keep each whole OSM way in its
+ // original node order so forward/backward limits survive the area lookup.
+ const query=`SELECT osm_id, geom, count(*) OVER () AS area_count,
+   (SELECT jsonb_object_agg(key,value) FROM jsonb_each(tags)
+    WHERE key IN ('highway','area','access','vehicle','motor_vehicle','motorcar','oneway','junction',
+                  'ref','official_ref','name','name:no','name:sv','name:en','name:th')
+       OR key LIKE 'maxspeed%' OR key LIKE 'source:maxspeed%' OR key LIKE 'oneway:%') AS tags
+   FROM postpass_line WHERE osm_type='W' AND (${intersects})
+   AND (tags->>'highway') ~ '${OSM_ROAD_TYPES.source}' AND (tags->>'area') IS DISTINCT FROM 'yes'`;
+ const data=await fetchRoadJson('https://postpass.geofabrik.de/api/interpreter',{
+  method:'POST',referrerPolicy:'strict-origin',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+  body:'data='+encodeURIComponent(query)
+ },8000);
+ if(data?.type!=='FeatureCollection'||!Array.isArray(data.features)||data.error||data.postpass_properties?.error)
+  throw new Error('Ufullstendig svar fra Postpass');
+ const roads=[],seen=new Set();
+ for(const feature of data.features){
+  const {osm_id:id,tags,area_count:count}=feature?.properties||{},geometry=feature?.geometry;
+  const parts=geometry?.type==='LineString'?[geometry.coordinates]:
+   geometry?.type==='MultiLineString'?geometry.coordinates:null;
+  if(feature?.type!=='Feature'||count!==data.features.length||!Number.isSafeInteger(id)||id<=0||seen.has(id)||
+     typeof tags?.highway!=='string'||!parts)throw new Error('Ufullstendige vegdata fra Postpass');
+  seen.add(id);
+  const road=normalizeOsmRoad(id,tags,parts);
+  if(road)roads.push(road);
  }
  return roads;
+}
+async function loadOsmSpeedLimitsAround(lat,lon,radiusKm){
+ const [west,south,east,north]=bboxFromPoint(lat,lon,radiusKm);
+ const query=`[out:json][timeout:8];way["highway"~"${OSM_ROAD_TYPES.source}"]["area"!="yes"](${south},${west},${north},${east});out geom;`;
+ const data=await fetchRoadJson(OVERPASS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(query)},10000);
+ if(data.remark||!Array.isArray(data.elements))throw new Error(data.remark||'Ufullstendig svar fra Overpass');
+ const roads=[];
+ for(const way of data.elements){
+  if(way.type!=='way')continue;
+  const part=way.geometry?.map(point=>[point?.lon,point?.lat]);
+  const road=normalizeOsmRoad(way.id,way.tags||{},[part]);
+  if(road)roads.push(road);
+ }
+ return roads;
+}
+
+// Cache area downloads only. The request centres are rounded before the network lookup.
+const OSM_AREA_MAX_COUNT=8,OSM_FULL_AREA_TTL_MS=12*60*60*1000,OSM_GENERAL_AREA_TTL_MS=2*60*60*1000;
+let osmRecentAreas=[],osmAreaBootstrap=null;
+function osmAreaCenter(lat,lon){
+ return {lat:Math.round(lat*1000)/1000,lon:Math.round(lon*1000)/1000};
+}
+function retainOsmAreas(entries){
+ const fresh=new Map(),now=Date.now();
+ for(const entry of entries){
+  const age=now-entry.savedAt;
+  if(!Number.isFinite(age)||age<0||age>=(entry.generalOnly?OSM_GENERAL_AREA_TTL_MS:OSM_FULL_AREA_TTL_MS))continue;
+  const previous=fresh.get(entry.id);
+  if(!previous||(previous.generalOnly&&!entry.generalOnly)||
+     (previous.generalOnly===entry.generalOnly&&previous.savedAt<entry.savedAt))fresh.set(entry.id,entry);
+ }
+ return [...fresh.values()].sort((a,b)=>b.savedAt-a.savedAt).slice(0,OSM_AREA_MAX_COUNT);
+}
+// A single read/write transaction keeps simultaneous tabs inside the same size bound.
+async function storedOsmAreas(incoming){
+ let storage;
+ try{storage=globalThis.indexedDB}catch{return []}
+ if(!storage)return [];
+ return new Promise(resolve=>{
+  let db,transaction,done=false;
+  function finish(rows=[]){
+   if(done)return;
+   done=true;clearTimeout(timeout);db?.close();resolve(rows);
+  }
+  const timeout=setTimeout(()=>{
+   try{transaction?.abort()}catch{}
+   finish();
+  },350);
+  try{
+   const open=storage.open('oddis-speedometer-osm-areas-v1',1);
+   open.onupgradeneeded=()=>open.result.createObjectStore('cache');
+   open.onblocked=open.onerror=()=>finish();
+   open.onsuccess=()=>{
+    db=open.result;
+    if(done){db.close();return}
+    try{
+     transaction=db.transaction('cache',incoming?'readwrite':'readonly');
+     const store=transaction.objectStore('cache'),get=store.get('areas');
+     let rows=[];
+     get.onsuccess=()=>{
+      try{
+       const stored=Array.isArray(get.result)?get.result:[];
+       rows=retainOsmAreas(incoming?[...stored,incoming]:stored);
+       if(incoming)store.put(rows,'areas');
+      }catch{finish()}
+     };
+     transaction.oncomplete=()=>finish(rows);
+     transaction.onabort=transaction.onerror=()=>finish();
+    }catch{finish()}
+   };
+  }catch{finish()}
+ });
+}
+async function readOsmArea(lat,lon,radiusKm){
+ if(!Number.isFinite(lat)||!Number.isFinite(lon)||!Number.isFinite(radiusKm)||radiusKm<=0)return null;
+ if(!osmAreaBootstrap)osmAreaBootstrap=storedOsmAreas().then(rows=>{
+  osmRecentAreas=retainOsmAreas([...rows,...osmRecentAreas]);
+ });
+ await osmAreaBootstrap;
+ osmRecentAreas=retainOsmAreas(osmRecentAreas);
+ const reach=Math.min(300,radiusKm*1000/3);
+ let best=null,bestDistance=Infinity;
+ for(const area of osmRecentAreas){
+  if(area.radiusKm!==radiusKm)continue;
+  const distance=dM(lat,lon,area.lat,area.lon)+area.centreMargin;
+  if(distance<=reach&&(!best||(best.generalOnly&&!area.generalOnly)||
+     (best.generalOnly===area.generalOnly&&distance<bestDistance))){best=area;bestDistance=distance}
+ }
+ if(!best)return null;
+ const {lat:areaLat,lon:areaLon,roads,generalOnly,savedAt}=best;
+ return {lat:areaLat,lon:areaLon,roads,generalOnly,savedAt};
+}
+async function writeOsmArea({lat,lon,roads,generalOnly=false,savedAt=Date.now()},radiusKm){
+ if(!Number.isFinite(lat)||!Number.isFinite(lon)||!Number.isFinite(radiusKm)||radiusKm<=0||
+    !Array.isArray(roads)||roads.length>1500)return;
+ let coordinates=0;
+ for(const road of roads){
+  if(!Array.isArray(road.parts))return;
+  for(const part of road.parts){
+   if(!Array.isArray(part))return;
+   coordinates+=part.length;
+   if(coordinates>24000)return;
+  }
+ }
+ const centre=osmAreaCenter(lat,lon);
+ // If a caller fetched at an unsnapped centre, shrink the hit radius conservatively.
+ const centreMargin=Math.ceil(dM(lat,lon,centre.lat,centre.lon)/25)*25;
+ const area={...centre,radiusKm,centreMargin,roads,generalOnly:!!generalOnly,savedAt,
+             id:radiusKm+'/'+centre.lat+'/'+centre.lon};
+ osmRecentAreas=retainOsmAreas([...osmRecentAreas,area]);
+ const stored=await storedOsmAreas(area);
+ if(stored.length)osmRecentAreas=retainOsmAreas([...stored,...osmRecentAreas]);
 }
 
 function nvdbSpeedForMatch(match,heading){
@@ -538,7 +795,7 @@ function commonValue(values){
 }
 function updateRoadAt(lat,lon){
  currentRoadLabel='';currentSpeedLimit=null;
- if(!lastSpeedLimitRefreshPos||!Number.isFinite(lat)||!Number.isFinite(lon))return;
+ if(!lastSpeedLimitRefreshPos||roadSnapshotExpired()||!Number.isFinite(lat)||!Number.isFinite(lon))return;
  const acc=gps.acc??6;
  const radius=Math.min(42,Math.max(ROAD_REF_MAX_DIST_M,acc+10));
  if(acc>radius||dM(...lastSpeedLimitRefreshPos,lat,lon)>SPEED_LIMIT_REFRESH_RADIUS_KM*1000-radius)return;
@@ -551,42 +808,102 @@ function updateRoadAt(lat,lon){
  }
  // A GPS fix can fit several roads, even when their displayed road numbers agree.
  const plausible=nearby.filter(match=>match.score<=bestScore+Math.max(2,acc));
- currentRoadLabel=commonValue(plausible.map(m=>m.road.label))||'';
+ const label=commonValue(plausible.map(m=>m.road.label));
+ currentRoadLabel=label||(label===''&&plausible.length===1?'Veg uten navn':'');
  const signRadius=Math.min(radius,Math.max(SPEED_LIMIT_MAX_DIST_M,acc+10));
  currentSpeedLimit=commonValue(plausible.map(m=>{
-  if(m.dist>signRadius)return null;
+  if(m.dist>signRadius||m.opposesTraffic)return null;
   return m.road.source==='osm'?osmSpeedForMatch(m.road,heading,m.bearing):nvdbSpeedForMatch(m,heading);
  }));
 }
+function installRoadArea(center,roads,limits,source,savedAt,fromCache){
+ const grouped=new Map();
+ for(const sl of limits){
+  if(!grouped.has(sl.linkId))grouped.set(sl.linkId,[]);
+  grouped.get(sl.linkId).push(sl);
+ }
+ roadRefs=roads.map(prepareRoad);
+ limitsByLink=grouped;
+ lastSpeedLimitRefreshPos=center;
+ roadSource=source;
+ roadSnapshotTime=savedAt;
+ roadFromCache=fromCache;
+ lastRoadFailure=null;
+ updateRoadAt(...(gps.lastPos||center));
+ renderDashboard();
+}
+async function requestOsmProvider(name,load){
+ if(osmPending.has(name)||Date.now()<(osmRetryAt.get(name)||0))throw new Error(name+' venter før nytt oppslag');
+ osmPending.add(name);
+ try{
+  return await load();
+ }catch(error){
+  osmRetryAt.set(name,Date.now()+(error.status===429?300000:60000));
+  throw error;
+ }finally{osmPending.delete(name)}
+}
+async function refreshOsmArea(lat,lon,radius,generation){
+ const center=osmAreaCenter(lat,lon);
+ const active=()=>generation===roadLookupGeneration&&!isMarineMode();
+ const cached=await readOsmArea(lat,lon,radius);
+ if(!active())return;
+ if(cached){
+  installRoadArea([cached.lat,cached.lon],cached.roads,[],cached.generalOnly?'general':'osm',cached.savedAt,true);
+  if(!cached.generalOnly)return;
+ }
+ function display(roads,generalOnly){
+  if(!active())return;
+  const savedAt=Date.now();
+  installRoadArea([center.lat,center.lon],roads,[],generalOnly?'general':'osm',savedAt,false);
+  void writeOsmArea({...center,roads,generalOnly,savedAt},radius).catch(error=>console.warn('Lokal områdebuffer utilgjengelig',error));
+ }
+ try{
+  const roads=await requestOsmProvider('Postpass',()=>fetchPostpassRoads(center.lat,center.lon,radius));
+  display(roads,false);
+  return;
+ }catch(error){console.warn('Postpass utilgjengelig',error)}
+ if(!active())return;
+ // Independent services. A complete tag response always supersedes the general map.
+ let full=false,shown=!!cached;
+ const service=osmRegionalService(lat,lon);
+ const detailed=requestOsmProvider('Overpass',()=>loadOsmSpeedLimitsAround(center.lat,center.lon,radius)).then(roads=>{
+  full=true;shown=true;display(roads,false);
+ });
+ const regional=service&&!cached?requestOsmProvider(service.url,()=>fetchRegionalRoads(center.lat,center.lon,radius,service)).then(roads=>{
+  if(!full){shown=true;display(roads,true)}
+ }):null;
+ const results=await Promise.allSettled([detailed,regional]);
+ if(!shown)throw results[0].reason;
+}
+function roadSnapshotExpired(){
+ if(roadSource==='nvdb'||!roadSource)return false;
+ return Date.now()-roadSnapshotTime>=(roadSource==='general'?OSM_GENERAL_AREA_TTL_MS:OSM_FULL_AREA_TTL_MS);
+}
 async function refreshSpeedLimitsLight(lat,lon,force=false){
  if(isMarineMode()||!Number.isFinite(lat)||!Number.isFinite(lon)||speedLimitRefreshInFlight)return false;
- if(!force&&lastSpeedLimitRefreshPos&&dM(...lastSpeedLimitRefreshPos,lat,lon)<SPEED_LIMIT_REFRESH_DISTANCE_M)return false;
+ const retryDetailed=roadSource==='general'&&Date.now()-lastGeneralLookupTime>=60000;
+ if(!force&&!retryDetailed&&!roadSnapshotExpired()&&lastSpeedLimitRefreshPos&&dM(...lastSpeedLimitRefreshPos,lat,lon)<SPEED_LIMIT_REFRESH_DISTANCE_M)return false;
  if(!force&&lastRoadFailure&&Date.now()-lastRoadFailure.time<15000&&dM(...lastRoadFailure.pos,lat,lon)<SPEED_LIMIT_REFRESH_DISTANCE_M)return false;
  speedLimitRefreshInFlight=true;
+ lastGeneralLookupTime=Date.now();
  const generation=roadLookupGeneration,radius=SPEED_LIMIT_REFRESH_RADIUS_KM;
  try{
-  let refs=[],limits=[];
   if(await pointInNorway(lat,lon)!==false){
-   // Fetch across county borders. Populate both halves of an NVDB snapshot together.
    try{
-    [refs,limits]=await Promise.all([loadRoadRefsAround(lat,lon,radius),loadSpeedLimitsAround(lat,lon,radius)]);
+    const [roads,limits]=await Promise.all([loadRoadRefsAround(lat,lon,radius),loadSpeedLimitsAround(lat,lon,radius)]);
+    if(generation!==roadLookupGeneration)return false;
+    if(roads.length){
+     installRoadArea([lat,lon],roads,limits,'nvdb',Date.now(),false);
+     return true;
+    }
    }catch(err){
-    if(lastSpeedLimitRefreshPos&&dM(...lastSpeedLimitRefreshPos,lat,lon)<radius*1000-ROAD_REF_MAX_DIST_M)throw err;
+    if(roadSource==='nvdb'&&lastSpeedLimitRefreshPos&&dM(...lastSpeedLimitRefreshPos,lat,lon)<radius*1000-ROAD_REF_MAX_DIST_M)throw err;
     console.warn('NVDB utilgjengelig, prøver OpenStreetMap',err);
    }
   }
-  if(!refs.length)refs=await loadOsmSpeedLimitsAround(lat,lon,radius);
-  if(generation!==roadLookupGeneration||isMarineMode())return false;
-  const grouped=new Map();
-  for(const sl of limits){
-   if(!grouped.has(sl.linkId))grouped.set(sl.linkId,[]);
-   grouped.get(sl.linkId).push(sl);
-  }
-  roadRefs=refs.map(prepareRoad);
-  limitsByLink=grouped;
-  lastRoadFailure=null;lastSpeedLimitRefreshPos=[lat,lon];
-  updateRoadAt(...(gps.lastPos||[lat,lon]));
-  return true;
+  if(generation!==roadLookupGeneration)return false;
+  await refreshOsmArea(lat,lon,radius,generation);
+  return generation===roadLookupGeneration;
  }catch(e){
   if(generation===roadLookupGeneration)lastRoadFailure={pos:[lat,lon],time:Date.now()};
   console.warn('Fartsgrenseoppslag feilet',e);
@@ -611,6 +928,15 @@ function updateGauge(speed,limit,over){
 }
 function renderDashboard(){
  const unit=currentSpeedUnit(),speedKmh=Number.isFinite(gps.speed)?gps.speed*3.6:0,speedValue=displaySpeedFromMps(gps.speed),limit=currentSpeedLimit,limitValue=displayLimitFromKmh(limit),marine=isMarineMode();
+ const general=!marine&&roadSource==='general'&&limitValue!=null;
+ el.speedSign.classList.toggle('general-limit',general);
+ el.sourcePanel.hidden=marine||!roadSource;
+ if(!el.sourcePanel.hidden){
+  const norwegian=roadSource==='nvdb';
+  el.sourceDetail.textContent=(roadFromCache?'Lagret område · ':'')+(roadSource==='general'?'Esri · ':'');
+  el.creditLink.textContent=norwegian?'NVDB · Statens vegvesen':'© OpenStreetMap-bidragsyterne';
+  el.creditLink.href=norwegian?'https://www.vegvesen.no/fag/teknologi/nasjonal-vegdatabank/':'https://www.openstreetmap.org/copyright';
+ }
  el.unit.textContent=unit.label;
  el.speed.textContent=gps.watching&&speedValue!=null&&gps.lastPos?String(speedValue):'--';
 
@@ -618,6 +944,7 @@ function renderDashboard(){
   const marineLimit=Number.isFinite(currentMarineSpeedLimitKn)?currentMarineSpeedLimitKn:null;
   const speedKn=Number.isFinite(gps.speed)?gps.speed*SPEED_UNITS.knots.speedFromMps:0;
   const over=marineLimit!=null&&speedKn>marineLimit+.5;
+  el.speedSign.setAttribute('aria-label',marineLimit==null?'Ukjent sjøfartsgrense':marineLimit+' knop');
   if(marineLimit==null){
    el.speedSign.textContent='KN';
    el.speedSign.classList.add('unknown','marine');
@@ -635,10 +962,11 @@ function renderDashboard(){
   el.speedSign.classList.remove('marine','limit');
   if(limitValue==null){el.speedSign.textContent='--';el.speedSign.classList.add('unknown')}else{el.speedSign.textContent=String(limitValue);el.speedSign.classList.remove('unknown')}
   if(currentRoadLabel){el.roadText.textContent=currentRoadLabel;el.roadText.classList.remove('unknown')}else{el.roadText.textContent='Veg ukjent';el.roadText.classList.add('unknown')}
-  const over=limit!=null&&speedKmh>limit+5;
+  const over=!general&&limit!=null&&speedKmh>limit+5;
   el.speed.classList.toggle('danger',!!over);
   el.speedSign.classList.toggle('blink',!!over);
-  updateGauge(speedValue,limitValue,over);
+  el.speedSign.setAttribute('aria-label',limitValue==null?'Ukjent fartsgrense':(general?'Generell kartverdi ':'Fartsgrense ')+limitValue+' '+unit.label);
+  updateGauge(speedValue,general?null:limitValue,over);
  }
 
  el.accuracy.textContent=Number.isFinite(gps.acc)?`±${Math.round(gps.acc)} m`:'--';
@@ -658,7 +986,8 @@ function renderDashboard(){
   else if(marineLimit!=null)setMessage('Innenfor fartsgrense');
   else if(currentMarineAreaType)setMessage(currentMarineAreaType);
   else setMessage('Båtmodus');
- }else if(limit==null)setMessage(speedLimitRefreshInFlight?'Henter fartsgrense':'Fartsgrense ukjent');
+ }else if(limit==null)setMessage(speedLimitRefreshInFlight?'Henter fartsgrense':lastRoadFailure?'Vegdata utilgjengelige':'Fartsgrense ukjent');
+ else if(general)setMessage('Kartverdi · vilkår ukjent');
  else if(speedValue==null)setMessage('Fart ukjent');
  else if(limit!=null&&speedKmh>limit+5)setMessage(`Over grense med ${deltaTextFromKmh(speedKmh-limit)}`);
  else if(speedKmh>limit)setMessage('Over fartsgrense');

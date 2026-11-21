@@ -10,17 +10,27 @@ const script = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
 
 // Run the actual watchPosition callback, fetch and rendering path for the standalone page.
 async function createSpeedometer(fetch) {
+  function element() {
+    const classes = new Set(), listeners = new Map();
+    return {
+      addEventListener(name, fn) { listeners.set(name, fn); },
+      click() { listeners.get('click')?.(); },
+      setAttribute() {}, style: {setProperty() {}},
+      classList: {
+        add(...names) { names.forEach(name => classes.add(name)); },
+        remove(...names) { names.forEach(name => classes.delete(name)); },
+        toggle(name, active) { if (active) classes.add(name); else classes.delete(name); },
+        contains(name) { return classes.has(name); }
+      }
+    };
+  }
   const elements = new Map();
+  const buttons = ['kmh','mph','knots'].map(unit => ({...element(), dataset: {unit}}));
   const document = {
     addEventListener() {},
-    querySelectorAll: () => [],
+    querySelectorAll: selector => selector === '[data-unit]' ? buttons : [],
     getElementById(id) {
-      if (!elements.has(id)) {
-        elements.set(id, {
-          addEventListener() {}, setAttribute() {},
-          classList: {add() {}, remove() {}, toggle() {}}, style: {setProperty() {}}
-        });
-      }
+      if (!elements.has(id)) elements.set(id, element());
       return elements.get(id);
     }
   };
@@ -43,6 +53,8 @@ async function createSpeedometer(fetch) {
       now += 2000;
       receivePosition({timestamp: now, coords: {latitude, longitude, accuracy, speed, heading}});
     },
+    chooseUnit: unit => buttons.find(button => button.dataset.unit === unit).click(),
+    hasClass: (id, name) => document.getElementById(id).classList.contains(name),
     speed: () => document.getElementById('speed').textContent,
     message: () => document.getElementById('messageMain').textContent,
     sign: () => document.getElementById('speedSign').textContent,
