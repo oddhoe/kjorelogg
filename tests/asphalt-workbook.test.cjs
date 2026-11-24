@@ -48,3 +48,23 @@ test('single-sheet MRFK keeps the same row id, and MRFK retains priority in mixe
   assert.equal(single.sheet, 'Plan');
   assert.equal(mixed.format, 'MRFK');
 });
+
+test('MRFK survey dates and stable ID preserve field history across file and row changes', () => {
+  const rows = [[...mrfk[0], 'Tiltaks-ID', 'Dato lagt dekke', 'Dato utført vegmerking'],
+    [...mrfk[1], 'MR-26-1', '02.06.2026', '2026-06-05']];
+  const row = parse({Plan: rows}).result.records[0];
+  assert.equal(row.laidDate, '2026-06-02');
+  assert.equal(row.markedDate, '2026-06-05');
+  const app = createAppContext();
+  const [saved] = app.mergeSurveyPlans([], [row]);
+  saved.surveyRuns.push({work: 'Bilder', finished: false, vegref: row.vegref});
+  const [updated] = app.normalizeAsphaltPlan(app.mergeSurveyPlans([saved], [{...row, id: 'ny-fil:annen-rad'}]));
+  assert.equal(updated.id, saved.id);
+  assert.equal(updated.surveyRuns[0].work, 'Bilder');
+  updated.manualStatus='none';
+  assert.equal(app.asphaltReady(updated),true);
+  updated.surveyRuns[0].finished=true;
+  assert.equal(app.asphaltReady(updated),false);
+  assert.equal(app.asphaltWorkDate('31.02.2026'), '');
+  assert.throws(()=>app.mergeSurveyPlans([], [row,row]), /Duplikat/);
+});
