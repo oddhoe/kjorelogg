@@ -64,7 +64,7 @@ test('MRFK survey dates and stable ID preserve field history across file and row
   updated.manualStatus='none';
   assert.equal(app.asphaltReady(updated),true);
   updated.surveyRuns[0].finished=true;
-  assert.equal(app.asphaltReady(updated),false);
+  assert.equal(app.asphaltReady(updated),true);
   assert.equal(app.asphaltWorkDate('31.02.2026'), '');
   assert.throws(()=>app.mergeSurveyPlans([], [row,row]), /Duplikat/);
 });

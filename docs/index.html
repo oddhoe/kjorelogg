@@ -4335,7 +4335,7 @@ function openAsphaltProgressPopup(r,latlng){
  const sourceStatus={COMPLETED:'🔵 FERDIG',IN_PROGRESS:'🟡 PÅBEGYNT',DEFERRED:'🔴 UTSATT',PLANNED:'🟠 IKKE STARTET'};
  const statusTxt=asphaltStatusText(status);
  const statusColor=asphaltPlanColor(r,status);
- const doneBtn=status!=='done'?`<button onclick="window._progressMarkDone('${safeKey}')" style="background:#0d4775;color:#d7efff;border:1px solid #1976d2;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🔵 Sett ferdig</button>`:'';
+ const doneBtn=status!=='done'?`<button onclick="window._progressMarkDone('${safeKey}')" style="background:#0d4775;color:#d7efff;border:1px solid #1976d2;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🔵 Sett planstatus ferdig</button>`:'';
  const oneWayBtn=status!=='oneway'?`<button onclick="window._progressMarkOneWay('${safeKey}')" style="background:#3a3000;color:#f9a825;border:1px solid #7a6500;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px">🟠 Kjørt 1 retning</button>`:'';
  const date=r.asfaltDato?new Date(r.asfaltDato).toLocaleDateString('nb-NO'):'–';
  const dateTo=r.asfaltDatoTil?new Date(r.asfaltDatoTil).toLocaleDateString('nb-NO'):'';
@@ -5171,6 +5171,8 @@ function normalizeAsphaltPlan(raw){
   manualStatus:['done','oneway','skip','none','deferred'].includes(r?.manualStatus)?r.manualStatus:'',
   tiltakId:String(r?.tiltakId||''),laidDate:r?.laidDate||'',markedDate:r?.markedDate||'',
   surveyRuns:Array.isArray(r?.surveyRuns)?r.surveyRuns:[],
+  surveyCompletion:r?.surveyCompletion&&typeof r.surveyCompletion.scope==='string'
+   ?{scope:r.surveyCompletion.scope,reason:String(r.surveyCompletion.reason||'').trim()}:null,
   matchedRanges:Array.isArray(r?.matchedRanges)?r.matchedRanges:[],
   manualStatusTs:Number(r?.manualStatusTs)||0,
   source:String(r?.source||''),
@@ -5288,14 +5290,83 @@ function mergeSurveyPlans(existing,incoming){
    if(candidates.length===1&&incoming.filter(r=>r.vegref===row.vegref).length===1)prev=candidates[0];
   }
   const id=prev?.id||(row.tiltakId?'MRFK-tiltak:'+row.tiltakId:row.id);
-  map.set(id,{...row,id,manualStatus:prev?.manualStatus,manualStatusTs:prev?.manualStatusTs,surveyRuns:prev?.surveyRuns||[]});
+  map.set(id,{...row,id,manualStatus:prev?.manualStatus,manualStatusTs:prev?.manualStatusTs,surveyRuns:prev?.surveyRuns||[],surveyCompletion:prev?.surveyCompletion});
  }
  return [...map.values()];
+}
+const SURVEY_DIRECTIONS=['Stigende','Synkende'];
+const SURVEY_WORK=['Skanning','Bilder'];
+
+function surveyIntervalGaps(from,to,intervals){
+ const gaps=[];
+ let cursor=from;
+ for(const interval of intervals.sort((a,b)=>a.from-b.from)){
+  if(interval.to<=cursor||interval.from>=to)continue;
+  if(interval.from>cursor)gaps.push({from:cursor,to:interval.from});
+  cursor=Math.max(cursor,interval.to);
+  if(cursor>=to)break;
+ }
+ if(cursor<to)gaps.push({from:cursor,to});
+ return gaps;
+}
+function surveyCoverage(r){
+ const valid=x=>x&&[x.s,x.d,x.from,x.to].every(Number.isFinite)&&x.from>=0&&x.to>x.from;
+ const ranges=(r.matchedRanges||[]).filter(valid);
+ const runs=(r.surveyRuns||[]).filter(x=>valid(x)&&x.nr===r.nr&&SURVEY_DIRECTIONS.includes(x.direction)&&
+  (x.work==='Skanning og bilder'||SURVEY_WORK.includes(x.work)));
+ const {a,b}=_orderedPlanRefs(r);
+ const sameSection=(x,y)=>x.s===y.s&&x.d===y.d;
+ const nvdbIssues=[];
+ if(!ranges.length){
+  nvdbIssues.push('Ingen NVDB-intervaller er tilgjengelige. Importer planen på nytt.');
+ }else if(sameSection(a,b)&&Number.isFinite(a.m)&&b.m>a.m){
+  for(const gap of surveyIntervalGaps(a.m,b.m,ranges.filter(x=>sameSection(x,a)))){
+   nvdbIssues.push(`Mangler NVDB-intervall for S${a.s}D${a.d} m${gap.from}–${gap.to}.`);
+  }
+ }else if(Number.isFinite(a.m)&&Number.isFinite(b.m)&&!sameSection(a,b)){
+  for(const endpoint of [a,b]){
+   if(!ranges.some(x=>sameSection(x,endpoint)&&x.from<=endpoint.m&&x.to>=endpoint.m)){
+    nvdbIssues.push(`Mangler NVDB-treff ved S${endpoint.s}D${endpoint.d} m${endpoint.m}.`);
+   }
+  }
+ }
+ const gaps=[];
+ for(const range of ranges){
+  const sectionRuns=runs.filter(x=>sameSection(x,range)&&x.from<range.to&&x.to>range.from);
+  for(const direction of SURVEY_DIRECTIONS){
+   for(const work of SURVEY_WORK){
+    const matching=sectionRuns.filter(x=>x.direction===direction&&(x.work===work||x.work==='Skanning og bilder'));
+    for(const gap of surveyIntervalGaps(range.from,range.to,matching)){
+     gaps.push({...gap,s:range.s,d:range.d,direction,work});
+    }
+   }
+  }
+ }
+ return {gaps,nvdbIssues,complete:!nvdbIssues.length&&!gaps.length};
+}
+function surveyScope(r){
+ return JSON.stringify([r.countyId||'15',r.nr,r.vegref,r.fraS,r.fraD,r.fraM,r.tilS,r.tilD,r.tilM]);
+}
+function surveyState(r,coverage=surveyCoverage(r)){
+ const confirmation=r.surveyCompletion?.scope===surveyScope(r)?r.surveyCompletion:null;
+ if(confirmation?.reason)return 'override';
+ if(coverage.complete){
+  if(confirmation)return 'complete';
+  return 'unconfirmed';
+ }
+ return r.surveyRuns?.length?'partial':'pending';
+}
+function confirmSurvey(r,reason=''){
+ const coverage=surveyCoverage(r);
+ reason=reason.trim();
+ if(!coverage.complete&&!reason)return false;
+ r.surveyCompletion={scope:surveyScope(r),reason};
+ return true;
 }
 function asphaltReady(r){
  const today=localSurveyDate();
  return !!(r.laidDate&&r.markedDate&&r.laidDate<=today&&r.markedDate<=today&&
-  !['skip','deferred'].includes(asphaltStatus(r))&&!r.surveyRuns?.some(x=>x.finished&&x.vegref===r.vegref));
+  !['skip','deferred'].includes(asphaltStatus(r))&&!['complete','override'].includes(surveyState(r)));
 }
 function localSurveyDate(){
  const now=new Date();
@@ -5303,35 +5374,71 @@ function localSurveyDate(){
 }
 function surveyPanel(r){
  if(r.sourceFormat!=='MRFK')return '';
- const ranges=r.matchedRanges||[];
- const history=(r.surveyRuns||[]).map(x=>esc(`${x.date} · ${x.work} · FV${x.nr} S${x.s}D${x.d} m${x.from}–${x.to} · ${x.direction}${x.finished?' · Oppdrag ferdig':''}`)).join('<br>');
- return `<details><summary>Målebil · ${asphaltReady(r)?'klar for kjøring':'registrering'}</summary>
- Tiltaks-ID: ${esc(r.tiltakId||'–')}<br>Lagt dekke: ${esc(r.laidDate||'–')}<br>Utført merking: ${esc(r.markedDate||'–')}<br>${history}
+ const ranges=r.matchedRanges||[],coverage=surveyCoverage(r),state=surveyState(r,coverage);
+ const status={pending:'Ikke startet',partial:'Delvis gjennomført',unconfirmed:'Full dekning · venter på bekreftelse',
+  complete:'Fullført',override:'Fullført med avvik'}[state];
+ const missing=[...coverage.nvdbIssues,...coverage.gaps.map(gap=>
+  `${gap.work} · ${gap.direction} · S${gap.s}D${gap.d} m${gap.from}–${gap.to}`)];
+ const history=(r.surveyRuns||[]).filter(Boolean).map(x=>esc(`${x.date} · ${x.work} · FV${x.nr} S${x.s}D${x.d} m${x.from}–${x.to} · ${x.direction}${x.finished?' · Tidligere ferdigmarkering':''}`)).join('<br>');
+ const done=['complete','override'].includes(state);
+ return `<details ${r.surveyRuns?.length||done?'open':''}><summary>Målebil · ${status}</summary>
+ Tiltaks-ID: ${esc(r.tiltakId||'–')}<br>Lagt dekke: ${esc(r.laidDate||'–')}<br>Utført merking: ${esc(r.markedDate||'–')}<br>
+ ${missing.length?`<strong>Mangler dekning</strong><ul style="max-height:9em;overflow-y:auto">${missing.map(line=>`<li>${esc(line)}</li>`).join('')}</ul>`:'Bilder og skanning dekker alle NVDB-intervaller i begge retninger.<br>'}
+ ${state==='override'?`Begrunnelse: ${esc(r.surveyCompletion.reason)}<br>`:''}
+ ${history?'<details><summary>Registrerte kjøringer</summary>'+history+'</details>':''}
  ${ranges.length?`<form id="survey-run"><label>NVDB-intervall <select name="range">${ranges.map((v,i)=>`<option value="${i}">S${Number(v.s)}D${Number(v.d)} m${Number(v.from)}–${Number(v.to)}</option>`).join('')}</select></label><br>
- <label>Fra meter <input required name="from" type="number" min="0"></label><br><label>Til meter <input required name="to" type="number" min="0"></label><br>
+ <label>Fra meter <input required name="from" type="number" min="0" step="any"></label><br><label>Til meter <input required name="to" type="number" min="0" step="any"></label><br>
  <label>Dato <input required name="date" type="date" value="${localSurveyDate()}" max="${localSurveyDate()}"></label><br>
- <label>Retning <select name="direction"><option>Stigende</option><option>Synkende</option></select></label><br>
- <label>Utført <select name="work"><option>Skanning og bilder</option><option>Skanning</option><option>Bilder</option></select></label><br>
- <label><input name="finished" type="checkbox"> Hele målebiloppdraget er ferdig</label><br><button>Lagre kjøring</button></form>`:'Importer planen på nytt for å hente NVDB-intervaller.'}</details>`;
+ <label>Retning <select name="direction">${SURVEY_DIRECTIONS.map(x=>`<option>${x}</option>`).join('')}</select></label><br>
+ <label>Utført <select name="work"><option>Skanning og bilder</option>${SURVEY_WORK.map(x=>`<option>${x}</option>`).join('')}</select></label><br>
+ <button>Lagre kjøring</button></form>`:''}
+ ${done?'':`<form id="survey-complete">${coverage.complete?'':`<label>Begrunnelse for avvik <textarea name="reason" required></textarea></label><br>`}
+ <button>${coverage.complete?'Bekreft målebiloppdrag fullført':'Avslutt målebiloppdrag med avvik'}</button></form>`}
+ ${state==='override'?'<form id="survey-reopen"><button>Gjenåpne målebiloppdrag</button></form>':''}
+ </details>`;
 }
 document.addEventListener('submit',event=>{
- if(event.target.id!=='survey-run')return;
+ const form=event.target;
+ if(!['survey-run','survey-complete','survey-reopen'].includes(form.id))return;
  event.preventDefault();
- const r=asphaltRecordByKey(_progressPopupContext?.key);
+ const key=_progressPopupContext?.key,r=asphaltRecordByKey(key);
  if(!r)return;
- const data=new FormData(event.target),v=r.matchedRanges[Number(data.get('range'))];
- const from=Number(data.get('from')),to=Number(data.get('to'));
- if(!v||Math.min(from,to)<v.from||Math.max(from,to)>v.to||from===to){alert('Oppgi to ulike meterverdier innenfor valgt NVDB-intervall.');return}
- r.surveyRuns.push({date:data.get('date'),work:data.get('work'),direction:data.get('direction'),nr:r.nr,s:v.s,d:v.d,from:Math.min(from,to),to:Math.max(from,to),vegref:r.vegref,finished:data.has('finished')});
- saveAsphaltPlan();refreshProgressAfterPopup('Målebilkjøring lagret.');
+ const data=new FormData(form);
+ let message;
+ if(form.id==='survey-run'){
+  const v=r.matchedRanges[Number(data.get('range'))];
+  const from=Math.min(Number(data.get('from')),Number(data.get('to')));
+  const to=Math.max(Number(data.get('from')),Number(data.get('to')));
+  if(!v||!Number.isFinite(from)||!Number.isFinite(to)||from<v.from||to>v.to||from===to){
+   alert('Oppgi to ulike meterverdier innenfor valgt NVDB-intervall.');return;
+  }
+  r.surveyRuns.push({date:data.get('date'),work:data.get('work'),direction:data.get('direction'),
+   nr:r.nr,s:v.s,d:v.d,from,to,vegref:r.vegref,finished:false});
+  message='Målebilkjøring lagret.';
+ }else if(form.id==='survey-complete'){
+  if(!confirmSurvey(r,data.get('reason')||'')){alert('Gjennomgå manglende dekning og oppgi en begrunnelse for avviket.');return}
+  message=r.surveyCompletion.reason?'Målebiloppdrag avsluttet med avvik.':'Målebiloppdrag bekreftet fullført.';
+ }else{
+  r.surveyCompletion=null;
+  message='Målebiloppdrag gjenåpnet.';
+ }
+ saveAsphaltPlan();refreshProgressAfterPopup(message,'success',key);
 });
 document.getElementById('asphalt-ready')?.addEventListener('change',()=>{
  if(document.getElementById('asphalt-ready').checked){settings.progressShowAsphalt=true;saveSettings();applySettingsToUI()}
  updateProgressMap({fit:false,force:true});
 });
 document.getElementById('export-asphalt-runs')?.addEventListener('click',()=>{
- const rows=[['Tiltaks-ID','Veg','S','D','Fra meter','Til meter','Dato','Retning','Utført','Hele oppdraget ferdig']];
- for(const r of asphaltPlan)for(const x of r.surveyRuns||[])rows.push([r.tiltakId,'FV'+x.nr,x.s,x.d,x.from,x.to,x.date,x.direction,x.work,x.finished?'Ja':'Nei']);
+ const rows=[['Tiltaks-ID','Veg','S','D','Fra meter','Til meter','Dato','Retning','Utført','Hele oppdraget ferdig','Avviksbegrunnelse']];
+ for(const r of asphaltPlan){
+  if(!r.surveyRuns?.length)continue;
+  const state=surveyState(r);
+  const finished=['complete','override'].includes(state);
+  for(const x of r.surveyRuns.filter(Boolean)){
+   rows.push([r.tiltakId,'FV'+x.nr,x.s,x.d,x.from,x.to,x.date,x.direction,x.work,
+    finished?'Ja':'Nei',state==='override'?r.surveyCompletion.reason:'']);
+  }
+ }
  if(rows.length===1){setMessage('Ingen målebilkjøringer å eksportere.','notice');return}
  const quote=v=>'"'+String(v??'').replace(/^([=+@\-\t\r])/,"'$1").replaceAll('"','""')+'"';
  const csv=rows.map(row=>row.map(quote).join(';')).join('\r\n');
